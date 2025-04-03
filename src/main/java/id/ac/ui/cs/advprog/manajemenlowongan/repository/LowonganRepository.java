@@ -1,6 +1,8 @@
 package id.ac.ui.cs.advprog.manajemenlowongan.repository;
 
 import id.ac.ui.cs.advprog.manajemenlowongan.model.Lowongan;
+import id.ac.ui.cs.advprog.manajemenlowongan.model.Lamaran;
+
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -53,5 +55,13 @@ public class LowonganRepository {
             }
         }
         return null; // Jika tidak ditemukan
+    }
+
+    public Lamaran acceptLamaran(UUID idLamaran) {
+        return null;
+    }
+
+    public Lamaran rejectLamaran(UUID idLamaran) {
+        return null;
     }
 }
