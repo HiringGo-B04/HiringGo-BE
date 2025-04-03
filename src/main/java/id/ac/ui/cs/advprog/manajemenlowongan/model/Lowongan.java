@@ -1,11 +1,13 @@
 package id.ac.ui.cs.advprog.manajemenlowongan.model;
 
+import java.util.UUID;
+
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter @Setter
 public class Lowongan {
-    private String id;
+    private UUID id;
     private String matkul;
     private int year;
     private String term;
