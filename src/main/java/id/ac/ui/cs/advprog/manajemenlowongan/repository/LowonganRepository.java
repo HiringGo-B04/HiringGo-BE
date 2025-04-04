@@ -70,6 +70,12 @@ public class LowonganRepository {
     }
 
     public Lamaran rejectLamaran(UUID idLamaran) {
+        for (Lamaran lamaran : lamaranData) {
+            if (lamaran.getId().equals(idLamaran)) {
+                lamaran.updateStatus(StatusLamaran.DITOLAK);
+                return lamaran;
+            }
+        }
         return null;
     }
 }
