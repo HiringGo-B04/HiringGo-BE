@@ -5,6 +5,7 @@ import lombok.Setter;
 
 import java.util.UUID;
 
+@Getter @Setter
 public class Lamaran {
     private UUID id;
     private UUID idMahasiswa;
