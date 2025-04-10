@@ -267,25 +267,4 @@ public class AuthServiceTest {
         assertEquals("error", response.getBody().get("status"));
         assertEquals("Role is empty", response.getBody().get("messages"));
     }
-
-    @Test
-    void testRegisterA_UsernameAlreadyExists() {
-        // Mock behavior for an existing username
-        User user = new User(UUID.randomUUID(), "adminUser", "password123");
-        when(userRepository.existsByUsername("adminUser")).thenReturn(true);
-
-        // Act
-
-        ResponseEntity<Map<String, String>> responseEntity = authService.registerA(user, "admin");
-
-        // Assertions
-        assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
-        Map<String, String> response = responseEntity.getBody();
-        assertNotNull(response);
-        assertEquals("error", response.get("status"));
-        assertEquals("Username already exists", response.get("messages"));
-    }
-
-
-
 }

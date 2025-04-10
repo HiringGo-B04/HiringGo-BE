@@ -11,8 +11,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class AdminRegistrationCommand extends RegistrationCommand {
-    public AdminRegistrationCommand(UserRepository userRepository, PasswordEncoder passwordEncoder, User user) {
+public class StudentRegistrationCommand extends RegistrationCommand {
+    public StudentRegistrationCommand(UserRepository userRepository, PasswordEncoder passwordEncoder, User user) {
         super(userRepository,passwordEncoder,user);
     }
 
@@ -20,7 +20,15 @@ public class AdminRegistrationCommand extends RegistrationCommand {
     @Transactional
     public ResponseEntity<Map<String, String>> addUser() {
         Map<String, String> response = new HashMap<>();
-        if(user.getPassword() == null || user.getPassword().isEmpty() || user.getUsername() == null || user.getUsername().isEmpty()) {
+        if(user.getPassword() == null
+                || user.getUsername() == null
+                || user.getFullName() == null
+                || user.getNim() == null
+                || user.getPassword().isEmpty()
+                || user.getUsername().isEmpty()
+                || user.getFullName().isEmpty()
+                || user.getNim().isEmpty()
+        ) {
             response.put("status", "error");
             response.put("message", "Invalid payload");
             return new ResponseEntity<>(response, HttpStatus.valueOf(403));
@@ -36,7 +44,10 @@ public class AdminRegistrationCommand extends RegistrationCommand {
             User newUser = new User(
                     UUID.randomUUID(),
                     user.getUsername(),
-                    passwordEncoder.encode(user.getPassword())
+                    passwordEncoder.encode(user.getPassword()),
+                    user.getFullName(),
+                    false,
+                    user.getNim()
             );
 
             userRepository.save(newUser);
@@ -44,7 +55,7 @@ public class AdminRegistrationCommand extends RegistrationCommand {
             response.put("status", "accept");
             response.put("messages", "Success register");
             response.put("username", newUser.getUsername());
-            response.put("role", "ADMIN");
+            response.put("role", "STUDENT");
 
             return new ResponseEntity<>(response, HttpStatus.valueOf(200));
         }

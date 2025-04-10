@@ -6,6 +6,10 @@ import id.ac.ui.cs.advprog.authjwt.model.Token;
 import id.ac.ui.cs.advprog.authjwt.model.User;
 import id.ac.ui.cs.advprog.authjwt.repository.TokenRepository;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
+import id.ac.ui.cs.advprog.authjwt.service.command.AdminRegistrationCommand;
+import id.ac.ui.cs.advprog.authjwt.service.command.LecturerRegistrationCommand;
+import id.ac.ui.cs.advprog.authjwt.service.command.RegistrationCommand;
+import id.ac.ui.cs.advprog.authjwt.service.command.StudentRegistrationCommand;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +35,7 @@ public class AuthService implements AuthenticationFacade {
 
     @Autowired
     JwtUtil jwtUtils;
+    private PasswordEncoder passwordEncoder;
 
     @Override
     public ResponseEntity<Map<String, String>> login(User user){
@@ -115,5 +120,37 @@ public class AuthService implements AuthenticationFacade {
             response.put("messages", e.getMessage());
             return new ResponseEntity<>(response, HttpStatus.valueOf(401));
         }
+    }
+
+    @Override
+    public ResponseEntity<Map<String, String>> registerA(@RequestBody User user, String role) {
+        try{
+            if(role == null || role.isEmpty()) {
+                throw new IllegalArgumentException("Role is empty");
+            }
+
+            RegistrationCommand resgistrand;
+            if(role.equalsIgnoreCase("admin")) {
+                resgistrand = new AdminRegistrationCommand(userRepository, encoder, user);
+            }
+            else if(role.equalsIgnoreCase("lecturer")) {
+                resgistrand = new LecturerRegistrationCommand(userRepository, encoder, user);
+            }
+            else if(role.equalsIgnoreCase("student")) {
+                resgistrand = new StudentRegistrationCommand(userRepository, encoder, user);
+            }
+            else {
+                throw new IllegalArgumentException("Role is invalid");
+            }
+
+            return resgistrand.addUser();
+        }
+        catch (Exception e) {
+            Map<String, String> response = new HashMap<>();
+            response.put("status", "error");
+            response.put("messages", e.getMessage());
+            return new ResponseEntity<>(response, HttpStatus.valueOf(401));
+        }
+
     }
 }
