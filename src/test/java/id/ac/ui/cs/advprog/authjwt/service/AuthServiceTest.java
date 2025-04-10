@@ -102,4 +102,44 @@ public class AuthServiceTest {
         assertEquals("Success register", response.getBody().get("messages"));
         assertEquals("newuser", response.getBody().get("username"));
     }
+
+    @Test
+    public void testLogin_ThrowsException() {
+        User input = new User(null, "testuser", "password");
+        User existing = new User(UUID.randomUUID(), "testuser", "encodedPassword");
+
+        when(userRepository.findByUsername("testuser")).thenReturn(existing);
+        when(passwordEncoder.matches("password", "encodedPassword")).thenReturn(true);
+        when(jwtUtil.generateToken("testuser")).thenReturn("mocktoken");
+
+        // Force tokenRepository.save(...) to throw exception
+        doThrow(new RuntimeException("DB failure")).when(tokenRepository).save(any(Token.class));
+
+        ResponseEntity<Map<String, String>> response = authService.login(input);
+
+        assertEquals(401, response.getStatusCodeValue());
+        assertEquals("error", response.getBody().get("status"));
+        assertEquals("DB failure", response.getBody().get("messages"));
+    }
+
+    @Test
+    public void testRegister_ThrowsException() {
+        User input = new User(null, "newuser", "password");
+
+        // username does not exist yet
+        when(userRepository.existsByUsername("newuser")).thenReturn(false);
+
+        // passwordEncoder.encode() works fine
+        when(passwordEncoder.encode("password")).thenReturn("encodedPassword");
+
+        // Simulate save throwing an exception
+        doThrow(new RuntimeException("Database is down")).when(userRepository).save(any(User.class));
+
+        ResponseEntity<Map<String, String>> response = authService.register(input);
+
+        assertEquals(401, response.getStatusCodeValue());
+        assertEquals("error", response.getBody().get("status"));
+        assertEquals("Database is down", response.getBody().get("messages"));
+    }
+
 }
