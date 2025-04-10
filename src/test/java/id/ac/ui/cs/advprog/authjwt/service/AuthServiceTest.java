@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Map;
+import java.util.HashMap;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -134,6 +135,35 @@ public class AuthServiceTest {
         assertEquals(401, response.getStatusCodeValue());
         assertEquals("error", response.getBody().get("status"));
         assertEquals("Database is down", response.getBody().get("messages"));
+    }
+
+    @Test
+    void testLogout_Success() {
+        // Arrange
+        String tokenString = "valid-token";
+        Token token = new Token(tokenString);
+        when(tokenRepository.findByToken(tokenString)).thenReturn(token);
+
+        doNothing().when(tokenRepository).deleteByToken(tokenString);
+
+
+        ResponseEntity<Map<String, String>> response = authService.logout(token);
+
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals("Success to logout", response.getBody().get("messages"));
+    }
+
+    @Test
+    void testLogout_InvalidToken() {
+        // Arrange
+        String tokenString = "invalid-token";
+        Token token = new Token(tokenString);
+        Map<String, String> responseBody = new HashMap<>();
+
+        ResponseEntity<Map<String, String>> response = authService.logout(token);
+
+        assertEquals(401, response.getStatusCodeValue());
+        assertEquals("Invalid Token", response.getBody().get("messages"));
     }
 
 }
