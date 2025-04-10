@@ -34,12 +34,18 @@ public class User {
         this.role = "ADMIN";
     }
 
-    public User(UUID uuid, String email, String password, String fullName, boolean worker) {
+    public User(UUID uuid, String email, String password, String fullName, boolean worker, String number) {
         this.userId = uuid;
         this.username = email;
         this.password = password;
         this.fullName = fullName;
-        this.role = (worker ? "LECTURER" : "STUDENT");
+        if(worker) {
+            this.role = "LECTURER";
+            this.nip = number;
+        }
+        else{
+            this.role = "STUDENT";
+            this.nim = number;
+        }
     }
-
 }
