@@ -27,8 +27,8 @@ public class User {
         // Required by JPA
     }
 
-    public User(String email, String password) {
-        this.userId = UUID.randomUUID();
+    public User(UUID uuid, String email, String password) {
+        this.userId = uuid;
         this.username = email;
         this.password = password;
         this.role = "ADMIN";
