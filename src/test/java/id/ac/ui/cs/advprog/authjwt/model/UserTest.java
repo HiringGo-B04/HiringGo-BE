@@ -10,7 +10,7 @@ public class UserTest {
     void testUserGettersAndSetters() {
         User user = new User();
 
-        user.setUserId(UUID.randomUUID()); // Manually setting a UUID
+        user.setUserId(UUID.randomUUID());
         user.setUsername("test@example.com");
         user.setPassword("password123");
         user.setRole("Admin");
@@ -18,7 +18,7 @@ public class UserTest {
         user.setNim("67890");
         user.setFullName("John Doe");
 
-        assertThat(user.getUserId()).isNotNull(); // Check if UUID is generated (it's random so we just check it's not null)
+        assertThat(user.getUserId()).isNotNull();
         assertThat(user.getUsername()).isEqualTo("test@example.com");
         assertThat(user.getPassword()).isEqualTo("password123");
         assertThat(user.getRole()).isEqualTo("Admin");
@@ -29,15 +29,12 @@ public class UserTest {
 
     @Test
     void testUserConstructor() {
-        // Given
         String email = "test@example.com";
         String password = "password123";
         UUID id = UUID.randomUUID();
 
-        // When
         User user = new User(id, email, password);
 
-        // Then
         assertThat(user.getUserId()).isNotNull();
         assertThat(user.getUsername()).isEqualTo(email);
         assertThat(user.getPassword()).isEqualTo(password);

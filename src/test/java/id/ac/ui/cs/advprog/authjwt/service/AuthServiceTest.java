@@ -7,7 +7,6 @@ import id.ac.ui.cs.advprog.authjwt.repository.TokenRepository;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -112,7 +111,6 @@ public class AuthServiceTest {
         when(passwordEncoder.matches("password", "encodedPassword")).thenReturn(true);
         when(jwtUtil.generateToken("testuser")).thenReturn("mocktoken");
 
-        // Force tokenRepository.save(...) to throw exception
         doThrow(new RuntimeException("DB failure")).when(tokenRepository).save(any(Token.class));
 
         ResponseEntity<Map<String, String>> response = authService.login(input);
@@ -126,13 +124,9 @@ public class AuthServiceTest {
     public void testRegister_ThrowsException() {
         User input = new User(null, "newuser", "password");
 
-        // username does not exist yet
         when(userRepository.existsByUsername("newuser")).thenReturn(false);
-
-        // passwordEncoder.encode() works fine
         when(passwordEncoder.encode("password")).thenReturn("encodedPassword");
 
-        // Simulate save throwing an exception
         doThrow(new RuntimeException("Database is down")).when(userRepository).save(any(User.class));
 
         ResponseEntity<Map<String, String>> response = authService.register(input);
