@@ -1,12 +1,28 @@
+import io.github.cdimascio.dotenv.Dotenv
+val dotenv = Dotenv.configure()
+    .filename(".env.test")
+    .ignoreIfMissing()
+    .load()
+
 plugins {
     java
     jacoco
     id("org.springframework.boot") version "3.4.4"
     id("io.spring.dependency-management") version "1.1.7"
+    id("com.github.johnrengelman.processes") version "0.5.0"
 }
 
 group = "id.ac.ui.cs.advprog"
 version = "0.0.1-SNAPSHOT"
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("io.github.cdimascio:dotenv-kotlin:6.4.1")
+    }
+}
 
 java {
     toolchain {
@@ -46,6 +62,11 @@ dependencies {
 }
 
 tasks.test{
+    environment("DB_URL", dotenv["DB_URL"])
+    environment("DB_USERNAME", dotenv["DB_USERNAME"])
+    environment("DB_PASSWORD", dotenv["DB_PASSWORD"])
+    environment("JWT_SECRET", dotenv["JWT_SECRET"])
+
     filter{
         excludeTestsMatching("*FunctionalTest")
     }
