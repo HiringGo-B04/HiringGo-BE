@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.authjwt.controller;
 
 import id.ac.ui.cs.advprog.authjwt.model.User;
+import id.ac.ui.cs.advprog.authjwt.model.Token;
 import id.ac.ui.cs.advprog.authjwt.service.AuthService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -64,5 +65,49 @@ public class AuthControllerTest {
         assertEquals(200, response.getStatusCodeValue());
         assertEquals("Success register", response.getBody().get("messages"));
         assertEquals("newuser", response.getBody().get("username"));
+    }
+
+    @Test
+    void testLogout_Success() {
+        // Arrange
+        String tokenString = "valid-token";
+        Token token = new Token(tokenString);  // Assuming Token has a constructor accepting the token string
+        Map<String, String> responseBody = new HashMap<>();
+        responseBody.put("status", "accept");
+        responseBody.put("messages", "Success logout");
+
+        ResponseEntity<Map<String, String>> mockResponse = ResponseEntity.ok(responseBody);
+
+        // Mocking the AuthService method
+        when(authService.logout(token)).thenReturn(mockResponse);
+
+        // Act
+        ResponseEntity<Map<String, String>> response = authService.logout(token);
+
+        // Assert
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals("Success logout", response.getBody().get("messages"));
+    }
+
+    @Test
+    void testLogout_InvalidToken() {
+        // Arrange
+        String tokenString = "invalid-token";
+        Token token = new Token(tokenString);
+        Map<String, String> responseBody = new HashMap<>();
+        responseBody.put("status", "error");
+        responseBody.put("messages", "Invalid Token");
+
+        ResponseEntity<Map<String, String>> mockResponse = ResponseEntity.status(401).body(responseBody);
+
+        // Mocking the AuthService method for invalid token
+        when(authService.logout(token)).thenReturn(mockResponse);
+
+        // Act
+        ResponseEntity<Map<String, String>> response = authService.logout(token);
+
+        // Assert
+        assertEquals(401, response.getStatusCodeValue());
+        assertEquals("Invalid Token", response.getBody().get("messages"));
     }
 }
