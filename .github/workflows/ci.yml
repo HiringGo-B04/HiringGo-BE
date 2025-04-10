@@ -6,7 +6,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    env:
+    .env:
       DB_URL: ${{ secrets.DB_URL }}
       DB_USERNAME: ${{ secrets.DB_USERNAME }}
       DB_PASSWORD: ${{ secrets.DB_PASSWORD }}

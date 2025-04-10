@@ -1,6 +1,6 @@
 import io.github.cdimascio.dotenv.Dotenv
 val dotenv = Dotenv.configure()
-    .filename(".env.test")
+    .filename(".env")
     .ignoreIfMissing()
     .load()
 
