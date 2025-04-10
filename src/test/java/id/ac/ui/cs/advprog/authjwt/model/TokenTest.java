@@ -1,28 +1,37 @@
 package id.ac.ui.cs.advprog.authjwt.model;
 
 import org.junit.jupiter.api.Test;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class TokenTest {
+class TokenTest {
 
     @Test
-    void testTokenGettersAndSetters() {
-        // Create a Token object
-        Token token = new Token();
+    void testNoArgsConstructorAndSetterGetter() {
+        // Given
+        String sampleToken = "abc123xyz";
 
-        // Set values using setters
-        token.setToken("sampleToken123");
+        // When
+        Token token = new Token();     // no‑args constructor
+        token.setToken(sampleToken);   // setter
 
-        // Assertions to check if the getters return the expected values
-        assertThat(token.getToken()).isEqualTo("sampleToken123");
+        // Then
+        assertThat(token.getToken())
+                .as("getter should return the value set by the setter")
+                .isEqualTo(sampleToken);
     }
 
     @Test
-    void testTokenConstructor() {
-        // Create a Token object using the constructor
-        Token token = new Token("sampleToken456");
+    void testParameterizedConstructor() {
+        // Given
+        String sampleToken = "token‑value‑456";
 
-        // Assertions to check if the constructor sets the token value correctly
-        assertThat(token.getToken()).isEqualTo("sampleToken456");
+        // When
+        Token token = new Token(sampleToken);
+
+        // Then
+        assertThat(token.getToken())
+                .as("getter should return the value passed into the constructor")
+                .isEqualTo(sampleToken);
     }
 }

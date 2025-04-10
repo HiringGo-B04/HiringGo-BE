@@ -40,6 +40,6 @@ public class UserTest {
         assertThat(user.getUserId()).isNotNull();  // userId should not be null since it's generated
         assertThat(user.getUsername()).isEqualTo(email);  // username should be set to the email
         assertThat(user.getPassword()).isEqualTo(password);  // password should match the input
-        assertThat(user.getRole()).isEqualTo("Admin");  // role should be set to "Admin"
+        assertThat(user.getRole()).isEqualTo("ADMIN");  // role should be set to "Admin"
     }
 }
