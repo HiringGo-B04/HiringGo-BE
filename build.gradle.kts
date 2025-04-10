@@ -1,9 +1,3 @@
-import io.github.cdimascio.dotenv.Dotenv
-val dotenv = Dotenv.configure()
-    .filename(".env")
-    .ignoreIfMissing()
-    .load()
-
 plugins {
     java
     jacoco
