@@ -5,10 +5,16 @@ import id.ac.ui.cs.advprog.authjwt.model.Token;
 import id.ac.ui.cs.advprog.authjwt.model.User;
 import id.ac.ui.cs.advprog.authjwt.repository.TokenRepository;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
+import id.ac.ui.cs.advprog.authjwt.service.command.AdminRegistrationCommand;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.http.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -18,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class AuthServiceTest {
-
+    private static final Logger logger = LoggerFactory.getLogger(AuthServiceTest.class);
     private AuthService authService;
     private UserRepository userRepository;
     private TokenRepository tokenRepository;
@@ -165,5 +171,121 @@ public class AuthServiceTest {
         assertEquals(401, response.getStatusCodeValue());
         assertEquals("Invalid Token", response.getBody().get("messages"));
     }
+
+    @Test
+    void testRegisterA_AdminRole_Success() {
+        // Arrange
+        User validUser = new User(UUID.randomUUID(), "adminUser", "password123");
+        when(userRepository.existsByUsername("adminUser")).thenReturn(false);
+        when(passwordEncoder.encode("password123")).thenReturn("encodedPassword");
+
+        // Mock the creation of AdminRegistrationCommand
+        AdminRegistrationCommand adminRegistrationCommand = mock(AdminRegistrationCommand.class);
+        when(adminRegistrationCommand.addUser()).thenReturn(new ResponseEntity<>(Map.of("status", "accept", "messages", "Success register"), HttpStatus.OK));
+
+        // Act
+        ResponseEntity<Map<String, String>> response = authService.registerA(validUser, "admin");  // Use lowercase role
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        logger.info("Response: {}", response.getBody().get("messages"));
+
+        assertEquals("accept", response.getBody().get("status"));
+        assertEquals("Success register", response.getBody().get("messages"));
+    }
+
+    @Test
+    void testRegisterA_LecturerRole_Success() {
+        // Arrange
+        User validUser = new User(UUID.randomUUID(), "lecturerUser", "password123", "Lecturer User", true, "lecturerNIP");
+        when(userRepository.existsByUsername("lecturerUser")).thenReturn(false);
+        when(passwordEncoder.encode("password123")).thenReturn("encodedPassword");
+
+        // Act
+        ResponseEntity<Map<String, String>> response = authService.registerA(validUser, "lecturer");
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("accept", response.getBody().get("status"));
+        assertEquals("Success register", response.getBody().get("messages"));
+    }
+
+    @Test
+    void testRegisterA_StudentRole_Success() {
+        // Arrange
+        User validUser = new User(UUID.randomUUID(), "studentUser", "password123", "Student User", false, "studentNIP");
+        when(userRepository.existsByUsername("studentUser")).thenReturn(false);
+        when(passwordEncoder.encode("password123")).thenReturn("encodedPassword");
+
+        // Act
+        ResponseEntity<Map<String, String>> response = authService.registerA(validUser, "student");
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("accept", response.getBody().get("status"));
+        assertEquals("Success register", response.getBody().get("messages"));
+    }
+
+    @Test
+    void testRegisterA_InvalidRole() {
+        // Arrange
+        User validUser = new User(UUID.randomUUID(), "userWithInvalidRole", "password123", "User", true, "userNIP");
+
+        // Act
+        ResponseEntity<Map<String, String>> response = authService.registerA(validUser, "invalidRole");
+
+        // Assert
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertEquals("error", response.getBody().get("status"));
+        assertEquals("Role is invalid", response.getBody().get("messages"));
+    }
+
+    @Test
+    void testRegisterA_NullRole() {
+        // Arrange
+        User validUser = new User(UUID.randomUUID(), "userWithNullRole", "password123", "User", true, "userNIP");
+
+        // Act
+        ResponseEntity<Map<String, String>> response = authService.registerA(validUser, null);
+
+        // Assert
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertEquals("error", response.getBody().get("status"));
+        assertEquals("Role is empty", response.getBody().get("messages"));
+    }
+
+    @Test
+    void testRegisterA_EmptyRole() {
+        // Arrange
+        User validUser = new User(UUID.randomUUID(), "userWithEmptyRole", "password123", "User", true, "userNIP");
+
+        // Act
+        ResponseEntity<Map<String, String>> response = authService.registerA(validUser, "");
+
+        // Assert
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertEquals("error", response.getBody().get("status"));
+        assertEquals("Role is empty", response.getBody().get("messages"));
+    }
+
+    @Test
+    void testRegisterA_UsernameAlreadyExists() {
+        // Mock behavior for an existing username
+        User user = new User(UUID.randomUUID(), "adminUser", "password123");
+        when(userRepository.existsByUsername("adminUser")).thenReturn(true);
+
+        // Act
+
+        ResponseEntity<Map<String, String>> responseEntity = authService.registerA(user, "admin");
+
+        // Assertions
+        assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+        Map<String, String> response = responseEntity.getBody();
+        assertNotNull(response);
+        assertEquals("error", response.get("status"));
+        assertEquals("Username already exists", response.get("messages"));
+    }
+
+
 
 }
