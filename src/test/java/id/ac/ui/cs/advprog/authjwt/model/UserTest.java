@@ -1,8 +1,8 @@
 package id.ac.ui.cs.advprog.authjwt.model;
 import java.util.UUID;
-
 import org.junit.jupiter.api.Test;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 public class UserTest {
 
@@ -39,5 +39,45 @@ public class UserTest {
         assertThat(user.getUsername()).isEqualTo(email);
         assertThat(user.getPassword()).isEqualTo(password);
         assertThat(user.getRole()).isEqualTo("ADMIN");
+    }
+
+    @Test
+    void testUserConstructorWithWorkerTrue() {
+        // Arrange
+        UUID uuid = UUID.randomUUID();
+        String email = "test@domain.com";
+        String password = "password123";
+        String fullName = "John Doe";
+        boolean worker = true;
+
+        // Act
+        User user = new User(uuid, email, password, fullName, worker);
+
+        // Assert
+        assertEquals(uuid, user.getUserId()); // Check that userId is set correctly
+        assertEquals(email, user.getUsername()); // Check that username is set correctly
+        assertEquals(password, user.getPassword()); // Check that password is set correctly
+        assertEquals(fullName, user.getFullName()); // Check that fullName is set correctly
+        assertEquals("LECTURER", user.getRole()); // Check that role is "LECTURER" when worker is true
+    }
+
+    @Test
+    void testUserConstructorWithWorkerFalse() {
+        // Arrange
+        UUID uuid = UUID.randomUUID();
+        String email = "student@domain.com";
+        String password = "password123";
+        String fullName = "Jane Doe";
+        boolean worker = false;
+
+        // Act
+        User user = new User(uuid, email, password, fullName, worker);
+
+        // Assert
+        assertEquals(uuid, user.getUserId()); // Check that userId is set correctly
+        assertEquals(email, user.getUsername()); // Check that username is set correctly
+        assertEquals(password, user.getPassword()); // Check that password is set correctly
+        assertEquals(fullName, user.getFullName()); // Check that fullName is set correctly
+        assertEquals("STUDENT", user.getRole()); // Check that role is "STUDENT" when worker is false
     }
 }
