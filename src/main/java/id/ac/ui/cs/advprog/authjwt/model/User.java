@@ -33,4 +33,13 @@ public class User {
         this.password = password;
         this.role = "ADMIN";
     }
+
+    public User(UUID uuid, String email, String password, String fullName, boolean worker) {
+        this.userId = uuid;
+        this.username = email;
+        this.password = password;
+        this.fullName = fullName;
+        this.role = (worker ? "LECTURER" : "STUDENT");
+    }
+
 }
