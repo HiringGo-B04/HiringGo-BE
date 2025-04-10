@@ -26,4 +26,20 @@ public class UserTest {
         assertThat(user.getNim()).isEqualTo("67890");
         assertThat(user.getFullName()).isEqualTo("John Doe");
     }
+
+    @Test
+    void testUserConstructor() {
+        // Given
+        String email = "test@example.com";
+        String password = "password123";
+
+        // When
+        User user = new User(email, password);
+
+        // Then
+        assertThat(user.getUserId()).isNotNull();  // userId should not be null since it's generated
+        assertThat(user.getUsername()).isEqualTo(email);  // username should be set to the email
+        assertThat(user.getPassword()).isEqualTo(password);  // password should match the input
+        assertThat(user.getRole()).isEqualTo("Admin");  // role should be set to "Admin"
+    }
 }
