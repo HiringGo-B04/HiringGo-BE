@@ -41,6 +41,9 @@ repositories {
 }
 
 dependencies {
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    runtimeOnly("org.postgresql:postgresql") // still needed for prod
+    runtimeOnly("com.h2database:h2") // ✅ this is the one you’re missing
     implementation("org.json:json:20210307") // Use the latest version
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -66,6 +69,7 @@ tasks.test{
     environment("DB_USERNAME", dotenv["DB_USERNAME"])
     environment("DB_PASSWORD", dotenv["DB_PASSWORD"])
     environment("JWT_SECRET", dotenv["JWT_SECRET"])
+    systemProperty("spring.profiles.active", "test")
 
     filter{
         excludeTestsMatching("*FunctionalTest")
