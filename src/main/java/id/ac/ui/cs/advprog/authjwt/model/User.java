@@ -31,6 +31,6 @@ public class User {
         this.userId = UUID.randomUUID();
         this.username = email;
         this.password = password;
-        this.role = "Admin";
+        this.role = "ADMIN";
     }
 }
