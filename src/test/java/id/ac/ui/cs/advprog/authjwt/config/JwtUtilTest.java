@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.jwtauth.config;
+package id.ac.ui.cs.advprog.authjwt.config;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import org.junit.jupiter.api.BeforeEach;
