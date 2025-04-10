@@ -65,10 +65,6 @@ dependencies {
 }
 
 tasks.test{
-    environment("DB_URL", dotenv["DB_URL"])
-    environment("DB_USERNAME", dotenv["DB_USERNAME"])
-    environment("DB_PASSWORD", dotenv["DB_PASSWORD"])
-    environment("JWT_SECRET", dotenv["JWT_SECRET"])
     systemProperty("spring.profiles.active", "test")
 
     filter{

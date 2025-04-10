@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.authjwt.service;
 
 import id.ac.ui.cs.advprog.authjwt.config.JwtUtil;
+import id.ac.ui.cs.advprog.authjwt.facade.AuthenticationFacade;
 import id.ac.ui.cs.advprog.authjwt.model.Token;
 import id.ac.ui.cs.advprog.authjwt.model.User;
 import id.ac.ui.cs.advprog.authjwt.repository.TokenRepository;
@@ -17,7 +18,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @Service
-public class AuthService {
+public class AuthService implements AuthenticationFacade {
     @Autowired
     UserRepository userRepository;
 
@@ -30,6 +31,7 @@ public class AuthService {
     @Autowired
     JwtUtil jwtUtils;
 
+    @Override
     public ResponseEntity<Map<String, String>> login(User user){
         User exist_user = userRepository.findByUsername(user.getUsername());
         Map<String, String> response = new HashMap<>();
@@ -63,6 +65,7 @@ public class AuthService {
         }
     }
 
+    @Override
     public ResponseEntity<Map<String, String>>  register(@RequestBody User user) {
         Map<String, String> response = new HashMap<>();
         if (userRepository.existsByUsername(user.getUsername())) {
@@ -71,7 +74,6 @@ public class AuthService {
             return new ResponseEntity<>(response, HttpStatus.valueOf(404));
         }
 
-        // Create new user's account
         try{
             User newUser = new User(
                     UUID.randomUUID(),
