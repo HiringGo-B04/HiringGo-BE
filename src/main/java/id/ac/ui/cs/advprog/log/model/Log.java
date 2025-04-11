@@ -1,3 +1,5 @@
+package id.ac.ui.cs.advprog.log.model;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -5,64 +7,59 @@ public class Log {
 
     private String judul;
     private String keterangan;
-    private Object kategori; // belum pakai enum
+    private String kategori;
     private LocalDate tanggalLog;
     private LocalTime waktuMulai;
     private LocalTime waktuSelesai;
     private String pesanUntukDosen;
-    private Object status; // belum pakai enum
+    private String status;
 
-    // Buat constructor private agar hanya bisa dibuat via builder
-    private Log() {}
-
-    public static LogBuilder builder() {
-        return new LogBuilder();
-    }
-
+    // Getters & Setters
     public String getJudul() {
-        return judul;
     }
 
-    public Object getStatus() {
-        return status;
+    public void setJudul(String judul) {
     }
 
-    // --- Inner class: LogBuilder (skeleton only) ---
-    public static class LogBuilder {
-        public LogBuilder judul(String judul) {
-            return this;
-        }
+    public String getKeterangan() {
+    }
 
-        public LogBuilder keterangan(String keterangan) {
-            return this;
-        }
+    public void setKeterangan(String keterangan) {
+    }
 
-        public LogBuilder kategori(Object kategori) {
-            return this;
-        }
+    public String getKategori() {
+    }
 
-        public LogBuilder tanggalLog(LocalDate tanggal) {
-            return this;
-        }
+    public void setKategori(String kategori) {
+    }
 
-        public LogBuilder waktuMulai(LocalTime waktuMulai) {
-            return this;
-        }
+    public LocalDate getTanggalLog() {
+    }
 
-        public LogBuilder waktuSelesai(LocalTime waktuSelesai) {
-            return this;
-        }
+    public void setTanggalLog(LocalDate tanggalLog) {
+    }
 
-        public LogBuilder pesanUntukDosen(String pesan) {
-            return this;
-        }
+    public LocalTime getWaktuMulai() {
+    }
 
-        public LogBuilder status(Object status) {
-            return this;
-        }
+    public void setWaktuMulai(LocalTime waktuMulai) {
+    }
 
-        public Log build() {
-            return new Log();
-        }
+    public LocalTime getWaktuSelesai() {
+    }
+
+    public void setWaktuSelesai(LocalTime waktuSelesai) {
+    }
+
+    public String getPesanUntukDosen() {
+    }
+
+    public void setPesanUntukDosen(String pesanUntukDosen) {
+    }
+
+    public String getStatus() {
+    }
+
+    public void setStatus(String status) {
     }
 }
