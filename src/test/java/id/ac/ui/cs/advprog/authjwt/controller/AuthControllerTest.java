@@ -49,27 +49,6 @@ public class AuthControllerTest {
         verify(authFacade, times(1)).login(user);
     }
 
-    @Test
-    void testRegisterUser_Success() {
-        UUID uuid = UUID.randomUUID();
-        User user = new User(uuid, "user@example.com", "pass123");
-
-        Map<String, String> responseBody = new HashMap<>();
-        responseBody.put("status", "success");
-        responseBody.put("messages", "User registered");
-
-        ResponseEntity<Map<String, String>> mockResponse = ResponseEntity.status(201).body(responseBody);
-
-        when(authFacade.register(user)).thenReturn(mockResponse);
-
-        ResponseEntity<Map<String, String>> response = authController.registerUser(user);
-
-        assertNotNull(response);
-        assertEquals(201, response.getStatusCodeValue());
-        assertEquals("User registered", response.getBody().get("messages"));
-
-        verify(authFacade, times(1)).register(user);
-    }
 
     @Test
     void testRegisterAdmin_Success() {
@@ -81,7 +60,7 @@ public class AuthControllerTest {
 
         ResponseEntity<Map<String, String>> mockResponse = ResponseEntity.status(201).body(responseBody);
 
-        when(authFacade.registerA(admin, "ADMIN")).thenReturn(mockResponse);
+        when(authFacade.register(admin, "ADMIN")).thenReturn(mockResponse);
 
         ResponseEntity<Map<String, String>> response = authController.registerAdmin(admin);
 
@@ -89,7 +68,7 @@ public class AuthControllerTest {
         assertEquals(201, response.getStatusCodeValue());
         assertEquals("Admin registered", response.getBody().get("messages"));
 
-        verify(authFacade, times(1)).registerA(admin, "ADMIN");
+        verify(authFacade, times(1)).register(admin, "ADMIN");
     }
 
     @Test
@@ -102,7 +81,7 @@ public class AuthControllerTest {
 
         ResponseEntity<Map<String, String>> mockResponse = ResponseEntity.status(201).body(responseBody);
 
-        when(authFacade.registerA(student, "STUDENT")).thenReturn(mockResponse);
+        when(authFacade.register(student, "STUDENT")).thenReturn(mockResponse);
 
         ResponseEntity<Map<String, String>> response = authController.registerStudent(student);
 
@@ -110,7 +89,7 @@ public class AuthControllerTest {
         assertEquals(201, response.getStatusCodeValue());
         assertEquals("Student registered", response.getBody().get("messages"));
 
-        verify(authFacade, times(1)).registerA(student, "STUDENT");
+        verify(authFacade, times(1)).register(student, "STUDENT");
     }
 
     @Test
@@ -123,7 +102,7 @@ public class AuthControllerTest {
 
         ResponseEntity<Map<String, String>> mockResponse = ResponseEntity.status(201).body(responseBody);
 
-        when(authFacade.registerA(lecturer, "LECTURER")).thenReturn(mockResponse);
+        when(authFacade.register(lecturer, "LECTURER")).thenReturn(mockResponse);
 
         ResponseEntity<Map<String, String>> response = authController.registerLecturer(lecturer);
 
@@ -131,7 +110,7 @@ public class AuthControllerTest {
         assertEquals(201, response.getStatusCodeValue());
         assertEquals("Lecturer registered", response.getBody().get("messages"));
 
-        verify(authFacade, times(1)).registerA(lecturer, "LECTURER");
+        verify(authFacade, times(1)).register(lecturer, "LECTURER");
     }
 
     @Test

@@ -94,36 +94,7 @@ public class AuthService implements AuthenticationFacade {
     }
 
     @Override
-    public ResponseEntity<Map<String, String>> register(@RequestBody User user) {
-        Map<String, String> response = new HashMap<>();
-        if (userRepository.existsByUsername(user.getUsername())) {
-            response.put("status", "error");
-            response.put("messages", "Username already exists");
-            return new ResponseEntity<>(response, HttpStatus.valueOf(404));
-        }
-
-        try{
-            User newUser = new User(
-                    UUID.randomUUID(),
-                    user.getUsername(),
-                    encoder.encode(user.getPassword())
-            );
-            userRepository.save(newUser);
-            response.put("status", "accept");
-            response.put("messages", "Success register");
-            response.put("username", newUser.getUsername());
-            response.put("role", newUser.getRole());
-            return new ResponseEntity<>(response, HttpStatus.valueOf(200));
-        }
-        catch (Exception e) {
-            response.put("status", "error");
-            response.put("messages", e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.valueOf(401));
-        }
-    }
-
-    @Override
-    public ResponseEntity<Map<String, String>> registerA(@RequestBody User user, String role) {
+    public ResponseEntity<Map<String, String>> register(@RequestBody User user, String role) {
         try{
             if(role == null || role.isEmpty()) {
                 throw new IllegalArgumentException("Role is empty");

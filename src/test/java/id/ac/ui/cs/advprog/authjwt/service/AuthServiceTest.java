@@ -85,29 +85,6 @@ public class AuthServiceTest {
         assertEquals(fakeToken, response.getBody().get("token"));
     }
 
-    @Test
-    public void testRegister_UserAlreadyExists() {
-        User user = new User(null, "existinguser", "pass");
-
-        when(userRepository.existsByUsername("existinguser")).thenReturn(true);
-
-        ResponseEntity<Map<String, String>> response = authService.register(user);
-        assertEquals(404, response.getStatusCodeValue());
-        assertEquals("Username already exists", response.getBody().get("messages"));
-    }
-
-    @Test
-    public void testRegister_Success() {
-        User input = new User(null, "newuser", "plainpassword");
-
-        when(userRepository.existsByUsername("newuser")).thenReturn(false);
-        when(passwordEncoder.encode("plainpassword")).thenReturn("encodedPassword");
-
-        ResponseEntity<Map<String, String>> response = authService.register(input);
-        assertEquals(200, response.getStatusCodeValue());
-        assertEquals("Success register", response.getBody().get("messages"));
-        assertEquals("newuser", response.getBody().get("username"));
-    }
 
     @Test
     public void testLogin_ThrowsException() {
@@ -125,22 +102,6 @@ public class AuthServiceTest {
         assertEquals(401, response.getStatusCodeValue());
         assertEquals("error", response.getBody().get("status"));
         assertEquals("DB failure", response.getBody().get("messages"));
-    }
-
-    @Test
-    public void testRegister_ThrowsException() {
-        User input = new User(null, "newuser", "password");
-
-        when(userRepository.existsByUsername("newuser")).thenReturn(false);
-        when(passwordEncoder.encode("password")).thenReturn("encodedPassword");
-
-        doThrow(new RuntimeException("Database is down")).when(userRepository).save(any(User.class));
-
-        ResponseEntity<Map<String, String>> response = authService.register(input);
-
-        assertEquals(401, response.getStatusCodeValue());
-        assertEquals("error", response.getBody().get("status"));
-        assertEquals("Database is down", response.getBody().get("messages"));
     }
 
     @Test
@@ -173,7 +134,7 @@ public class AuthServiceTest {
     }
 
     @Test
-    void testRegisterA_AdminRole_Success() {
+    void testRegister_AdminRole_Success() {
         // Arrange
         User validUser = new User(UUID.randomUUID(), "adminUser", "password123");
         when(userRepository.existsByUsername("adminUser")).thenReturn(false);
@@ -184,7 +145,7 @@ public class AuthServiceTest {
         when(adminRegistrationCommand.addUser()).thenReturn(new ResponseEntity<>(Map.of("status", "accept", "messages", "Success register"), HttpStatus.OK));
 
         // Act
-        ResponseEntity<Map<String, String>> response = authService.registerA(validUser, "admin");  // Use lowercase role
+        ResponseEntity<Map<String, String>> response = authService.register(validUser, "admin");  // Use lowercase role
 
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -195,14 +156,14 @@ public class AuthServiceTest {
     }
 
     @Test
-    void testRegisterA_LecturerRole_Success() {
+    void testRegister_LecturerRole_Success() {
         // Arrange
         User validUser = new User(UUID.randomUUID(), "lecturerUser", "password123", "Lecturer User", true, "lecturerNIP");
         when(userRepository.existsByUsername("lecturerUser")).thenReturn(false);
         when(passwordEncoder.encode("password123")).thenReturn("encodedPassword");
 
         // Act
-        ResponseEntity<Map<String, String>> response = authService.registerA(validUser, "lecturer");
+        ResponseEntity<Map<String, String>> response = authService.register(validUser, "lecturer");
 
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -211,14 +172,14 @@ public class AuthServiceTest {
     }
 
     @Test
-    void testRegisterA_StudentRole_Success() {
+    void testRegister_StudentRole_Success() {
         // Arrange
         User validUser = new User(UUID.randomUUID(), "studentUser", "password123", "Student User", false, "studentNIP");
         when(userRepository.existsByUsername("studentUser")).thenReturn(false);
         when(passwordEncoder.encode("password123")).thenReturn("encodedPassword");
 
         // Act
-        ResponseEntity<Map<String, String>> response = authService.registerA(validUser, "student");
+        ResponseEntity<Map<String, String>> response = authService.register(validUser, "student");
 
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -227,12 +188,12 @@ public class AuthServiceTest {
     }
 
     @Test
-    void testRegisterA_InvalidRole() {
+    void testRegister_InvalidRole() {
         // Arrange
         User validUser = new User(UUID.randomUUID(), "userWithInvalidRole", "password123", "User", true, "userNIP");
 
         // Act
-        ResponseEntity<Map<String, String>> response = authService.registerA(validUser, "invalidRole");
+        ResponseEntity<Map<String, String>> response = authService.register(validUser, "invalidRole");
 
         // Assert
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
@@ -241,12 +202,12 @@ public class AuthServiceTest {
     }
 
     @Test
-    void testRegisterA_NullRole() {
+    void testRegister_NullRole() {
         // Arrange
         User validUser = new User(UUID.randomUUID(), "userWithNullRole", "password123", "User", true, "userNIP");
 
         // Act
-        ResponseEntity<Map<String, String>> response = authService.registerA(validUser, null);
+        ResponseEntity<Map<String, String>> response = authService.register(validUser, null);
 
         // Assert
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
@@ -255,12 +216,12 @@ public class AuthServiceTest {
     }
 
     @Test
-    void testRegisterA_EmptyRole() {
+    void testRegister_EmptyRole() {
         // Arrange
         User validUser = new User(UUID.randomUUID(), "userWithEmptyRole", "password123", "User", true, "userNIP");
 
         // Act
-        ResponseEntity<Map<String, String>> response = authService.registerA(validUser, "");
+        ResponseEntity<Map<String, String>> response = authService.register(validUser, "");
 
         // Assert
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
