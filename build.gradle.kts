@@ -1,5 +1,8 @@
+import org.springframework.boot.gradle.tasks.bundling.BootJar
+
 plugins {
     java
+    jacoco
     id("org.springframework.boot") version "3.4.4"
     id("io.spring.dependency-management") version "1.1.7"
 }
@@ -11,6 +14,10 @@ java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
     }
+}
+
+tasks.withType<BootJar>().configureEach {
+    destinationDirectory.set(layout.buildDirectory.dir("libs"))
 }
 
 configurations {
@@ -40,10 +47,10 @@ dependencies {
     testImplementation("org.seleniumhq.selenium:selenium-java:$seleniumJavaVersion")
     testImplementation("io.github.bonigarcia:selenium-jupiter:$seleniumJupiterVersion")
     testImplementation("io.github.bonigarcia:webdrivermanager:$webdrivermanagerVersion")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion")
+    testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
 }
-tasks.register<Test>("unitTest"){
+
+tasks.register<Test>("unitTest") {
     description = "Runs unit tests."
     group = "verification"
 
@@ -52,7 +59,7 @@ tasks.register<Test>("unitTest"){
     }
 }
 
-tasks.register<Test>("functionalTest"){
+tasks.register<Test>("functionalTest") {
     description = "Runs functional tests."
     group = "verification"
 
@@ -60,6 +67,19 @@ tasks.register<Test>("functionalTest"){
         includeTestsMatching("*FunctionalTest")
     }
 }
-tasks.withType<Test>().configureEach{
+
+tasks.withType<Test>().configureEach {
     useJUnitPlatform()
+}
+
+tasks.test {
+    filter {
+        excludeTestsMatching("*FunctionalTest")
+    }
+
+    finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
 }
