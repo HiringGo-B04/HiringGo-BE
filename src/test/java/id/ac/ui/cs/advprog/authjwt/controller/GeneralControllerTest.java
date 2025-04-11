@@ -20,7 +20,7 @@ public class GeneralControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    @WithMockUser // Add a mock user so Spring Security allows access
+    @WithMockUser
     void helloWorldEndpointReturnsHelloWorld() throws Exception {
         mockMvc.perform(get("/"))
                 .andExpect(status().isOk())
