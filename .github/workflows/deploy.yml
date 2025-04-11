@@ -87,13 +87,15 @@ jobs:
           name: java-app
           path: build/libs
 
-      - name: List contents of build/libs
-        run: ls -al
-
-      - name: Rename JAR to standard name
+      - name: Rename JAR to standard name (if needed)
         run: |
           JAR=$(ls build/libs/*.jar | head -n 1)
-          mv "$JAR" build/libs/Log-0.0.1-SNAPSHOT.jar
+          TARGET="build/libs/Log-0.0.1-SNAPSHOT.jar"
+          if [ "$JAR" != "$TARGET" ]; then
+            mv "$JAR" "$TARGET"
+          else
+            echo "JAR already has the correct name."
+          fi
 
       - name: Docker login
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.REGISTRY_USER }}" --password-stdin
@@ -115,14 +117,14 @@ jobs:
         run: sudo apt-get install -y openssh-client
 
       - name: Decode SSH key
-        run: echo "${{ secrets.EC2_SSH_KEY }}" | base64 -d > ec2-key.pem
+        run: echo "${{ secrets.EC2_SSH_KEY }}" | base64 -d > log-service_key.pem
 
       - name: Set SSH key permissions
-        run: chmod 400 ec2-key.pem
+        run: chmod 400 log-service_key.pem
 
       - name: Deploy Docker container to EC2
         run: |
-          ssh -o StrictHostKeyChecking=no -i ec2-key.pem ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no -i log-service_key.pem ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << 'EOF'
             docker container rm -f ${{ secrets.CONTAINER_NAME }} || true
             docker image rm -f ${{ secrets.REGISTRY_USER }}/${{ secrets.IMAGE_NAME }}:${{ secrets.IMAGE_TAG }} || true
             docker pull ${{ secrets.REGISTRY_USER }}/${{ secrets.IMAGE_NAME }}:${{ secrets.IMAGE_TAG }}
