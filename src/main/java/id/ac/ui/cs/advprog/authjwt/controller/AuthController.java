@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.authjwt.controller;
 import id.ac.ui.cs.advprog.authjwt.facade.AuthenticationFacade;
+import id.ac.ui.cs.advprog.authjwt.model.Token;
 import id.ac.ui.cs.advprog.authjwt.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -21,5 +22,24 @@ public class AuthController {
     @PostMapping("/signup")
     public ResponseEntity<Map<String, String>> registerUser(@RequestBody User user) {
         return authFacade.register(user);
+    }
+
+    @PostMapping("/signup/admin")
+    public ResponseEntity<Map<String, String>> registerAdmin(@RequestBody User user) {
+        return authFacade.registerA(user, "ADMIN");
+    }
+
+    @PostMapping("/signup/student")
+    public ResponseEntity<Map<String, String>> registerStudent(@RequestBody User user) {
+        return authFacade.registerA(user, "STUDENT");
+    }
+    @PostMapping("/signup/lecturer")
+    public ResponseEntity<Map<String, String>> registerLecturer(@RequestBody User user) {
+        return authFacade.registerA(user, "LECTURER");
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Map<String, String>> logout(@RequestBody Token token) {
+        return authFacade.logout(token);
     }
 }

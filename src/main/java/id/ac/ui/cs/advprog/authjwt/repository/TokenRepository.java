@@ -7,4 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 @Repository
 public interface TokenRepository extends JpaRepository<Token, String> {
     Token findByToken(String token);
+    void deleteByToken(String token);
 }
