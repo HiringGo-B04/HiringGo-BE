@@ -6,7 +6,6 @@ import java.time.LocalTime;
 public class LogBuilder {
 
     private final Log log = new Log();
-
     public LogBuilder judul(String judul) {
         if (judul == null || judul.trim().isEmpty()) {
             throw new IllegalArgumentException("Judul tidak boleh kosong");
