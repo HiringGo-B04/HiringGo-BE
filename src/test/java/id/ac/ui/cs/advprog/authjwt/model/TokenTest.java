@@ -8,14 +8,11 @@ class TokenTest {
 
     @Test
     void testNoArgsConstructorAndSetterGetter() {
-        // Given
         String sampleToken = "abc123xyz";
 
-        // When
-        Token token = new Token();     // no‑args constructor
-        token.setToken(sampleToken);   // setter
+        Token token = new Token();
+        token.setToken(sampleToken);
 
-        // Then
         assertThat(token.getToken())
                 .as("getter should return the value set by the setter")
                 .isEqualTo(sampleToken);
@@ -23,13 +20,10 @@ class TokenTest {
 
     @Test
     void testParameterizedConstructor() {
-        // Given
         String sampleToken = "token‑value‑456";
 
-        // When
         Token token = new Token(sampleToken);
 
-        // Then
         assertThat(token.getToken())
                 .as("getter should return the value passed into the constructor")
                 .isEqualTo(sampleToken);
