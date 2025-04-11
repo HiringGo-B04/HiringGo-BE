@@ -5,13 +5,7 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
-import static org.mockito.Mockito.*;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -43,7 +37,6 @@ class TokenRepositoryTest {
 
     @Test
     public void testDeleteByToken_successfulDeletion() {
-        // Arrange
         String token = "validToken";
         tokenRepository.save(new Token("abc123"));
         tokenRepository.deleteByToken(token);
@@ -54,7 +47,6 @@ class TokenRepositoryTest {
 
     @Test
     public void testDeleteByToken_tokenNotFound() {
-        // Arrange
         String token = "validToken";
         tokenRepository.save(new Token("abc123"));
         tokenRepository.deleteByToken(token);
