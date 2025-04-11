@@ -21,16 +21,16 @@ jobs:
           java-version: "21"
           cache: "gradle"
 
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
       - name: Cache Gradle dependencies
         uses: actions/cache@v4
         with:
           path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          key: ${{ runner.os }}-gradle-${{ hashFiles('/.gradle', '/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
-
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew
 
       - name: Build with Gradle
         run: ./gradlew bootJar
@@ -63,7 +63,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          key: ${{ runner.os }}-gradle-${{ hashFiles('/.gradle', '/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
 
@@ -85,14 +85,15 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: java-app
+          path: build/libs
 
       - name: List contents of build/libs
         run: ls -al
 
-      - name: Rename Artifact
+      - name: Rename JAR to standard name
         run: |
-          JAR_FILE=$(ls build/libs/*.jar | head -n 1)
-          mv "$JAR_FILE" Log-0.0.1-SNAPSHOT.jar
+          JAR=$(ls build/libs/*.jar | head -n 1)
+          mv "$JAR" build/libs/product-service-0.0.1-SNAPSHOT.jar
 
       - name: Docker login
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.REGISTRY_USER }}" --password-stdin
@@ -113,7 +114,7 @@ jobs:
       - name: Install SSH client
         run: sudo apt-get install -y openssh-client
 
-      - name: Decode SSH key file
+      - name: Decode SSH key
         run: echo "${{ secrets.EC2_SSH_KEY }}" | base64 -d > ec2-key.pem
 
       - name: Set SSH key permissions
