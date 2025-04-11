@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class MataKuliahServiceImplTest {
+class MataKuliahServiceImplTest {
 
     private MataKuliahRepository repository;
     private MataKuliahService service;
@@ -22,7 +22,7 @@ public class MataKuliahServiceImplTest {
 
     // Test pembuatan mata kuliah dengan valid (create success)
     @Test
-    public void testCreateSuccess() {
+    void testCreateSuccess() {
         MataKuliah mk = new MataKuliah("IF1234", "Algoritma", "Deskripsi Mata Kuliah", 3);
         service.create(mk);
         MataKuliah result = service.findByKode("IF1234");
@@ -32,7 +32,7 @@ public class MataKuliahServiceImplTest {
 
     // Test pembuatan mata kuliah dengan kode yang sudah ada (duplicate)
     @Test
-    public void testCreateDuplicateThrowsException() {
+    void testCreateDuplicateThrowsException() {
         MataKuliah mk1 = new MataKuliah("IF1234", "Algoritma", "Deskripsi", 3);
         service.create(mk1);
         MataKuliah mk2 = new MataKuliah("IF1234", "Data Structures", "Deskripsi Lain", 3);
@@ -42,7 +42,7 @@ public class MataKuliahServiceImplTest {
 
     // Test validasi saat membuat: kode tidak boleh kosong dan SKS tidak boleh negatif
     @Test
-    public void testCreateInvalidMataKuliahThrowsException() {
+    void testCreateInvalidMataKuliahThrowsException() {
         // Kode kosong
         MataKuliah mkInvalidKode = new MataKuliah("", "Nama", "Deskripsi", 3);
         Exception exception1 = assertThrows(RuntimeException.class, () -> service.create(mkInvalidKode));
@@ -56,7 +56,7 @@ public class MataKuliahServiceImplTest {
 
     // Test pengambilan semua mata kuliah (findAll)
     @Test
-    public void testFindAll() {
+    void testFindAll() {
         MataKuliah mk1 = new MataKuliah("IF1234", "Algoritma", "Deskripsi", 3);
         MataKuliah mk2 = new MataKuliah("IF5678", "Data Structures", "Deskripsi", 4);
         service.create(mk1);
@@ -67,14 +67,14 @@ public class MataKuliahServiceImplTest {
 
     // Test pencarian berdasarkan kode yang tidak ada (findByKode)
     @Test
-    public void testFindByKodeNotFound() {
+    void testFindByKodeNotFound() {
         MataKuliah result = service.findByKode("NON_EXISTENT");
         assertNull(result);
     }
 
     // Test update data mata kuliah yang sudah ada
     @Test
-    public void testUpdateSuccess() {
+    void testUpdateSuccess() {
         MataKuliah mk = new MataKuliah("IF1234", "Algoritma", "Deskripsi", 3);
         service.create(mk);
 
@@ -89,7 +89,7 @@ public class MataKuliahServiceImplTest {
 
     // Test update data yang tidak ada harus melempar exception
     @Test
-    public void testUpdateNonExistentThrowsException() {
+    void testUpdateNonExistentThrowsException() {
         MataKuliah mk = new MataKuliah("IF1234", "Algoritma", "Deskripsi", 3);
         Exception exception = assertThrows(RuntimeException.class, () -> service.update(mk));
         assertTrue(exception.getMessage().contains("Mata kuliah tidak ditemukan"));
@@ -97,7 +97,7 @@ public class MataKuliahServiceImplTest {
 
     // Test menghapus data mata kuliah yang sudah ada
     @Test
-    public void testDeleteSuccess() {
+    void testDeleteSuccess() {
         MataKuliah mk = new MataKuliah("IF1234", "Algoritma", "Deskripsi", 3);
         service.create(mk);
         service.delete("IF1234");
@@ -107,7 +107,7 @@ public class MataKuliahServiceImplTest {
 
     // Test penghapusan data yang tidak ada harus melempar exception
     @Test
-    public void testDeleteNonExistentThrowsException() {
+    void testDeleteNonExistentThrowsException() {
         Exception exception = assertThrows(RuntimeException.class, () -> service.delete("NON_EXISTENT"));
         assertTrue(exception.getMessage().contains("Mata kuliah tidak ditemukan"));
     }

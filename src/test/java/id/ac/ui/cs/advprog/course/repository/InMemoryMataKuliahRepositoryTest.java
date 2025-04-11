@@ -7,19 +7,19 @@ import java.util.List;
 import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class InMemoryMataKuliahRepositoryTest {
+class InMemoryMataKuliahRepositoryTest {
 
     private MataKuliahRepository repository;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         // Menggunakan implementasi in-memory untuk testing
         repository = new InMemoryMataKuliahRepository();
     }
 
     // Test simpan data dan ambil semua data
     @Test
-    public void testSaveAndFindAll() {
+    void testSaveAndFindAll() {
         MataKuliah mk = new MataKuliah("IF1234", "Algoritma", "Deskripsi Mata Kuliah", 3);
         repository.save(mk);
         List<MataKuliah> all = repository.findAll();
@@ -29,7 +29,7 @@ public class InMemoryMataKuliahRepositoryTest {
 
     // Test penyimpanan duplikat harus melempar exception
     @Test
-    public void testSaveDuplicateThrowsException() {
+    void testSaveDuplicateThrowsException() {
         MataKuliah mk1 = new MataKuliah("IF1234", "Algoritma", "Deskripsi", 3);
         MataKuliah mk2 = new MataKuliah("IF1234", "Struktur Data", "Deskripsi Lain", 4);
         repository.save(mk1);
@@ -39,7 +39,7 @@ public class InMemoryMataKuliahRepositoryTest {
 
     // Test pencarian berdasarkan kode
     @Test
-    public void testFindByKode() {
+    void testFindByKode() {
         MataKuliah mk = new MataKuliah("IF1234", "Algoritma", "Deskripsi Mata Kuliah", 3);
         repository.save(mk);
         Optional<MataKuliah> found = repository.findByKode("IF1234");
@@ -49,7 +49,7 @@ public class InMemoryMataKuliahRepositoryTest {
 
     // Test update data mata kuliah yang sudah tersimpan
     @Test
-    public void testUpdate() {
+    void testUpdate() {
         MataKuliah mk = new MataKuliah("IF1234", "Algoritma", "Deskripsi", 3);
         repository.save(mk);
         mk.setNama("Algoritma Updated");
@@ -61,7 +61,7 @@ public class InMemoryMataKuliahRepositoryTest {
 
     // Test update pada data yang belum tersimpan harus melempar exception
     @Test
-    public void testUpdateNonExistentThrowsException() {
+    void testUpdateNonExistentThrowsException() {
         MataKuliah mk = new MataKuliah("IF1234", "Algoritma", "Deskripsi", 3);
         Exception exception = assertThrows(RuntimeException.class, () -> repository.update(mk));
         assertTrue(exception.getMessage().contains("Mata kuliah tidak ditemukan"));
@@ -69,7 +69,7 @@ public class InMemoryMataKuliahRepositoryTest {
 
     // Test hapus data berdasarkan kode
     @Test
-    public void testDeleteByKode() {
+    void testDeleteByKode() {
         MataKuliah mk = new MataKuliah("IF1234", "Algoritma", "Deskripsi", 3);
         repository.save(mk);
         repository.deleteByKode("IF1234");

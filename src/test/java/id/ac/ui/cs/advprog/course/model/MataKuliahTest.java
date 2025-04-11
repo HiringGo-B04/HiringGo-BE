@@ -5,11 +5,11 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MataKuliahTest {
+class MataKuliahTest {
 
     // Test default constructor: pastikan field dosenPengampu diinisialisasi dan field lain default (null atau 0)
     @Test
-    public void testDefaultConstructor() {
+    void testDefaultConstructor() {
         MataKuliah mk = new MataKuliah();
         assertNotNull(mk.getDosenPengampu(), "dosenPengampu harus tidak null");
         assertTrue(mk.getDosenPengampu().isEmpty(), "List dosenPengampu harus kosong");
@@ -21,7 +21,7 @@ public class MataKuliahTest {
 
     // Test parameterized constructor
     @Test
-    public void testParameterizedConstructor() {
+    void testParameterizedConstructor() {
         MataKuliah mk = new MataKuliah("IF1234", "Algoritma", "Deskripsi Mata Kuliah", 3);
         assertEquals("IF1234", mk.getKode());
         assertEquals("Algoritma", mk.getNama());
@@ -33,7 +33,7 @@ public class MataKuliahTest {
 
     // Test setter dan getter untuk properti dasar
     @Test
-    public void testSettersAndGetters() {
+    void testSettersAndGetters() {
         MataKuliah mk = new MataKuliah();
         mk.setKode("IF5678");
         mk.setNama("Pemrograman Lanjut");
@@ -48,7 +48,7 @@ public class MataKuliahTest {
 
     // Test penambahan dosen melalui helper method addDosenPengampu
     @Test
-    public void testAddDosenPengampu() {
+    void testAddDosenPengampu() {
         MataKuliah mk = new MataKuliah();
         mk.addDosenPengampu("Dosen A");
         assertEquals(1, mk.getDosenPengampu().size());
@@ -57,7 +57,7 @@ public class MataKuliahTest {
 
     // Test setter langsung pada field dosenPengampu
     @Test
-    public void testSetDosenPengampu() {
+    void testSetDosenPengampu() {
         MataKuliah mk = new MataKuliah();
         List<String> dosenList = new ArrayList<>();
         dosenList.add("Dosen B");
