@@ -2,9 +2,11 @@ package id.ac.ui.cs.advprog.course.service;
 
 import id.ac.ui.cs.advprog.course.model.MataKuliah;
 import id.ac.ui.cs.advprog.course.repository.MataKuliahRepository;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public class MataKuliahServiceImpl implements MataKuliahService {
 
     private final MataKuliahRepository repository;
