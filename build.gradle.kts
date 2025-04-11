@@ -43,10 +43,10 @@ dependencies {
     testImplementation("org.seleniumhq.selenium:selenium-java:$seleniumJavaVersion")
     testImplementation("io.github.bonigarcia:selenium-jupiter:$seleniumJupiterVersion")
     testImplementation("io.github.bonigarcia:webdrivermanager:$webdrivermanagerVersion")
-    testImplementation("org.junit.jupiter:junit-jupiter-jupiter:$junitJupiterVersion")
+    testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
 }
 
-tasks.register<Test>("unitTest"){
+tasks.register<Test>("unitTest") {
     description = "Runs unit tests."
     group = "verification"
 
@@ -55,7 +55,7 @@ tasks.register<Test>("unitTest"){
     }
 }
 
-tasks.register<Test>("functionalTest"){
+tasks.register<Test>("functionalTest") {
     description = "Runs functional tests."
     group = "verification"
 
@@ -63,7 +63,8 @@ tasks.register<Test>("functionalTest"){
         includeTestsMatching("*FunctionalTest")
     }
 }
-tasks.withType<Test>().configureEach{
+
+tasks.withType<Test>().configureEach {
     useJUnitPlatform()
 }
 
