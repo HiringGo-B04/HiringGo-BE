@@ -2,6 +2,7 @@ package id.ac.ui.cs.advprog.course.service;
 
 import id.ac.ui.cs.advprog.course.repository.InMemoryMataKuliahRepository;
 import id.ac.ui.cs.advprog.course.repository.MataKuliahRepository;
+import id.ac.ui.cs.advprog.course.model.MataKuliah;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import java.util.List;
