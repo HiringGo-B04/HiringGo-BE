@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.course.repository;
 
 import id.ac.ui.cs.advprog.course.model.MataKuliah;
+import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
@@ -8,6 +9,7 @@ import java.util.*;
  * Implementasi in-memory dari MataKuliahRepository.
  * Menyimpan data MataKuliah dalam sebuah Map<String, MataKuliah> (key: kode)
  */
+@Repository
 public class InMemoryMataKuliahRepository implements MataKuliahRepository {
 
     /**
