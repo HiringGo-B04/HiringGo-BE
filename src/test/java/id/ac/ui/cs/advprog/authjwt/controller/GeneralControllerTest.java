@@ -13,7 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
 @WebMvcTest(GeneralController.class)
-@Import(SecurityConfig.class) // Only if you have a custom security config you want to load
+@Import(SecurityConfig.class)
 public class GeneralControllerTest {
 
     @Autowired
