@@ -14,7 +14,7 @@ public abstract class RegistrationCommand {
     public PasswordEncoder passwordEncoder;
     public User user;
 
-    public Map<String, String> check_invalid_input(String username){
+    public Map<String, String> check_invalid_input(String username, String number) {
         Map<String, String> response = new HashMap<>();
         if(userRepository.existsByUsername(username)) {
             response.put("code", "404");
@@ -25,6 +25,13 @@ public abstract class RegistrationCommand {
         if(!GeneralUtils.isValidEmail(username)) {
             response.put("code", "403");
             response.put("message", "Username must be a valid email address");
+            return response;
+        }
+
+        System.out.println(number);
+        if(!GeneralUtils.isValidInt(number)){
+            response.put("code", "403");
+            response.put("message", "NIM/NIP must only contain number and maximal 12 digits long");
             return response;
         }
 
