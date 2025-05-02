@@ -74,7 +74,7 @@ public class AuthServiceTest {
 
         when(userRepository.findByUsername("testuser")).thenReturn(existing);
         when(passwordEncoder.matches("correctpassword", "encodedPassword")).thenReturn(true);
-        when(jwtUtil.generateToken("testuser")).thenReturn(fakeToken);
+        when(jwtUtil.generateToken("testuser", "ADMIN")).thenReturn(fakeToken);
 
         ResponseEntity<Map<String, String>> response = authService.login(input);
         assertEquals(200, response.getStatusCodeValue());
@@ -90,7 +90,7 @@ public class AuthServiceTest {
 
         when(userRepository.findByUsername("testuser")).thenReturn(existing);
         when(passwordEncoder.matches("password", "encodedPassword")).thenReturn(true);
-        when(jwtUtil.generateToken("testuser")).thenReturn("mocktoken");
+        when(jwtUtil.generateToken("testuser", "ADMIN")).thenReturn("mocktoken");
 
         doThrow(new RuntimeException("DB failure")).when(tokenRepository).save(any(Token.class));
 
