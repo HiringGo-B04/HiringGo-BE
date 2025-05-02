@@ -74,7 +74,7 @@ public class AuthServiceTest {
 
         when(userRepository.findByUsername("testuser")).thenReturn(existing);
         when(passwordEncoder.matches("correctpassword", "encodedPassword")).thenReturn(true);
-        when(jwtUtil.generateToken("testuser")).thenReturn(fakeToken);
+        when(jwtUtil.generateToken("testuser", "ADMIN")).thenReturn(fakeToken);
 
         ResponseEntity<Map<String, String>> response = authService.login(input);
         assertEquals(200, response.getStatusCodeValue());
@@ -90,7 +90,7 @@ public class AuthServiceTest {
 
         when(userRepository.findByUsername("testuser")).thenReturn(existing);
         when(passwordEncoder.matches("password", "encodedPassword")).thenReturn(true);
-        when(jwtUtil.generateToken("testuser")).thenReturn("mocktoken");
+        when(jwtUtil.generateToken("testuser", "ADMIN")).thenReturn("mocktoken");
 
         doThrow(new RuntimeException("DB failure")).when(tokenRepository).save(any(Token.class));
 
@@ -129,8 +129,8 @@ public class AuthServiceTest {
 
     @Test
     void testRegister_AdminRole_Success() {
-        User validUser = new User(UUID.randomUUID(), "adminUser", "password123");
-        when(userRepository.existsByUsername("adminUser")).thenReturn(false);
+        User validUser = new User(UUID.randomUUID(), "adminUser@gmail.com", "password123");
+        when(userRepository.existsByUsername("adminUser@gmail.com")).thenReturn(false);
         when(passwordEncoder.encode("password123")).thenReturn("encodedPassword");
 
         AdminRegistrationCommand adminRegistrationCommand = mock(AdminRegistrationCommand.class);
@@ -147,8 +147,8 @@ public class AuthServiceTest {
 
     @Test
     void testRegister_LecturerRole_Success() {
-        User validUser = new User(UUID.randomUUID(), "lecturerUser", "password123", "Lecturer User", true, "lecturerNIP");
-        when(userRepository.existsByUsername("lecturerUser")).thenReturn(false);
+        User validUser = new User(UUID.randomUUID(), "lecturerUser@gmail.com", "password123", "Lecturer User", true, "1234");
+        when(userRepository.existsByUsername("lecturerUser@gmail.com")).thenReturn(false);
         when(passwordEncoder.encode("password123")).thenReturn("encodedPassword");
 
         ResponseEntity<Map<String, String>> response = authService.register(validUser, "lecturer");
@@ -160,8 +160,8 @@ public class AuthServiceTest {
 
     @Test
     void testRegister_StudentRole_Success() {
-        User validUser = new User(UUID.randomUUID(), "studentUser", "password123", "Student User", false, "studentNIP");
-        when(userRepository.existsByUsername("studentUser")).thenReturn(false);
+        User validUser = new User(UUID.randomUUID(), "studentUser@gmail.com", "password123", "Student User", false, "12345678");
+        when(userRepository.existsByUsername("studentUser@gmail.com")).thenReturn(false);
         when(passwordEncoder.encode("password123")).thenReturn("encodedPassword");
 
         ResponseEntity<Map<String, String>> response = authService.register(validUser, "student");
@@ -203,4 +203,11 @@ public class AuthServiceTest {
         assertEquals("error", response.getBody().get("status"));
         assertEquals("Role is empty", response.getBody().get("messages"));
     }
+
+    @Test
+    void testDelete_userSuccess(){
+
+    }
+
+
 }

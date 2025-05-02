@@ -20,6 +20,8 @@ public class StudentRegistrationCommand extends RegistrationCommand {
     @Transactional
     public ResponseEntity<Map<String, String>> addUser() {
         Map<String, String> response = new HashMap<>();
+        Map<String, String> validity = check_invalid_input("student");
+
         if(user.getPassword() == null
                 || user.getUsername() == null
                 || user.getFullName() == null
@@ -34,9 +36,15 @@ public class StudentRegistrationCommand extends RegistrationCommand {
             return new ResponseEntity<>(response, HttpStatus.valueOf(403));
         }
 
-        if(userRepository.existsByUsername(user.getUsername())) {
+        if(!"valid".equals(validity.get("message"))) {
             response.put("status", "error");
-            response.put("message", "Username already exists");
+            response.put("message", validity.get("message"));
+            return new ResponseEntity<>(response, HttpStatus.valueOf(Integer.parseInt(validity.get("code"))));
+        }
+        
+        if(userRepository.existsByNim(user.getNim())) {
+            response.put("status", "error");
+            response.put("message", "Nim already exists");
             return new ResponseEntity<>(response, HttpStatus.valueOf(404));
         }
 
