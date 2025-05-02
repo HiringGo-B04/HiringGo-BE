@@ -41,6 +41,11 @@ public class StudentRegistrationCommand extends RegistrationCommand {
             return new ResponseEntity<>(response, HttpStatus.valueOf(404));
         }
 
+        if(!GeneralUtils.isValidEmail(user.getUsername())) {
+            response.put("status", "error");
+            response.put("message", "Username must be a valid email address");
+            return new ResponseEntity<>(response, HttpStatus.valueOf(403));
+        }
 
         try{
 

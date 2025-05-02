@@ -2,6 +2,7 @@ package id.ac.ui.cs.advprog.authjwt.service;
 
 import id.ac.ui.cs.advprog.authjwt.model.User;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
+import id.ac.ui.cs.advprog.authjwt.service.command.LecturerRegistrationCommand;
 import id.ac.ui.cs.advprog.authjwt.service.command.StudentRegistrationCommand;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -263,14 +264,14 @@ class StudentRegistrationCommandTest {
     }
 
     @Test
-    void testAddUser_InvalidEmail() {
-        when(userRepository.existsByUsername("student1@gm")).thenReturn(false);
-        when(passwordEncoder.encode("password")).thenReturn("encodedPassword");
+    void testAddUser_Student_InvalidUsername() {
+        User invalidUser = new User(UUID.randomUUID(), "student1", "aaa", "Lecturer One", true, "12345678" );
 
-        User newUser = new User(UUID.randomUUID(), "student1", "encodedPassword", "Student One", false, "12345678");
-        when(userRepository.save(any(User.class))).thenReturn(newUser);
+        when(userRepository.existsByUsername(anyString())).thenReturn(false);
 
-        ResponseEntity<Map<String, String>> responseEntity = studentRegistrationCommand.addUser();
+        LecturerRegistrationCommand lecturerRegistrationCommand = new LecturerRegistrationCommand(userRepository, passwordEncoder, invalidUser);
+
+        ResponseEntity<Map<String, String>> responseEntity = lecturerRegistrationCommand.addUser();
 
         assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
         Map<String, String> response = responseEntity.getBody();
