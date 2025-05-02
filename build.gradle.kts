@@ -40,6 +40,12 @@ dependencies {
 
     testImplementation("org.springframework.security:spring-security-test")
 
+    // MapStruct runtime (dipanggil saat konversi DTO ↔ entity)
+    implementation("org.mapstruct:mapstruct:1.5.5.Final")
+
+    // Annotation‑processor: Gradle akan men‑generate class mapper
+    annotationProcessor("org.mapstruct:mapstruct-processor:1.5.5.Final")
+    testAnnotationProcessor("org.mapstruct:mapstruct-processor:1.5.5.Final")
 }
 
 tasks.withType<Test> {
