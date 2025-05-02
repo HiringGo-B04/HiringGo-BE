@@ -11,6 +11,4 @@ public interface LowonganService {
     public Lowongan updateLowongan(Lowongan lowongan);
     public Lowongan deleteLowongan(Lowongan lowongan);
     public Lowongan findLowonganById(UUID id);
-    public Lamaran acceptLamaran(UUID idLamaran);
-    public Lamaran rejectLamaran(UUID idLamaran);
 }
