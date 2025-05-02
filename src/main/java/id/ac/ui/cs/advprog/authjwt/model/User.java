@@ -14,7 +14,7 @@ public class User {
 
     @Id
     private UUID userId;
-    private String username; // pass as email
+    private String username;
     private String password;
 
     private String role;
@@ -23,9 +23,7 @@ public class User {
 
     private String fullName;
 
-    public User() {
-        // Required by JPA
-    }
+    public User() {}
 
     public User(UUID uuid, String email, String password) {
         this.userId = uuid;

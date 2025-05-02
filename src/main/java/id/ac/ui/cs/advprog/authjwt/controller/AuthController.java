@@ -14,26 +14,27 @@ public class AuthController {
     @Autowired
     private AuthenticationFacade authFacade;
 
-    @PostMapping("/signin")
+    @PostMapping("/public/signin")
     public ResponseEntity<Map<String, String>> login(@RequestBody User user) {
         return authFacade.login(user);
     }
 
-    @PostMapping("/signup/admin")
+    @PostMapping("/admin/signup")
     public ResponseEntity<Map<String, String>> registerAdmin(@RequestBody User user) {
         return authFacade.register(user, "ADMIN");
     }
 
-    @PostMapping("/signup/student")
+    @PostMapping("/public/signup/student")
     public ResponseEntity<Map<String, String>> registerStudent(@RequestBody User user) {
         return authFacade.register(user, "STUDENT");
     }
-    @PostMapping("/signup/lecturer")
+
+    @PostMapping("/admin/signup/lecturer")
     public ResponseEntity<Map<String, String>> registerLecturer(@RequestBody User user) {
         return authFacade.register(user, "LECTURER");
     }
 
-    @PostMapping("/logout")
+    @PostMapping("/user/logout")
     public ResponseEntity<Map<String, String>> logout(@RequestBody Token token) {
         return authFacade.logout(token);
     }

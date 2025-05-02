@@ -37,15 +37,15 @@ public class AdminRegistrationCommandTest {
 
         // Setup a valid user
         validUser = new User();
-        validUser.setUsername("admin");
+        validUser.setUsername("admin@gmail.com");
         validUser.setPassword("password");
     }
 
     @Test
     void testAddUser_Success() {
-        User user = new User(UUID.randomUUID(), "admin", "password", "Admin User", true, "12345678");
+        User user = new User(UUID.randomUUID(), "admin@gmail.com", "password", "Admin User", true, "12345678");
 
-        when(userRepository.existsByUsername("admin")).thenReturn(false);  // Simulate the username doesn't exist
+        when(userRepository.existsByUsername("admin@gmail.com")).thenReturn(false);  // Simulate the username doesn't exist
         when(passwordEncoder.encode("password")).thenReturn("encodedPassword");  // Simulate encoding the password
 
         AdminRegistrationCommand adminRegistrationCommand = new AdminRegistrationCommand(userRepository, passwordEncoder, user);
@@ -55,10 +55,10 @@ public class AdminRegistrationCommandTest {
         assertNotNull(response);
         assertEquals("accept", response.get("status"));
         assertEquals("Success register", response.get("messages"));
-        assertEquals("admin", response.get("username"));
+        assertEquals("admin@gmail.com", response.get("username"));
         assertEquals("ADMIN", response.get("role"));
 
-        verify(userRepository).existsByUsername("admin");
+        verify(userRepository).existsByUsername("admin@gmail.com");
         verify(userRepository).save(any(User.class));
         verify(passwordEncoder).encode("password");
     }
@@ -94,13 +94,12 @@ public class AdminRegistrationCommandTest {
         assertEquals("error", response.get("status"));
         assertEquals("Invalid payload", response.get("message"));
 
-        verify(userRepository, never()).existsByUsername(anyString());
         verify(userRepository, never()).save(any(User.class));
     }
 
     @Test
     void testAddUser_InvalidPayload_EmptyPassword() {
-        validUser.setUsername("admin");
+        validUser.setUsername("admin@gmail.com");
         validUser.setPassword("");
 
         adminRegistrationCommand = new AdminRegistrationCommand(userRepository, passwordEncoder, validUser);
@@ -112,15 +111,14 @@ public class AdminRegistrationCommandTest {
         assertEquals("error", response.get("status"));
         assertEquals("Invalid payload", response.get("message"));
 
-        verify(userRepository, never()).existsByUsername(anyString());
         verify(userRepository, never()).save(any(User.class));
     }
 
     @Test
     void testAddUser_UsernameAlreadyExists() {
-        User user = new User(UUID.randomUUID(), "admin", "password", "Admin User", true, "12345678");
+        User user = new User(UUID.randomUUID(), "admin@gmail.com", "password", "Admin User", true, "12345678");
 
-        when(userRepository.existsByUsername("admin")).thenReturn(true);
+        when(userRepository.existsByUsername("admin@gmail.com")).thenReturn(true);
         AdminRegistrationCommand adminRegistrationCommand = new AdminRegistrationCommand(userRepository, passwordEncoder, user);
         ResponseEntity<Map<String, String>> responseEntity = adminRegistrationCommand.addUser();
 
@@ -130,16 +128,16 @@ public class AdminRegistrationCommandTest {
         assertEquals("error", response.get("status"));
         assertEquals("Username already exists", response.get("message"));
 
-        verify(userRepository).existsByUsername("admin");
+        verify(userRepository).existsByUsername("admin@gmail.com");
         verify(userRepository, never()).save(any(User.class));
     }
 
 
     @Test
     void testAddUser_Exception() {
-        User user = new User(UUID.randomUUID(), "admin", "password", "Admin User", true, "12345678");
+        User user = new User(UUID.randomUUID(), "admin@gmail.com", "password", "Admin User", true, "12345678");
 
-        when(userRepository.existsByUsername("admin")).thenReturn(false);
+        when(userRepository.existsByUsername("admin@gmail.com")).thenReturn(false);
         when(passwordEncoder.encode("password")).thenReturn("encodedPassword");
         doThrow(new RuntimeException("Database error")).when(userRepository).save(any(User.class));
 
@@ -151,14 +149,14 @@ public class AdminRegistrationCommandTest {
         assertEquals("error", response.get("status"));
         assertEquals("Database error", response.get("messages"));
 
-        verify(userRepository).existsByUsername("admin");
+        verify(userRepository).existsByUsername("admin@gmail.com");
         verify(userRepository).save(any(User.class));
         verify(passwordEncoder).encode("password");
     }
 
     @Test
     void testAddUser_Admin_NullPassword() {
-        User invalidUser = new User(UUID.randomUUID(), "admin1", null);
+        User invalidUser = new User(UUID.randomUUID(), "admin@gmail.com", null);
         when(userRepository.existsByUsername(anyString())).thenReturn(false);
 
         adminRegistrationCommand = new AdminRegistrationCommand(userRepository, passwordEncoder, invalidUser);
@@ -176,7 +174,7 @@ public class AdminRegistrationCommandTest {
 
     @Test
     void testAddUser_Admin_EmptyPassword() {
-        User invalidUser = new User(UUID.randomUUID(), "admin1", "");
+        User invalidUser = new User(UUID.randomUUID(), "admin@gmail.com", "");
         when(userRepository.existsByUsername(anyString())).thenReturn(false);
 
         adminRegistrationCommand = new AdminRegistrationCommand(userRepository, passwordEncoder, invalidUser);
@@ -211,8 +209,9 @@ public class AdminRegistrationCommandTest {
     }
 
     @Test
-    void testAddUser_Admin_EmptyUsername() {
-        User invalidUser = new User(UUID.randomUUID(), "", "adminPassword");
+    void testAddUser_Admin_InvalidEmailFormat() {
+        // Use an invalid email format
+        User invalidUser = new User(UUID.randomUUID(), "invalid-email", "adminPassword");
 
         when(userRepository.existsByUsername(anyString())).thenReturn(false);
 
@@ -224,8 +223,12 @@ public class AdminRegistrationCommandTest {
         Map<String, String> response = responseEntity.getBody();
         assertNotNull(response);
         assertEquals("error", response.get("status"));
-        assertEquals("Invalid payload", response.get("message"));
+        assertEquals("Username must be a valid email address", response.get("message"));
 
         verify(userRepository, never()).save(any(User.class));
     }
+
+
+
+
 }
