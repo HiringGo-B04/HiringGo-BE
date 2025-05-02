@@ -19,20 +19,22 @@ public class JwtUtilTest {
     }
 
     @Test
-    public void testGenerateAndValidateToken() {
-        String token = jwtUtil.generateToken("testuser");
+    public void testGenerateTokenWithRole() {
+        String token = jwtUtil.generateToken("testuser", "STUDENT");
 
         assertNotNull(token);
         assertTrue(jwtUtil.validateJwtToken(token));
 
         String username = jwtUtil.getUsernameFromToken(token);
+        String role = jwtUtil.getRoleFromToken(token);
+
         assertEquals("testuser", username);
+        assertEquals("STUDENT", role);
     }
 
     @Test
     public void testInvalidToken() {
         String invalidToken = "this.is.invalid.token";
-
         assertFalse(jwtUtil.validateJwtToken(invalidToken));
     }
 
@@ -40,7 +42,7 @@ public class JwtUtilTest {
     public void testExpiredToken() throws InterruptedException {
         ReflectionTestUtils.setField(jwtUtil, "jwtExpirationMs", 1); // 1ms for instant expiration
         jwtUtil.init();
-        String token = jwtUtil.generateToken("testuser");
+        String token = jwtUtil.generateToken("testuser", "STUDENT");
 
         // wait to ensure it's expired
         Thread.sleep(5);

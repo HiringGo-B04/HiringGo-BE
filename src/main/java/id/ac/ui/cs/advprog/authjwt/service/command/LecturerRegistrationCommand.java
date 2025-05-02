@@ -44,7 +44,7 @@ public class LecturerRegistrationCommand extends RegistrationCommand {
 
         if(userRepository.existsByNip(user.getNip())) {
             response.put("status", "error");
-            response.put("message", "Nip Already Exists");
+            response.put("message", "Nip already Exists");
             return new ResponseEntity<>(response, HttpStatus.valueOf(404));
         }
 
