@@ -46,7 +46,7 @@ class StudentRegistrationCommandTest {
         when(userRepository.existsByUsername("student1@gmail.com")).thenReturn(false);
         when(passwordEncoder.encode("password")).thenReturn("encodedPassword");
 
-        User newUser = new User(UUID.randomUUID(), "student1", "encodedPassword", "Student One", false, "12345678");
+        User newUser = new User(UUID.randomUUID(), "student1@gmail.com", "encodedPassword", "Student One", false, "12345678");
         when(userRepository.save(any(User.class))).thenReturn(newUser);
 
         ResponseEntity<Map<String, String>> responseEntity = studentRegistrationCommand.addUser();
@@ -94,6 +94,19 @@ class StudentRegistrationCommandTest {
         assertNotNull(response);
         assertEquals("error", response.get("status"));
         assertEquals("Username already exists", response.get("message"));
+    }
+
+    @Test
+    void testAddUser_NIMAlreadyExists() {
+        when(userRepository.existsByNim("12345")).thenReturn(true);
+
+        ResponseEntity<Map<String, String>> responseEntity = studentRegistrationCommand.addUser();
+
+        assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+        Map<String, String> response = responseEntity.getBody();
+        assertNotNull(response);
+        assertEquals("error", response.get("status"));
+        assertEquals("Nim already exists", response.get("message"));
     }
 
     @Test
