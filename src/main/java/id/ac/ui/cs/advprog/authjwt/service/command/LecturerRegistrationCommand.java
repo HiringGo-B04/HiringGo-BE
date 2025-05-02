@@ -21,7 +21,7 @@ public class LecturerRegistrationCommand extends RegistrationCommand {
     @Transactional
     public ResponseEntity<Map<String, String>> addUser() {
         Map<String, String> response = new HashMap<>();
-        Map<String, String> validity = check_invalid_input(user.getUsername(), user.getNip());
+        Map<String, String> validity = check_invalid_input("lecturer");
 
         if(user.getPassword() == null
                 || user.getUsername() == null

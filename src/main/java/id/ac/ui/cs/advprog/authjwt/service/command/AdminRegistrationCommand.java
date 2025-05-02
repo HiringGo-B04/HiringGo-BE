@@ -21,7 +21,7 @@ public class AdminRegistrationCommand extends RegistrationCommand {
     @Transactional
     public ResponseEntity<Map<String, String>> addUser() {
         Map<String, String> response = new HashMap<>();
-        Map<String, String> validity = check_invalid_input(user.getUsername(), "0");
+        Map<String, String> validity = check_invalid_input("admin");
 
         if(user.getPassword() == null || user.getPassword().isEmpty() || user.getUsername() == null || user.getUsername().isEmpty()) {
             response.put("status", "error");
