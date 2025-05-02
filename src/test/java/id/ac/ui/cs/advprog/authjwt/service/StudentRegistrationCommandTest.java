@@ -98,7 +98,7 @@ class StudentRegistrationCommandTest {
 
     @Test
     void testAddUser_NIMAlreadyExists() {
-        when(userRepository.existsByNim("12345")).thenReturn(true);
+        when(userRepository.existsByNim("12345678")).thenReturn(true);
 
         ResponseEntity<Map<String, String>> responseEntity = studentRegistrationCommand.addUser();
 
