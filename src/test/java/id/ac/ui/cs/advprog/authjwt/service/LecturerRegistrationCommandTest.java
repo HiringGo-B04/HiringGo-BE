@@ -2,7 +2,6 @@ package id.ac.ui.cs.advprog.authjwt.service;
 
 import id.ac.ui.cs.advprog.authjwt.model.User;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
-import id.ac.ui.cs.advprog.authjwt.service.command.AdminRegistrationCommand;
 import id.ac.ui.cs.advprog.authjwt.service.command.LecturerRegistrationCommand;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
