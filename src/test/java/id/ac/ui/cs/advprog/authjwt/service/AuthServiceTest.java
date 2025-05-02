@@ -203,4 +203,11 @@ public class AuthServiceTest {
         assertEquals("error", response.getBody().get("status"));
         assertEquals("Role is empty", response.getBody().get("messages"));
     }
+
+    @Test
+    void testDelete_userSuccess(){
+
+    }
+
+
 }
