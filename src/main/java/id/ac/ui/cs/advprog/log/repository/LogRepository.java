@@ -23,7 +23,7 @@ public class LogRepository {
     }
 
     public List<Log> findAll() {
-        return new ArrayList<>(daftarLog); // return copy biar gak langsung bisa dimodifikasi luar
+        return new ArrayList<>(daftarLog);
     }
 
     public Log findById(UUID id) {
@@ -34,7 +34,6 @@ public class LogRepository {
     }
 
     public Log save(Log log) {
-        // Jika ID null → assign UUID baru
         if (log.getId() == null) {
             log.setId(UUID.randomUUID());
         }

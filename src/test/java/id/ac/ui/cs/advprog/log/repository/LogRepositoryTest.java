@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.log.repository;
-
+import id.ac.ui.cs.advprog.log.enums.KategoriLog;
+import id.ac.ui.cs.advprog.log.enums.StatusLog;
 import id.ac.ui.cs.advprog.log.model.Log;
 import id.ac.ui.cs.advprog.log.model.LogBuilder;
 import org.junit.jupiter.api.BeforeEach;
@@ -58,12 +59,12 @@ class LogRepositoryTest {
         Log updatedLog = new LogBuilder()
                 .judul("Update Judul")
                 .keterangan("Update Keterangan")
-                .kategori("Mengoreksi")
+                .kategori(KategoriLog.MENGOREKSI)
                 .tanggalLog(LocalDate.now())
                 .waktuMulai(LocalTime.of(8, 0))
                 .waktuSelesai(LocalTime.of(10, 0))
                 .pesanUntukDosen("Update Pesan")
-                .status("DITERIMA")
+                .status(StatusLog.DITERIMA)
                 .build();
         updatedLog.setId(log.getId());
 
@@ -71,7 +72,7 @@ class LogRepositoryTest {
 
         assertNotNull(result);
         assertEquals("Update Judul", result.getJudul());
-        assertEquals("DITERIMA", result.getStatus());
+        assertEquals(StatusLog.DITERIMA, result.getStatus());
     }
 
     @Test
@@ -90,12 +91,12 @@ class LogRepositoryTest {
         return new LogBuilder()
                 .judul("Asistensi Kalkulus")
                 .keterangan("Membantu menyampaikan materi integral")
-                .kategori("Asistensi")
+                .kategori(KategoriLog.ASISTENSI)
                 .tanggalLog(LocalDate.now())
                 .waktuMulai(LocalTime.of(10, 0))
                 .waktuSelesai(LocalTime.of(12, 0))
                 .pesanUntukDosen("Sudah selesai")
-                .status("MENUNGGU")
+                .status(StatusLog.MENUNGGU)
                 .build();
     }
 }
