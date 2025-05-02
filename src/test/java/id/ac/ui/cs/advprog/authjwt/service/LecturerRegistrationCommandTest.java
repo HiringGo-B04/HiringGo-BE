@@ -317,4 +317,24 @@ class LecturerRegistrationCommandTest {
         verify(userRepository, never()).save(any(User.class));
     }
 
+    @Test
+    void testAddUser_Lecturer_InvalidNIP() {
+        User invalidUser = new User(UUID.randomUUID(), "lecturer1", "aaa", "Lecturer One", true, "1234567jdksjd8" );
+
+        when(userRepository.existsByUsername(anyString())).thenReturn(false);
+
+        LecturerRegistrationCommand lecturerRegistrationCommand = new LecturerRegistrationCommand(userRepository, passwordEncoder, invalidUser);
+
+        ResponseEntity<Map<String, String>> responseEntity = lecturerRegistrationCommand.addUser();
+
+        assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
+        Map<String, String> response = responseEntity.getBody();
+        assertNotNull(response);
+        assertEquals("error", response.get("status"));
+        assertEquals("NIM/NIP must only contain number and maximal 12 digits long", response.get("message"));
+
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+
 }
