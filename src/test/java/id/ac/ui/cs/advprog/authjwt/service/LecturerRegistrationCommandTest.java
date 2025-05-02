@@ -319,7 +319,7 @@ class LecturerRegistrationCommandTest {
 
     @Test
     void testAddUser_Lecturer_InvalidNIP() {
-        User invalidUser = new User(UUID.randomUUID(), "lecturer1", "aaa", "Lecturer One", true, "1234567jdksjd8" );
+        User invalidUser = new User(UUID.randomUUID(), "lecturer1@gmail.com", "aaa", "Lecturer One", true, "1234567jdksjd8" );
 
         when(userRepository.existsByUsername(anyString())).thenReturn(false);
 
