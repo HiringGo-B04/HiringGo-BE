@@ -41,6 +41,9 @@ public class StudentRegistrationCommand extends RegistrationCommand {
         }
 
         try{
+
+
+
             User newUser = new User(
                     UUID.randomUUID(),
                     user.getUsername(),
