@@ -211,8 +211,9 @@ public class AdminRegistrationCommandTest {
     }
 
     @Test
-    void testAddUser_Admin_EmptyUsername() {
-        User invalidUser = new User(UUID.randomUUID(), "", "adminPassword");
+    void testAddUser_Admin_InvalidEmailFormat() {
+        // Use an invalid email format
+        User invalidUser = new User(UUID.randomUUID(), "invalid-email", "adminPassword");
 
         when(userRepository.existsByUsername(anyString())).thenReturn(false);
 
@@ -228,4 +229,8 @@ public class AdminRegistrationCommandTest {
 
         verify(userRepository, never()).save(any(User.class));
     }
+
+
+
+
 }
