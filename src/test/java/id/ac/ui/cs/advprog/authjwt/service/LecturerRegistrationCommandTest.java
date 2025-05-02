@@ -155,6 +155,27 @@ class LecturerRegistrationCommandTest {
     }
 
     @Test
+    void testAddUser_NIPAlreadyExists() {
+        User validUser = new User();
+        validUser.setUsername("lecturer1@gmail.com");
+        validUser.setPassword("password");
+        validUser.setFullName("Lecturer One");
+        validUser.setNip("12345678");
+
+        when(userRepository.existsByUsername(validUser.getNip())).thenReturn(true);
+
+        lecturerRegistrationCommand = new LecturerRegistrationCommand(userRepository, passwordEncoder, validUser);
+
+        ResponseEntity<Map<String, String>> responseEntity = lecturerRegistrationCommand.addUser();
+
+        assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+        Map<String, String> response = responseEntity.getBody();
+        assertNotNull(response);
+        assertEquals("error", response.get("status"));
+        assertEquals("Username already exists", response.get("message"));
+    }
+
+    @Test
     void testAddUser_Success() {
         when(userRepository.existsByUsername("lecturer1@gmail.com")).thenReturn(false);
         when(passwordEncoder.encode("password")).thenReturn("encodedPassword");
