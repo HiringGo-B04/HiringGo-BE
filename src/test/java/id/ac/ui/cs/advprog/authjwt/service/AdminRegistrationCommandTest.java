@@ -225,7 +225,7 @@ public class AdminRegistrationCommandTest {
         Map<String, String> response = responseEntity.getBody();
         assertNotNull(response);
         assertEquals("error", response.get("status"));
-        assertEquals("Invalid payload", response.get("message"));
+        assertEquals("Username must be a valid email address", response.get("message"));
 
         verify(userRepository, never()).save(any(User.class));
     }
