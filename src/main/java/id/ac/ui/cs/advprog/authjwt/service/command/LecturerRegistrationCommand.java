@@ -43,6 +43,12 @@ public class LecturerRegistrationCommand extends RegistrationCommand {
             return new ResponseEntity<>(response, HttpStatus.valueOf(Integer.parseInt(validity.get("code"))));
         }
 
+        if(userRepository.existsByNip(user.getNip())) {
+            response.put("status", "error");
+            response.put("message", "Nip Already Exists");
+            return new ResponseEntity<>(response, HttpStatus.valueOf(404));
+        }
+
         try{
             User newUser = new User(
                     UUID.randomUUID(),
