@@ -2,9 +2,11 @@ package id.ac.ui.cs.advprog.log.model;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.UUID;
 
 public class Log {
 
+    private UUID id;
     private String judul;
     private String keterangan;
     private String kategori;
@@ -15,6 +17,12 @@ public class Log {
     private String status;
 
     // Getters & Setters
+    public UUID getId() {
+        return id;
+    }
+    public void setId(UUID id) {
+        this.id = id;
+    }
     public String getJudul() {
         return judul;
     }

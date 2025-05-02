@@ -2,10 +2,12 @@ package id.ac.ui.cs.advprog.log.model;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.UUID;
 
 public class LogBuilder {
 
     private final Log log = new Log();
+
     public LogBuilder judul(String judul) {
         if (judul == null || judul.trim().isEmpty()) {
             throw new IllegalArgumentException("Judul tidak boleh kosong");
@@ -57,6 +59,12 @@ public class LogBuilder {
                 log.getWaktuSelesai().isBefore(log.getWaktuMulai())) {
             throw new IllegalArgumentException("Waktu selesai harus setelah waktu mulai");
         }
+
+        // 🔥 Tambahan ini untuk memastikan setiap Log punya ID unik
+        if (log.getId() == null) {
+            log.setId(UUID.randomUUID());
+        }
+
         return log;
     }
 }
