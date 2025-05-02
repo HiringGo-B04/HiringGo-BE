@@ -1,11 +1,16 @@
 package id.ac.ui.cs.advprog.log.model;
 
+import id.ac.ui.cs.advprog.log.enums.KategoriLog;
+import id.ac.ui.cs.advprog.log.enums.StatusLog;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.UUID;
 
 public class LogBuilder {
 
     private final Log log = new Log();
+
     public LogBuilder judul(String judul) {
         if (judul == null || judul.trim().isEmpty()) {
             throw new IllegalArgumentException("Judul tidak boleh kosong");
@@ -19,7 +24,7 @@ public class LogBuilder {
         return this;
     }
 
-    public LogBuilder kategori(String kategori) {
+    public LogBuilder kategori(KategoriLog kategori) {
         log.setKategori(kategori);
         return this;
     }
@@ -47,7 +52,7 @@ public class LogBuilder {
         return this;
     }
 
-    public LogBuilder status(String status) {
+    public LogBuilder status(StatusLog status) {
         log.setStatus(status);
         return this;
     }
@@ -57,6 +62,11 @@ public class LogBuilder {
                 log.getWaktuSelesai().isBefore(log.getWaktuMulai())) {
             throw new IllegalArgumentException("Waktu selesai harus setelah waktu mulai");
         }
+
+        if (log.getId() == null) {
+            log.setId(UUID.randomUUID());
+        }
+
         return log;
     }
 }
