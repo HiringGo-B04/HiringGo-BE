@@ -59,6 +59,25 @@ class LecturerRegistrationCommandTest {
     }
 
     @Test
+    void testAddUser_NNUllUsername() {
+        User invalidUser = new User();
+        invalidUser.setUsername(null);
+        invalidUser.setPassword("password");
+        invalidUser.setFullName("Lecturer One");
+        invalidUser.setNip("12345678");
+
+        lecturerRegistrationCommand = new LecturerRegistrationCommand(userRepository, passwordEncoder, invalidUser);
+
+        ResponseEntity<Map<String, String>> responseEntity = lecturerRegistrationCommand.addUser();
+
+        assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
+        Map<String, String> response = responseEntity.getBody();
+        assertNotNull(response);
+        assertEquals("error", response.get("status"));
+        assertEquals("Invalid payload", response.get("message"));
+    }
+
+    @Test
     void testAddUser_InvalidPassword() {
         User invalidUser = new User();
         invalidUser.setUsername("lecturer1@gmail.com");

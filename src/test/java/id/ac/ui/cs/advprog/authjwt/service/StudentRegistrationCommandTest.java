@@ -131,6 +131,25 @@ class StudentRegistrationCommandTest {
     }
 
     @Test
+    void testAddUser_NullUsername() {
+        User invalidUser = new User();
+        invalidUser.setUsername(null);
+        invalidUser.setPassword("password");
+        invalidUser.setFullName("Student One");
+        invalidUser.setNim("12345678");
+
+        studentRegistrationCommand = new StudentRegistrationCommand(userRepository, passwordEncoder, invalidUser);
+
+        ResponseEntity<Map<String, String>> responseEntity = studentRegistrationCommand.addUser();
+
+        assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
+        Map<String, String> response = responseEntity.getBody();
+        assertNotNull(response);
+        assertEquals("error", response.get("status"));
+        assertEquals("Invalid payload", response.get("message"));
+    }
+
+    @Test
     void testAddUser_InvalidPassword() {
         User invalidUser = new User();
         invalidUser.setUsername("student1@gmail.com");
