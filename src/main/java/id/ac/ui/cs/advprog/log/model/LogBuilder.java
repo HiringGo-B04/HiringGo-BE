@@ -1,5 +1,8 @@
 package id.ac.ui.cs.advprog.log.model;
 
+import id.ac.ui.cs.advprog.log.enums.KategoriLog;
+import id.ac.ui.cs.advprog.log.enums.StatusLog;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.UUID;
@@ -21,7 +24,7 @@ public class LogBuilder {
         return this;
     }
 
-    public LogBuilder kategori(String kategori) {
+    public LogBuilder kategori(KategoriLog kategori) {
         log.setKategori(kategori);
         return this;
     }
@@ -49,7 +52,7 @@ public class LogBuilder {
         return this;
     }
 
-    public LogBuilder status(String status) {
+    public LogBuilder status(StatusLog status) {
         log.setStatus(status);
         return this;
     }
@@ -60,7 +63,6 @@ public class LogBuilder {
             throw new IllegalArgumentException("Waktu selesai harus setelah waktu mulai");
         }
 
-        // 🔥 Tambahan ini untuk memastikan setiap Log punya ID unik
         if (log.getId() == null) {
             log.setId(UUID.randomUUID());
         }
