@@ -42,6 +42,12 @@ public class StudentRegistrationCommand extends RegistrationCommand {
             response.put("message", validity.get("message"));
             return new ResponseEntity<>(response, HttpStatus.valueOf(Integer.parseInt(validity.get("code"))));
         }
+        
+        if(userRepository.existsByNim(user.getNim())) {
+            response.put("status", "error");
+            response.put("message", "Nim already exists");
+            return new ResponseEntity<>(response, HttpStatus.valueOf(404));
+        }
 
         try{
             User newUser = new User(
