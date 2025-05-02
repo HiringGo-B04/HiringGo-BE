@@ -3,11 +3,8 @@ import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
 public class GeneralUtils {
-    private static final String EMAIL_REGEX =
-            "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
-
+    private static final String EMAIL_REGEX = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
     private static final String INT_MAX_12_REGEX = "^\\d{1,12}$";
-
 
     private static final Pattern EMAIL_PATTERN = Pattern.compile(EMAIL_REGEX);
     private static final Pattern INT_PATTERN = Pattern.compile(INT_MAX_12_REGEX);
