@@ -323,7 +323,7 @@ class StudentRegistrationCommandTest {
 
     @Test
     void testAddUser_Student_InvalidName() {
-        User invalidUser = new User(UUID.randomUUID(), "student1@gmail.com", "aaa", "Student 1234", false, "12abcd3455677");
+        User invalidUser = new User(UUID.randomUUID(), "student1@gmail.com", "aaa", "Student 1234", false, "123455677");
 
         when(userRepository.existsByUsername(anyString())).thenReturn(false);
 
