@@ -1,0 +1,18 @@
+package id.ac.ui.cs.advprog.log.enums;
+
+public enum KategoriLog {
+    ASISTENSI,
+    MENGOREKSI,
+    MENGAWAS,
+    PERSIAPAN_ASISTENSI,
+    MEMBUAT_SOAL_TUGAS,
+    RAPAT,
+    SIT_IN_KELAS,
+    PENGEMBANGAN_MATERI,
+    PENGEMBANGAN_APPS,
+    PERSIAPAN_INFRA,
+    DOKUMENTASI,
+    PERSIAPAN_KULIAH,
+    PENUNJANG,
+    INPUT_DATA
+}
