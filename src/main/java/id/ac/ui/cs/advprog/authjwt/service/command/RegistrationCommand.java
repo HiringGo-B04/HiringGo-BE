@@ -32,22 +32,6 @@ public abstract class RegistrationCommand {
         return response;
     }
 
-    public ResponseEntity<Map<String, String>> validateUsernameOrFail(String username) {
-        Map<String, String> validity = check_invalid_input(username);
-
-        if (!"valid".equals(validity.get("message"))) {
-            Map<String, String> response = new HashMap<>();
-            response.put("status", "error");
-            response.put("message", validity.get("message"));
-
-            int code = (validity.get("code") != null) ? Integer.parseInt(validity.get("code")) : 400;
-            return new ResponseEntity<>(response, HttpStatus.valueOf(code));
-        }
-
-        return null; // means valid
-    }
-
-
     RegistrationCommand(UserRepository userRepository, PasswordEncoder passwordEncoder, User user) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
