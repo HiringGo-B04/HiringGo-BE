@@ -38,4 +38,34 @@ public class AccountServiceTest {
         assertEquals("Succes delete user", response.getBody().get("messages"));
         assertEquals("error", response.getBody().get("status")); // You might want to change this to "success"
     }
+
+    @Test
+    public void testDeleteUser_EmailIsNull() {
+        ResponseEntity<Map<String, String>> response = accountService.delete(null);
+
+        assertEquals(403, response.getStatusCodeValue());
+        assertEquals("Email is empty", response.getBody().get("messages"));
+        assertEquals("error", response.getBody().get("status"));
+    }
+
+    @Test
+    public void testDeleteUser_EmailIsEmpty() {
+        ResponseEntity<Map<String, String>> response = accountService.delete("");
+
+        assertEquals(403, response.getStatusCodeValue());
+        assertEquals("Email is empty", response.getBody().get("messages"));
+        assertEquals("error", response.getBody().get("status"));
+    }
+
+    @Test
+    public void testDeleteUser_UserNotFound() {
+        String email = "nonexistent@example.com";
+        when(userRepository.findByUsername(email)).thenReturn(null);
+
+        ResponseEntity<Map<String, String>> response = accountService.delete(email);
+
+        assertEquals(403, response.getStatusCodeValue());
+        assertEquals("User not found", response.getBody().get("messages"));
+        assertEquals("error", response.getBody().get("status"));
+    }
 }

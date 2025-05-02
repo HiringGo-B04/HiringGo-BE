@@ -36,6 +36,7 @@ repositories {
 
 dependencies {
     runtimeOnly("org.postgresql:postgresql:42.7.2")
+    compileOnly("jakarta.servlet:jakarta.servlet-api:6.0.0")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     runtimeOnly("org.postgresql:postgresql") // still needed for prod
     runtimeOnly("com.h2database:h2") // ✅ this is the one you’re missing
