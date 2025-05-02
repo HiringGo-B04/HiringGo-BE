@@ -129,8 +129,8 @@ public class AuthServiceTest {
 
     @Test
     void testRegister_AdminRole_Success() {
-        User validUser = new User(UUID.randomUUID(), "adminUser", "password123");
-        when(userRepository.existsByUsername("adminUser")).thenReturn(false);
+        User validUser = new User(UUID.randomUUID(), "adminUser@gmail.com", "password123");
+        when(userRepository.existsByUsername("adminUser@gmail.com")).thenReturn(false);
         when(passwordEncoder.encode("password123")).thenReturn("encodedPassword");
 
         AdminRegistrationCommand adminRegistrationCommand = mock(AdminRegistrationCommand.class);
@@ -147,8 +147,8 @@ public class AuthServiceTest {
 
     @Test
     void testRegister_LecturerRole_Success() {
-        User validUser = new User(UUID.randomUUID(), "lecturerUser", "password123", "Lecturer User", true, "lecturerNIP");
-        when(userRepository.existsByUsername("lecturerUser")).thenReturn(false);
+        User validUser = new User(UUID.randomUUID(), "lecturerUser@gmail.com", "password123", "Lecturer User", true, "lecturerNIP");
+        when(userRepository.existsByUsername("lecturerUser@gmail.com")).thenReturn(false);
         when(passwordEncoder.encode("password123")).thenReturn("encodedPassword");
 
         ResponseEntity<Map<String, String>> response = authService.register(validUser, "lecturer");
@@ -160,8 +160,8 @@ public class AuthServiceTest {
 
     @Test
     void testRegister_StudentRole_Success() {
-        User validUser = new User(UUID.randomUUID(), "studentUser", "password123", "Student User", false, "studentNIP");
-        when(userRepository.existsByUsername("studentUser")).thenReturn(false);
+        User validUser = new User(UUID.randomUUID(), "studentUser@gmail.com", "password123", "Student User", false, "studentNIP");
+        when(userRepository.existsByUsername("studentUser@gmail.com")).thenReturn(false);
         when(passwordEncoder.encode("password123")).thenReturn("encodedPassword");
 
         ResponseEntity<Map<String, String>> response = authService.register(validUser, "student");
