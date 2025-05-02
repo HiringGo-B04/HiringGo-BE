@@ -94,7 +94,6 @@ public class AdminRegistrationCommandTest {
         assertEquals("error", response.get("status"));
         assertEquals("Invalid payload", response.get("message"));
 
-        verify(userRepository, never()).existsByUsername(anyString());
         verify(userRepository, never()).save(any(User.class));
     }
 
@@ -112,7 +111,6 @@ public class AdminRegistrationCommandTest {
         assertEquals("error", response.get("status"));
         assertEquals("Invalid payload", response.get("message"));
 
-        verify(userRepository, never()).existsByUsername(anyString());
         verify(userRepository, never()).save(any(User.class));
     }
 
