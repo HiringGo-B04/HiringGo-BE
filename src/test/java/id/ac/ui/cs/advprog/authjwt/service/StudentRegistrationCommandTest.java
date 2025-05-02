@@ -32,7 +32,7 @@ class StudentRegistrationCommandTest {
         MockitoAnnotations.openMocks(this);
 
         user = new User();
-        user.setUsername("student1");
+        user.setUsername("student1@gmail.com");
         user.setPassword("password");
         user.setFullName("Student One");
         user.setNim("12345678");
@@ -42,7 +42,7 @@ class StudentRegistrationCommandTest {
 
     @Test
     void testAddUser_Success() {
-        when(userRepository.existsByUsername("student1")).thenReturn(false);
+        when(userRepository.existsByUsername("student1@gmail.com")).thenReturn(false);
         when(passwordEncoder.encode("password")).thenReturn("encodedPassword");
 
         User newUser = new User(UUID.randomUUID(), "student1", "encodedPassword", "Student One", false, "12345678");
@@ -55,10 +55,10 @@ class StudentRegistrationCommandTest {
         assertNotNull(response);
         assertEquals("accept", response.get("status"));
         assertEquals("Success register", response.get("messages"));
-        assertEquals("student1", response.get("username"));
+        assertEquals("student1@gmail.com", response.get("username"));
         assertEquals("STUDENT", response.get("role"));
 
-        verify(userRepository).existsByUsername("student1");
+        verify(userRepository).existsByUsername("student1@gmail.com");
         verify(userRepository).save(any(User.class));
         verify(passwordEncoder).encode("password");
     }
@@ -84,7 +84,7 @@ class StudentRegistrationCommandTest {
 
     @Test
     void testAddUser_UsernameAlreadyExists() {
-        when(userRepository.existsByUsername("student1")).thenReturn(true);
+        when(userRepository.existsByUsername("student1@gmail.com")).thenReturn(true);
 
         ResponseEntity<Map<String, String>> responseEntity = studentRegistrationCommand.addUser();
 
@@ -97,7 +97,7 @@ class StudentRegistrationCommandTest {
 
     @Test
     void testAddUser_Exception() {
-        when(userRepository.existsByUsername("student1")).thenReturn(false);
+        when(userRepository.existsByUsername("student1@gmail.com")).thenReturn(false);
         when(passwordEncoder.encode("password")).thenReturn("encodedPassword");
         when(userRepository.save(any(User.class))).thenThrow(new RuntimeException("Database error"));
 
@@ -132,7 +132,7 @@ class StudentRegistrationCommandTest {
     @Test
     void testAddUser_InvalidPassword() {
         User invalidUser = new User();
-        invalidUser.setUsername("student1");
+        invalidUser.setUsername("student1@gmail.com");
         invalidUser.setPassword("");
         invalidUser.setFullName("Student One");
         invalidUser.setNim("12345678");
@@ -151,7 +151,7 @@ class StudentRegistrationCommandTest {
     @Test
     void testAddUser_InvalidFullName() {
         User invalidUser = new User();
-        invalidUser.setUsername("student1");
+        invalidUser.setUsername("student1@gmail.com");
         invalidUser.setPassword("password");
         invalidUser.setFullName("");
         invalidUser.setNim("12345678");
@@ -170,7 +170,7 @@ class StudentRegistrationCommandTest {
     @Test
     void testAddUser_InvalidNim() {
         User invalidUser = new User();
-        invalidUser.setUsername("student1");
+        invalidUser.setUsername("student1@gmail.com");
         invalidUser.setPassword("password");
         invalidUser.setFullName("Student One");
         invalidUser.setNim(""); // Empty NIM
@@ -207,7 +207,7 @@ class StudentRegistrationCommandTest {
 
     @Test
     void testAddUser_Student_NullPassword() {
-        User invalidUser = new User(UUID.randomUUID(), "student1", null, "Student One", false, "12345678");
+        User invalidUser = new User(UUID.randomUUID(), "student1@gmail.com", null, "Student One", false, "12345678");
 
         when(userRepository.existsByUsername(anyString())).thenReturn(false);
 
@@ -226,7 +226,7 @@ class StudentRegistrationCommandTest {
 
     @Test
     void testAddUser_Student_NullFullname() {
-        User invalidUser = new User(UUID.randomUUID(), "student1", "aksj", null, false, "12345678");
+        User invalidUser = new User(UUID.randomUUID(), "student1@gmail.com", "aksj", null, false, "12345678");
 
         when(userRepository.existsByUsername(anyString())).thenReturn(false);
 
@@ -244,8 +244,8 @@ class StudentRegistrationCommandTest {
     }
 
     @Test
-    void testAddUser_Student_NullNIP() {
-        User invalidUser = new User(UUID.randomUUID(), "student1", "aaa", "Student One", false, null);
+    void testAddUser_Student_NullNIM() {
+        User invalidUser = new User(UUID.randomUUID(), "student1@gmail.com", "aaa", "Student One", false, null);
 
         when(userRepository.existsByUsername(anyString())).thenReturn(false);
 
@@ -262,5 +262,23 @@ class StudentRegistrationCommandTest {
         verify(userRepository, never()).save(any(User.class));
     }
 
+    @Test
+    void testAddUser_InvalidEmail() {
+        when(userRepository.existsByUsername("student1@gm")).thenReturn(false);
+        when(passwordEncoder.encode("password")).thenReturn("encodedPassword");
+
+        User newUser = new User(UUID.randomUUID(), "student1", "encodedPassword", "Student One", false, "12345678");
+        when(userRepository.save(any(User.class))).thenReturn(newUser);
+
+        ResponseEntity<Map<String, String>> responseEntity = studentRegistrationCommand.addUser();
+
+        assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
+        Map<String, String> response = responseEntity.getBody();
+        assertNotNull(response);
+        assertEquals("error", response.get("status"));
+        assertEquals("Username must be a valid email address", response.get("message"));
+
+        verify(userRepository, never()).save(any(User.class));
+    }
 
 }
