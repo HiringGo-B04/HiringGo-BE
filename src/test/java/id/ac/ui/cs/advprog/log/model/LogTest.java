@@ -1,6 +1,9 @@
 package id.ac.ui.cs.advprog.log.model;
 
+import id.ac.ui.cs.advprog.log.enums.StatusLog;
+import id.ac.ui.cs.advprog.log.enums.KategoriLog;
 import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class LogTest {
@@ -15,7 +18,14 @@ public class LogTest {
     @Test
     void testSetAndGetStatus() {
         Log log = new Log();
-        log.setStatus("DITERIMA");
-        assertEquals("DITERIMA", log.getStatus());
+        log.setStatus(StatusLog.DITERIMA);
+        assertEquals(StatusLog.DITERIMA, log.getStatus());
+    }
+
+    @Test
+    void testSetAndGetKategori() {
+        Log log = new Log();
+        log.setKategori(KategoriLog.ASISTENSI);
+        assertEquals(KategoriLog.ASISTENSI, log.getKategori());
     }
 }
