@@ -34,6 +34,12 @@ public abstract class RegistrationCommand {
                 response.put("message", "NIM/NIP must only contain number and maximal 12 digits long");
                 return response;
             }
+
+            if(!GeneralUtils.isValidString(user.getFullName())) {
+                response.put("code", "403");
+                response.put("message", "Name must only contain letter character");
+                return response;
+            }
         }
 
         response.put("message", "valid");

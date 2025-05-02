@@ -336,5 +336,24 @@ class LecturerRegistrationCommandTest {
         verify(userRepository, never()).save(any(User.class));
     }
 
+    @Test
+    void testAddUser_Lecturer_InvalidName() {
+        User invalidUser = new User(UUID.randomUUID(), "lecturer1@gmail.com", "aaa", "Lecturer 123", true, "12345678" );
+
+        when(userRepository.existsByUsername(anyString())).thenReturn(false);
+
+        LecturerRegistrationCommand lecturerRegistrationCommand = new LecturerRegistrationCommand(userRepository, passwordEncoder, invalidUser);
+
+        ResponseEntity<Map<String, String>> responseEntity = lecturerRegistrationCommand.addUser();
+
+        assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
+        Map<String, String> response = responseEntity.getBody();
+        assertNotNull(response);
+        assertEquals("error", response.get("status"));
+        assertEquals("Name must only contain letter character", response.get("message"));
+
+        verify(userRepository, never()).save(any(User.class));
+    }
+
 
 }
