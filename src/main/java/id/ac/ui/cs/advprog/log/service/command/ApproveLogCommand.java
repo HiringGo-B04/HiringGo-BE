@@ -1,9 +1,9 @@
 package id.ac.ui.cs.advprog.log.service.command;
 
+import id.ac.ui.cs.advprog.log.enums.StatusLog;
 import id.ac.ui.cs.advprog.log.model.Log;
 
 public class ApproveLogCommand implements LogCommand {
-
     private final Log log;
 
     public ApproveLogCommand(Log log) {
@@ -12,6 +12,6 @@ public class ApproveLogCommand implements LogCommand {
 
     @Override
     public void execute() {
-        log.setStatus("DITERIMA");
+        log.setStatus(StatusLog.DITERIMA);
     }
 }

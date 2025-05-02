@@ -1,6 +1,9 @@
 package id.ac.ui.cs.advprog.log.service.command;
 
+import id.ac.ui.cs.advprog.log.enums.KategoriLog;
+import id.ac.ui.cs.advprog.log.enums.StatusLog;
 import id.ac.ui.cs.advprog.log.model.Log;
+import id.ac.ui.cs.advprog.log.model.LogBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -15,29 +18,28 @@ public class LogCommandTest {
 
     @BeforeEach
     void setUp() {
-        log = new Log();
-        log.setJudul("Asistensi 1");
-        log.setKeterangan("Membantu praktikum STI");
-        log.setKategori("Asistensi");
-        log.setTanggalLog(LocalDate.now());
-        log.setWaktuMulai(LocalTime.of(10, 0));
-        log.setWaktuSelesai(LocalTime.of(12, 0));
-        log.setStatus("MENUNGGU");
+        log = new LogBuilder()
+                .judul("Asistensi 1")
+                .keterangan("Membantu Asistensi PBP")
+                .kategori(KategoriLog.ASISTENSI)
+                .tanggalLog(LocalDate.now())
+                .waktuMulai(LocalTime.of(10, 0))
+                .waktuSelesai(LocalTime.of(12, 0))
+                .status(StatusLog.MENUNGGU)
+                .build();
     }
 
     @Test
     void testApproveLogCommandShouldSetStatusToDiterima() {
         LogCommand approveCommand = new ApproveLogCommand(log);
         approveCommand.execute();
-
-        assertEquals("DITERIMA", log.getStatus());
+        assertEquals(StatusLog.DITERIMA, log.getStatus());
     }
 
     @Test
     void testRejectLogCommandShouldSetStatusToDitolak() {
         LogCommand rejectCommand = new RejectLogCommand(log);
         rejectCommand.execute();
-
-        assertEquals("DITOLAK", log.getStatus());
+        assertEquals(StatusLog.DITOLAK, log.getStatus());
     }
 }
