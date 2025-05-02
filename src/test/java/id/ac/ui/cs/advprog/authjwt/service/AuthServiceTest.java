@@ -160,7 +160,7 @@ public class AuthServiceTest {
 
     @Test
     void testRegister_StudentRole_Success() {
-        User validUser = new User(UUID.randomUUID(), "studentUser@gmail.com", "password123", "Student User", false, "studentNIP");
+        User validUser = new User(UUID.randomUUID(), "studentUser@gmail.com", "password123", "Student User", false, "12345678");
         when(userRepository.existsByUsername("studentUser@gmail.com")).thenReturn(false);
         when(passwordEncoder.encode("password123")).thenReturn("encodedPassword");
 

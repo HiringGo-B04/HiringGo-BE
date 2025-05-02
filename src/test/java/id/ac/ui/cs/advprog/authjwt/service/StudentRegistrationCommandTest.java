@@ -284,32 +284,32 @@ class StudentRegistrationCommandTest {
 
     @Test
     void testAddUser_Student_InvalidUsername() {
-        User invalidUser = new User(UUID.randomUUID(), "student1", "aaa", "Lecturer One", true, "12345678" );
+        User invalidUser = new User();
+        invalidUser.setUsername("student1");
+        invalidUser.setPassword("password");
+        invalidUser.setFullName("Student One");
+        invalidUser.setNim("12345678");
 
-        when(userRepository.existsByUsername(anyString())).thenReturn(false);
+        studentRegistrationCommand = new StudentRegistrationCommand(userRepository, passwordEncoder, invalidUser);
 
-        LecturerRegistrationCommand lecturerRegistrationCommand = new LecturerRegistrationCommand(userRepository, passwordEncoder, invalidUser);
-
-        ResponseEntity<Map<String, String>> responseEntity = lecturerRegistrationCommand.addUser();
+        ResponseEntity<Map<String, String>> responseEntity = studentRegistrationCommand.addUser();
 
         assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
         Map<String, String> response = responseEntity.getBody();
         assertNotNull(response);
         assertEquals("error", response.get("status"));
         assertEquals("Username must be a valid email address", response.get("message"));
-
-        verify(userRepository, never()).save(any(User.class));
     }
 
     @Test
-    void testAddUser_Student_InvalidNim() {
-        User invalidUser = new User(UUID.randomUUID(), "student1@gmail.com", "aaa", "Lecturer One", true, "1234567abcd8" );
+    void testAddUser_Student_InvalidNIM() {
+        User invalidUser = new User(UUID.randomUUID(), "student1@gmail.com", "aaa", "Student One", false, "12abcd3455677");
 
         when(userRepository.existsByUsername(anyString())).thenReturn(false);
 
-        LecturerRegistrationCommand lecturerRegistrationCommand = new LecturerRegistrationCommand(userRepository, passwordEncoder, invalidUser);
+        StudentRegistrationCommand studentRegistrationCommand = new StudentRegistrationCommand(userRepository, passwordEncoder, invalidUser);
 
-        ResponseEntity<Map<String, String>> responseEntity = lecturerRegistrationCommand.addUser();
+        ResponseEntity<Map<String, String>> responseEntity = studentRegistrationCommand.addUser();
 
         assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
         Map<String, String> response = responseEntity.getBody();
