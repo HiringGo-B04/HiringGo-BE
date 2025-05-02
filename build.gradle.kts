@@ -32,6 +32,14 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    // VALIDATION  ➜ jakarta.validation.Valid  (@NotBlank, @Min, dst.)
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+
+    // SECURITY    ➜ PreAuthorize, EnableMethodSecurity, dll.
+    implementation("org.springframework.boot:spring-boot-starter-security")
+
+    testImplementation("org.springframework.security:spring-security-test")
+
 }
 
 tasks.withType<Test> {

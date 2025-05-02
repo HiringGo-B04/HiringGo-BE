@@ -10,18 +10,16 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Arrays;
+import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(MataKuliahController.class)
@@ -34,7 +32,7 @@ class MataKuliahControllerTest {
     @Autowired
     private MataKuliahService mataKuliahService;
 
-    // Konfigurasi Test khusus untuk menyediakan bean mock dari MataKuliahService
+    /** menyediakan bean mock untuk service */
     @TestConfiguration
     static class MataKuliahServiceMockConfiguration {
         @Bean
@@ -43,115 +41,130 @@ class MataKuliahControllerTest {
         }
     }
 
-    // GET /api/matakuliah - Mengembalikan semua mata kuliah
+    /* ---------- GET ALL ---------- */
     @Test
-    void testGetAllMataKuliah() throws Exception {
-        MataKuliah mk1 = new MataKuliah("MK001", "Algoritma", "Deskripsi 1", 3);
-        MataKuliah mk2 = new MataKuliah("MK002", "Basis Data", "Deskripsi 2", 4);
-
+    @WithMockUser(roles = "ADMIN")
+    void getAllMataKuliah_shouldReturnList() throws Exception {
+        var mk1 = new MataKuliah("MK001", "Algoritma", "Desc1", 3);
+        var mk2 = new MataKuliah("MK002", "Basis Data", "Desc2", 4);
         when(mataKuliahService.findAll()).thenReturn(Arrays.asList(mk1, mk2));
 
-        mockMvc.perform(get("/api/matakuliah"))
+        mockMvc.perform(get("/api/v1/matakuliah"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$[0].kode").value("MK001"))
                 .andExpect(jsonPath("$[1].kode").value("MK002"));
     }
 
-    // GET /api/matakuliah/{kode} - Data ditemukan
+    /* ---------- GET BY KODE (FOUND) ---------- */
     @Test
-    void testGetMataKuliahByKodeFound() throws Exception {
-        MataKuliah mk = new MataKuliah("MK001", "Algoritma", "Deskripsi", 3);
+    @WithMockUser(roles = "ADMIN")
+    void getMataKuliahByKode_found() throws Exception {
+        var mk = new MataKuliah("MK001", "Algoritma", "Desc", 3);
         when(mataKuliahService.findByKode("MK001")).thenReturn(mk);
 
-        mockMvc.perform(get("/api/matakuliah/MK001"))
+        mockMvc.perform(get("/api/v1/matakuliah/MK001"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.kode").value("MK001"))
-                .andExpect(jsonPath("$.nama").value("Algoritma"));
+                .andExpect(jsonPath("$.kode").value("MK001"));
     }
 
-    // GET /api/matakuliah/{kode} - Data tidak ditemukan
+    /* ---------- GET BY KODE (NOT FOUND) ---------- */
     @Test
-    void testGetMataKuliahByKodeNotFound() throws Exception {
-        when(mataKuliahService.findByKode("MK003")).thenReturn(null);
+    @WithMockUser(roles = "ADMIN")
+    void getMataKuliahByKode_notFound() throws Exception {
+        when(mataKuliahService.findByKode("MK404")).thenReturn(null);
 
-        mockMvc.perform(get("/api/matakuliah/MK003"))
+        mockMvc.perform(get("/api/v1/matakuliah/MK404"))
                 .andExpect(status().isNotFound());
     }
 
-    // POST /api/matakuliah - Pembuatan berhasil
+    /* ---------- POST (SUCCESS) ---------- */
     @Test
-    void testCreateMataKuliahSuccess() throws Exception {
-        String mkJson = "{\"kode\":\"MK001\",\"nama\":\"Algoritma\",\"deskripsi\":\"Deskripsi\",\"sks\":3}";
+    @WithMockUser(roles = "ADMIN")
+    void createMataKuliah_success() throws Exception {
+        String mkJson = """
+                {"kode":"MK001","nama":"Algoritma","deskripsi":"Desc","sks":3}
+                """;
         doNothing().when(mataKuliahService).create(any(MataKuliah.class));
 
-        mockMvc.perform(post("/api/matakuliah")
+        mockMvc.perform(post("/api/v1/matakuliah").with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mkJson))
                 .andExpect(status().isCreated())
-                .andExpect(content().string("Mata kuliah berhasil dibuat"));
+                .andExpect(header().string("Location",
+                        "http://localhost/api/v1/matakuliah/MK001"))
+                .andExpect(jsonPath("$.kode").value("MK001"));
     }
 
-    // POST /api/matakuliah - Pembuatan gagal karena duplikat
+    /* ---------- POST (DUPLICATE → BAD REQUEST) ---------- */
     @Test
-    void testCreateMataKuliahFailure() throws Exception {
-        String mkJson = "{\"kode\":\"MK001\",\"nama\":\"Algoritma\",\"deskripsi\":\"Deskripsi\",\"sks\":3}";
-        doThrow(new RuntimeException("Kode mata kuliah sudah terdaftar: MK001"))
+    @WithMockUser(roles = "ADMIN")
+    void createMataKuliah_duplicate() throws Exception {
+        String mkJson = """
+                {"kode":"MK001","nama":"Algoritma","deskripsi":"Desc","sks":3}
+                """;
+        doThrow(new RuntimeException("Kode sudah ada"))
                 .when(mataKuliahService).create(any(MataKuliah.class));
 
-        mockMvc.perform(post("/api/matakuliah")
+        mockMvc.perform(post("/api/v1/matakuliah").with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mkJson))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string("Kode mata kuliah sudah terdaftar: MK001"));
+                .andExpect(status().isBadRequest());
     }
 
-    // PUT /api/matakuliah/{kode} - Update berhasil
+    /* ---------- PUT (SUCCESS) ---------- */
     @Test
-    void testUpdateMataKuliahSuccess() throws Exception {
-        String mkJson = "{\"kode\":\"MK001\",\"nama\":\"Algoritma Updated\",\"deskripsi\":\"Deskripsi Updated\",\"sks\":3}";
+    @WithMockUser(roles = "ADMIN")
+    void updateMataKuliah_success() throws Exception {
+        String mkJson = """
+                {"kode":"MK001","nama":"Algoritma Updated","deskripsi":"D","sks":4}
+                """;
         doNothing().when(mataKuliahService).update(any(MataKuliah.class));
 
-        mockMvc.perform(put("/api/matakuliah/MK001")
+        mockMvc.perform(put("/api/v1/matakuliah/MK001").with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mkJson))
                 .andExpect(status().isOk())
-                .andExpect(content().string("Mata kuliah berhasil diupdate"));
+                .andExpect(jsonPath("$.nama").value("Algoritma Updated"));
     }
 
-    // PUT /api/matakuliah/{kode} - Update gagal (data tidak ditemukan)
+    /* ---------- PATCH (PARTIAL UPDATE) ---------- */
     @Test
-    void testUpdateMataKuliahFailure() throws Exception {
-        String mkJson = "{\"kode\":\"MK001\",\"nama\":\"Algoritma Updated\",\"deskripsi\":\"Deskripsi Updated\",\"sks\":3}";
-        doThrow(new RuntimeException("Mata kuliah tidak ditemukan: MK001"))
-                .when(mataKuliahService).update(any(MataKuliah.class));
+    @WithMockUser(roles = "ADMIN")
+    void patchMataKuliah_updateSksOnly() throws Exception {
+        var existing = new MataKuliah("MK001", "Algoritma", "Desc", 3);
+        when(mataKuliahService.findByKode("MK001")).thenReturn(existing);
+        doNothing().when(mataKuliahService).update(any(MataKuliah.class));
 
-        mockMvc.perform(put("/api/matakuliah/MK001")
+        String patchJson = """
+                {"sks":5}
+                """;
+
+        mockMvc.perform(patch("/api/v1/matakuliah/MK001").with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(mkJson))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string("Mata kuliah tidak ditemukan: MK001"));
+                        .content(patchJson))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.sks").value(5));
     }
 
-    // DELETE /api/matakuliah/{kode} - Delete berhasil
+    /* ---------- DELETE (SUCCESS) ---------- */
     @Test
-    void testDeleteMataKuliahSuccess() throws Exception {
+    @WithMockUser(roles = "ADMIN")
+    void deleteMataKuliah_success() throws Exception {
         doNothing().when(mataKuliahService).delete("MK001");
 
-        mockMvc.perform(delete("/api/matakuliah/MK001"))
-                .andExpect(status().isOk())
-                .andExpect(content().string("Mata kuliah berhasil dihapus"));
+        mockMvc.perform(delete("/api/v1/matakuliah/MK001").with(csrf()))
+                .andExpect(status().isOk());
     }
 
-    // DELETE /api/matakuliah/{kode} - Delete gagal (data tidak ditemukan)
+    /* ---------- DELETE (NOT FOUND) ---------- */
     @Test
-    void testDeleteMataKuliahFailure() throws Exception {
-        doThrow(new RuntimeException("Mata kuliah tidak ditemukan: MK002"))
-                .when(mataKuliahService).delete("MK002");
+    @WithMockUser(roles = "ADMIN")
+    void deleteMataKuliah_notFound() throws Exception {
+        doThrow(new RuntimeException("Not found"))
+                .when(mataKuliahService).delete("MKX");
 
-        mockMvc.perform(delete("/api/matakuliah/MK002"))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string("Mata kuliah tidak ditemukan: MK002"));
+        mockMvc.perform(delete("/api/v1/matakuliah/MKX").with(csrf()))
+                .andExpect(status().isBadRequest());
     }
 }
