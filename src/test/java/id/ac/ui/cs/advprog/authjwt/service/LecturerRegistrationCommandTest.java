@@ -2,6 +2,7 @@ package id.ac.ui.cs.advprog.authjwt.service;
 
 import id.ac.ui.cs.advprog.authjwt.model.User;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
+import id.ac.ui.cs.advprog.authjwt.service.command.AdminRegistrationCommand;
 import id.ac.ui.cs.advprog.authjwt.service.command.LecturerRegistrationCommand;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,7 +31,7 @@ class LecturerRegistrationCommandTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
         user = new User();
-        user.setUsername("lecturer1");
+        user.setUsername("lecturer1@gmail.com");
         user.setPassword("password");
         user.setFullName("Lecturer One");
         user.setNip("12345678");
@@ -60,7 +61,7 @@ class LecturerRegistrationCommandTest {
     @Test
     void testAddUser_InvalidPassword() {
         User invalidUser = new User();
-        invalidUser.setUsername("lecturer1");
+        invalidUser.setUsername("lecturer1@gmail.com");
         invalidUser.setPassword(""); // Empty password
         invalidUser.setFullName("Lecturer One");
         invalidUser.setNip("12345678");
@@ -79,7 +80,7 @@ class LecturerRegistrationCommandTest {
     @Test
     void testAddUser_InvalidFullName() {
         User invalidUser = new User();
-        invalidUser.setUsername("lecturer1");
+        invalidUser.setUsername("lecturer1@gmail.com");
         invalidUser.setPassword("password");
         invalidUser.setFullName("");
         invalidUser.setNip("12345678");
@@ -98,7 +99,7 @@ class LecturerRegistrationCommandTest {
     @Test
     void testAddUser_InvalidNip() {
         User invalidUser = new User();
-        invalidUser.setUsername("lecturer1");
+        invalidUser.setUsername("lecturer1@gmail.com");
         invalidUser.setPassword("password");
         invalidUser.setFullName("Lecturer One");
         invalidUser.setNip("");
@@ -117,7 +118,7 @@ class LecturerRegistrationCommandTest {
     @Test
     void testAddUser_UsernameAlreadyExists() {
         User validUser = new User();
-        validUser.setUsername("lecturer1");
+        validUser.setUsername("lecturer1@gmail.com");
         validUser.setPassword("password");
         validUser.setFullName("Lecturer One");
         validUser.setNip("12345678");
@@ -137,10 +138,10 @@ class LecturerRegistrationCommandTest {
 
     @Test
     void testAddUser_Success() {
-        when(userRepository.existsByUsername("lecturer1")).thenReturn(false);
+        when(userRepository.existsByUsername("lecturer1@gmail.com")).thenReturn(false);
         when(passwordEncoder.encode("password")).thenReturn("encodedPassword");
 
-        User newUser = new User(UUID.randomUUID(), "lecturer1", "encodedPassword", "Lecturer One", false, "12345678");
+        User newUser = new User(UUID.randomUUID(), "lecturer1@gmail.com", "encodedPassword", "Lecturer One", false, "12345678");
         when(userRepository.save(any(User.class))).thenReturn(newUser);
 
         ResponseEntity<Map<String, String>> responseEntity = lecturerRegistrationCommand.addUser();
@@ -150,10 +151,10 @@ class LecturerRegistrationCommandTest {
         assertNotNull(response);
         assertEquals("accept", response.get("status"));
         assertEquals("Success register", response.get("messages"));
-        assertEquals("lecturer1", response.get("username"));
+        assertEquals("lecturer1@gmail.com", response.get("username"));
         assertEquals("LECTURER", response.get("role"));
 
-        verify(userRepository).existsByUsername("lecturer1");
+        verify(userRepository).existsByUsername("lecturer1@gmail.com");
         verify(userRepository).save(any(User.class));
         verify(passwordEncoder).encode("password");
     }
@@ -179,7 +180,7 @@ class LecturerRegistrationCommandTest {
 
     @Test
     void testAddUser_Lecturer_ExceptionHandling() {
-        User validUser = new User(UUID.randomUUID(), "lecturer1", "encodedPassword", "Lecturer One", true, "12345678");
+        User validUser = new User(UUID.randomUUID(), "lecturer1@gmail.com", "encodedPassword", "Lecturer One", true, "12345678");
 
         when(userRepository.existsByUsername(anyString())).thenReturn(false);
         when(passwordEncoder.encode("encodedPassword")).thenReturn("encodedPassword");
@@ -196,7 +197,7 @@ class LecturerRegistrationCommandTest {
         assertEquals("error", response.get("status"));
         assertEquals("Unexpected database error", response.get("messages"));
 
-        verify(userRepository).existsByUsername("lecturer1");
+        verify(userRepository).existsByUsername("lecturer1@gmail.com");
         verify(userRepository).save(any(User.class));
         verify(passwordEncoder).encode("encodedPassword");
     }
@@ -223,7 +224,7 @@ class LecturerRegistrationCommandTest {
 
     @Test
     void testAddUser_Lecturer_NullPassword() {
-        User invalidUser = new User(UUID.randomUUID(), "lecturer1", null, "Lecturer One", true, "12345678");
+        User invalidUser = new User(UUID.randomUUID(), "lecturer1@gmail.com", null, "Lecturer One", true, "12345678");
 
         when(userRepository.existsByUsername(anyString())).thenReturn(false);
 
@@ -242,7 +243,7 @@ class LecturerRegistrationCommandTest {
 
     @Test
     void testAddUser_Lecturer_NullFullname() {
-        User invalidUser = new User(UUID.randomUUID(), "lecturer1", "aksj", null, true, "12345678");
+        User invalidUser = new User(UUID.randomUUID(), "lecturer1@gmail.com", "aksj", null, true, "12345678");
 
         when(userRepository.existsByUsername(anyString())).thenReturn(false);
 
@@ -261,7 +262,7 @@ class LecturerRegistrationCommandTest {
 
     @Test
     void testAddUser_Lecturer_NullNIP() {
-        User invalidUser = new User(UUID.randomUUID(), "lecturer1", "aaa", "Lecturer One", true, null);
+        User invalidUser = new User(UUID.randomUUID(), "lecturer1@gmail.com", "aaa", "Lecturer One", true, null);
 
         when(userRepository.existsByUsername(anyString())).thenReturn(false);
 
@@ -279,5 +280,23 @@ class LecturerRegistrationCommandTest {
     }
 
 
+    @Test
+    void testAddUser_Lecturer_InvalidUsername() {
+        User invalidUser = new User(UUID.randomUUID(), "lecturer1", "aaa", "Lecturer One", true, "12345678" );
+
+        when(userRepository.existsByUsername(anyString())).thenReturn(false);
+
+        LecturerRegistrationCommand lecturerRegistrationCommand = new LecturerRegistrationCommand(userRepository, passwordEncoder, invalidUser);
+
+        ResponseEntity<Map<String, String>> responseEntity = lecturerRegistrationCommand.addUser();
+
+        assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
+        Map<String, String> response = responseEntity.getBody();
+        assertNotNull(response);
+        assertEquals("error", response.get("status"));
+        assertEquals("Username must be a valid email address", response.get("message"));
+
+        verify(userRepository, never()).save(any(User.class));
+    }
 
 }
