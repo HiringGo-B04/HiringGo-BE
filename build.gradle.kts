@@ -46,6 +46,7 @@ dependencies {
     // Annotation‑processor: Gradle akan men‑generate class mapper
     annotationProcessor("org.mapstruct:mapstruct-processor:1.5.5.Final")
     testAnnotationProcessor("org.mapstruct:mapstruct-processor:1.5.5.Final")
+    implementation("org.springframework.data:spring-data-commons")
 }
 
 tasks.withType<Test> {
