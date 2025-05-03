@@ -19,3 +19,4 @@ public class Dosen extends User {
         this.nip = nip;
     }
 }
+
