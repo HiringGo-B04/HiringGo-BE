@@ -1,114 +1,95 @@
 package id.ac.ui.cs.advprog.course.service;
 
+import id.ac.ui.cs.advprog.course.dto.MataKuliahDto;
+import id.ac.ui.cs.advprog.course.dto.MataKuliahPatch;
+import id.ac.ui.cs.advprog.course.mapper.MataKuliahMapper;
+import id.ac.ui.cs.advprog.course.mapper.MataKuliahMapperImpl;
 import id.ac.ui.cs.advprog.course.repository.InMemoryMataKuliahRepository;
 import id.ac.ui.cs.advprog.course.repository.MataKuliahRepository;
-import id.ac.ui.cs.advprog.course.model.MataKuliah;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+
 import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class MataKuliahServiceImplTest {
 
-    private MataKuliahRepository repository;
     private MataKuliahService service;
 
     @BeforeEach
-    public void setUp() {
-        // Inisialisasi repository in-memory dan injeksikan ke service
-        repository = new InMemoryMataKuliahRepository();
-        service = new MataKuliahServiceImpl(repository);
+    void setUp() {
+        MataKuliahRepository repo  = new InMemoryMataKuliahRepository();
+        MataKuliahMapper     map   = new MataKuliahMapperImpl(); // MapStruct impl
+        service = new MataKuliahServiceImpl(repo, map);
     }
 
-    // Test pembuatan mata kuliah dengan valid (create success)
+    /* ---------- CREATE SUCCESS ---------- */
     @Test
-    void testCreateSuccess() {
-        MataKuliah mk = new MataKuliah("IF1234", "Algoritma", "Deskripsi Mata Kuliah", 3);
-        service.create(mk);
-        MataKuliah result = service.findByKode("IF1234");
-        assertNotNull(result);
-        assertEquals("Algoritma", result.getNama());
+    void create_shouldStoreAndReturnDto() {
+        MataKuliahDto dto = new MataKuliahDto("IF1234", "Algoritma", 3,
+                "Desc", List.of());
+
+        MataKuliahDto saved = service.create(dto);
+
+        assertEquals("IF1234", saved.kode());
+        assertEquals("Algoritma", service.findByKode("IF1234").nama());
     }
 
-    // Test pembuatan mata kuliah dengan kode yang sudah ada (duplicate)
+    /* ---------- DUPLICATE CREATE ---------- */
     @Test
-    void testCreateDuplicateThrowsException() {
-        MataKuliah mk1 = new MataKuliah("IF1234", "Algoritma", "Deskripsi", 3);
-        service.create(mk1);
-        MataKuliah mk2 = new MataKuliah("IF1234", "Data Structures", "Deskripsi Lain", 3);
-        Exception exception = assertThrows(RuntimeException.class, () -> service.create(mk2));
-        assertTrue(exception.getMessage().contains("Kode mata kuliah sudah terdaftar"));
+    void createDuplicate_shouldThrowException() {
+        var dto = new MataKuliahDto("IF1234", "Algoritma", 3, null, List.of());
+        service.create(dto);
+
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> service.create(dto));
+        assertTrue(ex.getMessage().contains("Kode sudah ada"));
     }
 
-    // Test validasi saat membuat: kode tidak boleh kosong dan SKS tidak boleh negatif
+    /* ---------- PAGING FINDALL ---------- */
     @Test
-    void testCreateInvalidMataKuliahThrowsException() {
-        // Kode kosong
-        MataKuliah mkInvalidKode = new MataKuliah("", "Nama", "Deskripsi", 3);
-        Exception exception1 = assertThrows(RuntimeException.class, () -> service.create(mkInvalidKode));
-        assertEquals("Kode mata kuliah tidak boleh kosong", exception1.getMessage());
+    void findAll_shouldReturnPage() {
+        service.create(new MataKuliahDto("A", "MK‑A", 2, null, List.of()));
+        service.create(new MataKuliahDto("B", "MK‑B", 3, null, List.of()));
 
-        // SKS negatif
-        MataKuliah mkInvalidSks = new MataKuliah("IF5678", "Nama", "Deskripsi", -1);
-        Exception exception2 = assertThrows(RuntimeException.class, () -> service.create(mkInvalidSks));
-        assertEquals("SKS tidak boleh negatif", exception2.getMessage());
+        Page<MataKuliahDto> page = service.findAll(PageRequest.of(0, 1));
+
+        assertEquals(1, page.getSize());
+        assertEquals(2, page.getTotalElements());
     }
 
-    // Test pengambilan semua mata kuliah (findAll)
+    /* ---------- UPDATE (FULL) ---------- */
     @Test
-    void testFindAll() {
-        MataKuliah mk1 = new MataKuliah("IF1234", "Algoritma", "Deskripsi", 3);
-        MataKuliah mk2 = new MataKuliah("IF5678", "Data Structures", "Deskripsi", 4);
-        service.create(mk1);
-        service.create(mk2);
-        List<MataKuliah> list = service.findAll();
-        assertEquals(2, list.size());
+    void update_shouldReplaceAllFields() {
+        service.create(new MataKuliahDto("IF1", "Old", 2, "Old", List.of()));
+
+        MataKuliahDto updated = service.update("IF1",
+                new MataKuliahDto("XIGNORED", "New", 4, "NewDesc", List.of()));
+
+        assertEquals(4, updated.sks());
+        assertEquals("New", updated.nama());
     }
 
-    // Test pencarian berdasarkan kode yang tidak ada (findByKode)
+    /* ---------- PARTIAL UPDATE ---------- */
     @Test
-    void testFindByKodeNotFound() {
-        MataKuliah result = service.findByKode("NON_EXISTENT");
-        assertNull(result);
+    void partialUpdate_shouldChangeOnlyNonNull() {
+        service.create(new MataKuliahDto("IF1", "Algo", 2, "Old", List.of()));
+
+        MataKuliahPatch patch = new MataKuliahPatch(5, null);
+        MataKuliahDto after   = service.partialUpdate("IF1", patch);
+
+        assertEquals(5, after.sks());
+        assertEquals("Old", after.deskripsi());          // field null = tak berubah
     }
 
-    // Test update data mata kuliah yang sudah ada
+    /* ---------- DELETE ---------- */
     @Test
-    void testUpdateSuccess() {
-        MataKuliah mk = new MataKuliah("IF1234", "Algoritma", "Deskripsi", 3);
-        service.create(mk);
+    void delete_shouldRemoveEntity() {
+        service.create(new MataKuliahDto("IF1", "Algo", 3, null, List.of()));
+        service.delete("IF1");
 
-        // Update nama
-        mk.setNama("Algoritma Updated");
-        service.update(mk);
-
-        MataKuliah updated = service.findByKode("IF1234");
-        assertNotNull(updated);
-        assertEquals("Algoritma Updated", updated.getNama());
-    }
-
-    // Test update data yang tidak ada harus melempar exception
-    @Test
-    void testUpdateNonExistentThrowsException() {
-        MataKuliah mk = new MataKuliah("IF1234", "Algoritma", "Deskripsi", 3);
-        Exception exception = assertThrows(RuntimeException.class, () -> service.update(mk));
-        assertTrue(exception.getMessage().contains("Mata kuliah tidak ditemukan"));
-    }
-
-    // Test menghapus data mata kuliah yang sudah ada
-    @Test
-    void testDeleteSuccess() {
-        MataKuliah mk = new MataKuliah("IF1234", "Algoritma", "Deskripsi", 3);
-        service.create(mk);
-        service.delete("IF1234");
-        MataKuliah result = service.findByKode("IF1234");
-        assertNull(result);
-    }
-
-    // Test penghapusan data yang tidak ada harus melempar exception
-    @Test
-    void testDeleteNonExistentThrowsException() {
-        Exception exception = assertThrows(RuntimeException.class, () -> service.delete("NON_EXISTENT"));
-        assertTrue(exception.getMessage().contains("Mata kuliah tidak ditemukan"));
+        assertNull(service.findByKode("IF1"));
     }
 }
