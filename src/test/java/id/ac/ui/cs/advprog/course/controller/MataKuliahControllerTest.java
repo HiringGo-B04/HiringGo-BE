@@ -1,170 +1,173 @@
 package id.ac.ui.cs.advprog.course.controller;
 
-import id.ac.ui.cs.advprog.course.model.MataKuliah;
+import id.ac.ui.cs.advprog.course.dto.MataKuliahDto;
+import id.ac.ui.cs.advprog.course.dto.MataKuliahPatch;
 import id.ac.ui.cs.advprog.course.service.MataKuliahService;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.Arrays;
-import java.util.Map;
+import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+/**
+ * Web‑layer tests untuk {@link MataKuliahController} versi DTO.
+ */
 @WebMvcTest(MataKuliahController.class)
-@Import(MataKuliahControllerTest.MataKuliahServiceMockConfiguration.class)
+@Import(MataKuliahControllerTest.MockConfig.class)
 class MataKuliahControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
-    private MataKuliahService mataKuliahService;
+    private MataKuliahService service;
 
-    /** menyediakan bean mock untuk service */
     @TestConfiguration
-    static class MataKuliahServiceMockConfiguration {
+    static class MockConfig {
         @Bean
         MataKuliahService mataKuliahService() {
             return Mockito.mock(MataKuliahService.class);
         }
     }
 
-    /* ---------- GET ALL ---------- */
+    /* ---------- GET ALL (PAGE) ---------- */
     @Test
     @WithMockUser(roles = "ADMIN")
-    void getAllMataKuliah_shouldReturnList() throws Exception {
-        var mk1 = new MataKuliah("MK001", "Algoritma", "Desc1", 3);
-        var mk2 = new MataKuliah("MK002", "Basis Data", "Desc2", 4);
-        when(mataKuliahService.findAll()).thenReturn(Arrays.asList(mk1, mk2));
+    void getAll_shouldReturnPage() throws Exception {
+        var dto1 = new MataKuliahDto("MK001", "Algoritma", 3, "D", List.of());
+        var dto2 = new MataKuliahDto("MK002", "Basis Data", 4, "D2", List.of());
+
+        when(service.findAll(PageRequest.of(0, 20)))
+                .thenReturn(new PageImpl<>(List.of(dto1, dto2)));
 
         mockMvc.perform(get("/api/v1/matakuliah"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$[0].kode").value("MK001"))
-                .andExpect(jsonPath("$[1].kode").value("MK002"));
+                .andExpect(jsonPath("$.content[0].kode").value("MK001"))
+                .andExpect(jsonPath("$.content[1].kode").value("MK002"));
     }
 
-    /* ---------- GET BY KODE (FOUND) ---------- */
+    /* ---------- GET BY KODE ---------- */
     @Test
     @WithMockUser(roles = "ADMIN")
-    void getMataKuliahByKode_found() throws Exception {
-        var mk = new MataKuliah("MK001", "Algoritma", "Desc", 3);
-        when(mataKuliahService.findByKode("MK001")).thenReturn(mk);
+    void getByKode_found() throws Exception {
+        var dto = new MataKuliahDto("MK001", "Algoritma", 3, null, List.of());
+        when(service.findByKode("MK001")).thenReturn(dto);
 
         mockMvc.perform(get("/api/v1/matakuliah/MK001"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.kode").value("MK001"));
+                .andExpect(jsonPath("$.nama").value("Algoritma"));
     }
 
-    /* ---------- GET BY KODE (NOT FOUND) ---------- */
     @Test
     @WithMockUser(roles = "ADMIN")
-    void getMataKuliahByKode_notFound() throws Exception {
-        when(mataKuliahService.findByKode("MK404")).thenReturn(null);
+    void getByKode_notFound() throws Exception {
+        when(service.findByKode("MK404")).thenReturn(null);
 
         mockMvc.perform(get("/api/v1/matakuliah/MK404"))
                 .andExpect(status().isNotFound());
     }
 
-    /* ---------- POST (SUCCESS) ---------- */
+    /* ---------- POST ---------- */
     @Test
     @WithMockUser(roles = "ADMIN")
-    void createMataKuliah_success() throws Exception {
-        String mkJson = """
-                {"kode":"MK001","nama":"Algoritma","deskripsi":"Desc","sks":3}
+    void create_success() throws Exception {
+        var dto = new MataKuliahDto("MK001", "Algoritma", 3, "Desc", List.of());
+        when(service.create(ArgumentMatchers.any(MataKuliahDto.class))).thenReturn(dto);
+
+        String body = """
+                {"kode":"MK001","nama":"Algoritma","sks":3,"deskripsi":"Desc","dosenPengampu":[]}
                 """;
-        doNothing().when(mataKuliahService).create(any(MataKuliah.class));
 
         mockMvc.perform(post("/api/v1/matakuliah").with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(mkJson))
+                        .content(body))
                 .andExpect(status().isCreated())
                 .andExpect(header().string("Location",
                         "http://localhost/api/v1/matakuliah/MK001"))
                 .andExpect(jsonPath("$.kode").value("MK001"));
     }
 
-    /* ---------- POST (DUPLICATE → BAD REQUEST) ---------- */
     @Test
     @WithMockUser(roles = "ADMIN")
-    void createMataKuliah_duplicate() throws Exception {
-        String mkJson = """
-                {"kode":"MK001","nama":"Algoritma","deskripsi":"Desc","sks":3}
-                """;
+    void create_duplicate_shouldReturn400() throws Exception {
         doThrow(new RuntimeException("Kode sudah ada"))
-                .when(mataKuliahService).create(any(MataKuliah.class));
+                .when(service).create(any(MataKuliahDto.class));
+
+        String body = """
+                {"kode":"MK001","nama":"Algoritma","sks":3,"deskripsi":"Desc","dosenPengampu":[]}
+                """;
 
         mockMvc.perform(post("/api/v1/matakuliah").with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(mkJson))
+                        .content(body))
                 .andExpect(status().isBadRequest());
     }
 
-    /* ---------- PUT (SUCCESS) ---------- */
+    /* ---------- PUT ---------- */
     @Test
     @WithMockUser(roles = "ADMIN")
-    void updateMataKuliah_success() throws Exception {
-        String mkJson = """
-                {"kode":"MK001","nama":"Algoritma Updated","deskripsi":"D","sks":4}
+    void update_success() throws Exception {
+        var updated = new MataKuliahDto("MK001", "Algo Upd", 4, "D", List.of());
+        when(service.update(eq("MK001"), any(MataKuliahDto.class))).thenReturn(updated);
+
+        String body = """
+                {"kode":"IGNORED","nama":"Algo Upd","sks":4,"deskripsi":"D","dosenPengampu":[]}
                 """;
-        doNothing().when(mataKuliahService).update(any(MataKuliah.class));
 
         mockMvc.perform(put("/api/v1/matakuliah/MK001").with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(mkJson))
+                        .content(body))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.nama").value("Algoritma Updated"));
+                .andExpect(jsonPath("$.sks").value(4));
     }
 
-    /* ---------- PATCH (PARTIAL UPDATE) ---------- */
+    /* ---------- PATCH ---------- */
     @Test
     @WithMockUser(roles = "ADMIN")
-    void patchMataKuliah_updateSksOnly() throws Exception {
-        var existing = new MataKuliah("MK001", "Algoritma", "Desc", 3);
-        when(mataKuliahService.findByKode("MK001")).thenReturn(existing);
-        doNothing().when(mataKuliahService).update(any(MataKuliah.class));
+    void patch_shouldUpdateSksOnly() throws Exception {
+        var patched = new MataKuliahDto("MK001", "Algoritma", 5, "Old", List.of());
+        when(service.partialUpdate(eq("MK001"), any(MataKuliahPatch.class))).thenReturn(patched);
 
-        String patchJson = """
-                {"sks":5}
-                """;
+        String body = "{\"sks\":5}";
 
         mockMvc.perform(patch("/api/v1/matakuliah/MK001").with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(patchJson))
+                        .content(body))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.sks").value(5));
     }
 
-    /* ---------- DELETE (SUCCESS) ---------- */
+    /* ---------- DELETE ---------- */
     @Test
     @WithMockUser(roles = "ADMIN")
-    void deleteMataKuliah_success() throws Exception {
-        doNothing().when(mataKuliahService).delete("MK001");
+    void delete_success() throws Exception {
+        doNothing().when(service).delete("MK001");
 
         mockMvc.perform(delete("/api/v1/matakuliah/MK001").with(csrf()))
                 .andExpect(status().isOk());
     }
 
-    /* ---------- DELETE (NOT FOUND) ---------- */
     @Test
     @WithMockUser(roles = "ADMIN")
-    void deleteMataKuliah_notFound() throws Exception {
-        doThrow(new RuntimeException("Not found"))
-                .when(mataKuliahService).delete("MKX");
+    void delete_notFound_shouldReturn400() throws Exception {
+        doThrow(new RuntimeException("Not found")).when(service).delete("BAD");
 
-        mockMvc.perform(delete("/api/v1/matakuliah/MKX").with(csrf()))
+        mockMvc.perform(delete("/api/v1/matakuliah/BAD").with(csrf()))
                 .andExpect(status().isBadRequest());
     }
 }
