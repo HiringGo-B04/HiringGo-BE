@@ -1,32 +1,28 @@
 package id.ac.ui.cs.advprog.course.repository;
 
 import id.ac.ui.cs.advprog.course.model.MataKuliah;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
-/**
- * Implementasi in-memory dari MataKuliahRepository.
- * Menyimpan data MataKuliah dalam sebuah Map<String, MataKuliah> (key: kode)
- */
 @Repository
+@Primary                   // ← agar Spring memilih repo ini
 public class InMemoryMataKuliahRepository implements MataKuliahRepository {
 
-    /**
-     * Penyimpanan utama in-memory:
-     * key   = kode unik mata kuliah
-     * value = objek MataKuliah
-     */
     private final Map<String, MataKuliah> storage = new HashMap<>();
 
+    /* ---------- CREATE ---------- */
     @Override
-    public void save(MataKuliah mk) {
+    public MataKuliah save(MataKuliah mk) {
         if (storage.containsKey(mk.getKode())) {
             throw new RuntimeException("Kode mata kuliah sudah terdaftar: " + mk.getKode());
         }
         storage.put(mk.getKode(), mk);
+        return mk;                    // ← return entity
     }
 
+    /* ---------- READ ---------- */
     @Override
     public List<MataKuliah> findAll() {
         return new ArrayList<>(storage.values());
@@ -34,22 +30,22 @@ public class InMemoryMataKuliahRepository implements MataKuliahRepository {
 
     @Override
     public Optional<MataKuliah> findByKode(String kode) {
-        MataKuliah result = storage.get(kode);
-        return Optional.ofNullable(result);
+        return Optional.ofNullable(storage.get(kode));
     }
 
+    /* ---------- UPDATE ---------- */
     @Override
-    public void update(MataKuliah mk) {
-        // Cek apakah data lama ada
+    public MataKuliah update(MataKuliah mk) {
         if (!storage.containsKey(mk.getKode())) {
             throw new RuntimeException("Mata kuliah tidak ditemukan: " + mk.getKode());
         }
         storage.put(mk.getKode(), mk);
+        return mk;                    // ← return entity
     }
 
+    /* ---------- DELETE ---------- */
     @Override
     public void deleteByKode(String kode) {
         storage.remove(kode);
     }
 }
-
