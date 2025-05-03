@@ -1,68 +1,53 @@
 package id.ac.ui.cs.advprog.course.controller;
 
-import id.ac.ui.cs.advprog.course.model.MataKuliah;
+import id.ac.ui.cs.advprog.course.dto.MataKuliahDto;
+import id.ac.ui.cs.advprog.course.dto.MataKuliahPatch;
 import id.ac.ui.cs.advprog.course.service.MataKuliahService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
-import java.util.List;
-import java.util.Map;
 
-/**
- * Controller Manajemen Mata Kuliah – API v1
- *
- * Endpoint:
- *  • GET    /api/v1/matakuliah            → daftar mata kuliah
- *  • GET    /api/v1/matakuliah/{kode}    → detail
- *  • POST   /api/v1/matakuliah            → buat (201 + Location)
- *  • PUT    /api/v1/matakuliah/{kode}    → ganti seluruh data
- *  • PATCH  /api/v1/matakuliah/{kode}    → ubah sebagian field
- *  • DELETE /api/v1/matakuliah/{kode}    → hapus
- *
- * Semua endpoint dibatasi role ADMIN via @PreAuthorize.
- * ResponseEntity dipakai agar status HTTP & header dapat diatur tepat.
- */
 @RestController
 @RequestMapping("/api/v1/matakuliah")
 @PreAuthorize("hasRole('ADMIN')")
 public class MataKuliahController {
 
-    private final MataKuliahService mataKuliahService;
+    private final MataKuliahService service;
 
-    public MataKuliahController(MataKuliahService mataKuliahService) {
-        this.mataKuliahService = mataKuliahService;
+    public MataKuliahController(MataKuliahService service) {
+        this.service = service;
     }
 
     /* ---------- READ ---------- */
 
     @GetMapping
-    public ResponseEntity<List<MataKuliah>> getAllMataKuliah() {
-        return ResponseEntity.ok(mataKuliahService.findAll());
+    public ResponseEntity<Page<MataKuliahDto>> list(Pageable pageable) {
+        return ResponseEntity.ok(service.findAll(pageable));
     }
 
     @GetMapping("/{kode}")
-    public ResponseEntity<MataKuliah> getMataKuliahByKode(@PathVariable String kode) {
-        MataKuliah mk = mataKuliahService.findByKode(kode);
-        return (mk == null) ? ResponseEntity.notFound().build()
-                : ResponseEntity.ok(mk);
+    public ResponseEntity<MataKuliahDto> get(@PathVariable String kode) {
+        MataKuliahDto dto = service.findByKode(kode);
+        return (dto == null) ? ResponseEntity.notFound().build()
+                : ResponseEntity.ok(dto);
     }
 
     /* ---------- CREATE ---------- */
 
     @PostMapping
-    public ResponseEntity<?> createMataKuliah(@Valid @RequestBody MataKuliah mk) {
+    public ResponseEntity<?> create(@Valid @RequestBody MataKuliahDto dto) {
         try {
-            mataKuliahService.create(mk);   // bisa lempar duplikat
-            URI location = ServletUriComponentsBuilder
-                    .fromCurrentRequest().path("/{kode}")
-                    .buildAndExpand(mk.getKode()).toUri();
-            return ResponseEntity.created(location).body(mk);   // 201 Created
+            MataKuliahDto saved = service.create(dto);
+            URI loc = ServletUriComponentsBuilder.fromCurrentRequest()
+                    .path("/{kode}").buildAndExpand(saved.kode()).toUri();
+            return ResponseEntity.created(loc).body(saved);
         } catch (RuntimeException ex) {
-            // duplikat kode → 400 Bad Request + pesan
             return ResponseEntity.badRequest().body(ex.getMessage());
         }
     }
@@ -70,12 +55,11 @@ public class MataKuliahController {
     /* ---------- FULL UPDATE ---------- */
 
     @PutMapping("/{kode}")
-    public ResponseEntity<?> updateMataKuliah(@PathVariable String kode,
-                                              @Valid @RequestBody MataKuliah mk) {
+    public ResponseEntity<?> replace(@PathVariable String kode,
+                                     @Valid @RequestBody MataKuliahDto dto) {
         try {
-            mk.setKode(kode);
-            mataKuliahService.update(mk);
-            return ResponseEntity.ok(mk);
+            MataKuliahDto updated = service.update(kode, dto);
+            return ResponseEntity.ok(updated);
         } catch (RuntimeException ex) {
             return ResponseEntity.badRequest().body(ex.getMessage());
         }
@@ -84,19 +68,11 @@ public class MataKuliahController {
     /* ---------- PARTIAL UPDATE ---------- */
 
     @PatchMapping("/{kode}")
-    public ResponseEntity<?> patchMataKuliah(@PathVariable String kode,
-                                             @RequestBody Map<String, Object> updates) {
+    public ResponseEntity<?> patch(@PathVariable String kode,
+                                   @Valid @RequestBody MataKuliahPatch patch) {
         try {
-            MataKuliah existing = mataKuliahService.findByKode(kode);
-            if (existing == null) return ResponseEntity.notFound().build();
-
-            if (updates.containsKey("sks"))
-                existing.setSks((Integer) updates.get("sks"));
-            if (updates.containsKey("deskripsi"))
-                existing.setDeskripsi((String) updates.get("deskripsi"));
-
-            mataKuliahService.update(existing);
-            return ResponseEntity.ok(existing);
+            MataKuliahDto patched = service.partialUpdate(kode, patch);
+            return ResponseEntity.ok(patched);
         } catch (RuntimeException ex) {
             return ResponseEntity.badRequest().body(ex.getMessage());
         }
@@ -105,11 +81,11 @@ public class MataKuliahController {
     /* ---------- DELETE ---------- */
 
     @DeleteMapping("/{kode}")
-    public ResponseEntity<?> deleteMataKuliah(@PathVariable String kode) {
+    public ResponseEntity<?> delete(@PathVariable String kode) {
         try {
-            mataKuliahService.delete(kode);
+            service.delete(kode);
             return ResponseEntity.ok().build();
-        } catch (RuntimeException ex) {     // not‑found
+        } catch (RuntimeException ex) {
             return ResponseEntity.badRequest().body(ex.getMessage());
         }
     }
