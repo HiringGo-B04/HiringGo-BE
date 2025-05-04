@@ -15,12 +15,17 @@ public class Lowongan {
     private int totalAsdosRegistered;
     private int totalAsdosAccepted;
 
-    private Lowongan() {
-        // private constructor to force usage of builder
+    private Lowongan(Builder builder) {
+        this.id = UUID.randomUUID();
+        this.matkul = builder.matkul;
+        this.year = builder.year;
+        this.term = builder.term;
+        this.totalAsdosNeeded = builder.totalAsdosNeeded;
+        this.totalAsdosRegistered = builder.totalAsdosRegistered;
+        this.totalAsdosAccepted = builder.totalAsdosAccepted;
     }
 
     public static class Builder {
-        private UUID id = UUID.randomUUID(); // default to new ID
         private String matkul;
         private int year;
         private String term;
@@ -59,15 +64,7 @@ public class Lowongan {
         }
 
         public Lowongan build() {
-            Lowongan lowongan = new Lowongan();
-            lowongan.id = this.id;
-            lowongan.matkul = this.matkul;
-            lowongan.year = this.year;
-            lowongan.term = this.term;
-            lowongan.totalAsdosNeeded = this.totalAsdosNeeded;
-            lowongan.totalAsdosRegistered = this.totalAsdosRegistered;
-            lowongan.totalAsdosAccepted = this.totalAsdosAccepted;
-            return lowongan;
+            return new Lowongan(this);
         }
     }
 }
