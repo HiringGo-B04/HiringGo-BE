@@ -6,9 +6,11 @@ import java.util.List;
 import java.util.UUID;
 
 public interface LowonganService {
-    public List<Lowongan> findAll();
-    public Lowongan addLowongan(Lowongan lowongan);
-    public Lowongan updateLowongan(Lowongan lowongan);
-    public Lowongan deleteLowongan(Lowongan lowongan);
-    public Lowongan findLowonganById(UUID id);
+    List<Lowongan> getLowongan();
+    Lowongan getLowonganById(UUID id);
+    Lowongan addLowongan(Lowongan lowongan);
+    Lowongan updateLowongan(UUID id, Lowongan lowongan);
+    void deleteLowongan(UUID id);
+    boolean isLowonganExists(Lowongan lowongan);
+    boolean isLowonganClosed(Lowongan lowongan);
 }
