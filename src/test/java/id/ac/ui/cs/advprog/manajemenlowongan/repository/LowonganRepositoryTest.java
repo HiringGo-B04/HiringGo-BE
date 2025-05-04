@@ -14,7 +14,7 @@ public class LowonganRepositoryTest {
     @BeforeEach
     void setUp() {
         repository = LowonganRepository.getInstance();
-        lowongan.getLowongan().clear();
+        repository.getLowongan().clear();
     }
 
     @Test
