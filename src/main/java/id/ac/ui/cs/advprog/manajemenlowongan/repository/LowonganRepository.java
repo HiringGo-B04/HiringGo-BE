@@ -1,8 +1,6 @@
 package id.ac.ui.cs.advprog.manajemenlowongan.repository;
 
 import id.ac.ui.cs.advprog.manajemenlowongan.model.Lowongan;
-import id.ac.ui.cs.advprog.manajemenlowongan.model.Lamaran;
-import id.ac.ui.cs.advprog.manajemenlowongan.model.StatusLamaran;
 
 import org.springframework.stereotype.Repository;
 
@@ -14,7 +12,6 @@ import java.util.UUID;
 @Repository
 public class LowonganRepository {
     private List<Lowongan> lowonganData = new ArrayList<>();
-    private List<Lamaran> lamaranData = new ArrayList<>();
 
     public Iterator<Lowongan> findAll() {
         return lowonganData.iterator();
@@ -57,25 +54,5 @@ public class LowonganRepository {
             }
         }
         return null; // Jika tidak ditemukan
-    }
-
-    public Lamaran acceptLamaran(UUID idLamaran) {
-        for (Lamaran lamaran : lamaranData) {
-            if (lamaran.getId().equals(idLamaran)) {
-                lamaran.updateStatus(StatusLamaran.DITERIMA);
-                return lamaran;
-            }
-        }
-        return null;
-    }
-
-    public Lamaran rejectLamaran(UUID idLamaran) {
-        for (Lamaran lamaran : lamaranData) {
-            if (lamaran.getId().equals(idLamaran)) {
-                lamaran.updateStatus(StatusLamaran.DITOLAK);
-                return lamaran;
-            }
-        }
-        return null;
     }
 }
