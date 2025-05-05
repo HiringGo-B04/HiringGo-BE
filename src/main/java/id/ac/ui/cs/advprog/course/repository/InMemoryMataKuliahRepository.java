@@ -2,6 +2,7 @@ package id.ac.ui.cs.advprog.course.repository;
 
 import id.ac.ui.cs.advprog.course.model.MataKuliah;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;

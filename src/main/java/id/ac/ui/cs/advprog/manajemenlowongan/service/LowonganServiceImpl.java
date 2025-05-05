@@ -2,6 +2,7 @@ package id.ac.ui.cs.advprog.manajemenlowongan.service;
 
 import id.ac.ui.cs.advprog.manajemenlowongan.model.Lowongan;
 import id.ac.ui.cs.advprog.manajemenlowongan.repository.LowonganRepository;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
+@Profile("manual")
 public class LowonganServiceImpl implements LowonganService {
     
     private final LowonganRepository lowonganRepository;

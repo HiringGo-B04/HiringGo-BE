@@ -1,11 +1,13 @@
 package id.ac.ui.cs.advprog.log.repository;
 
 import id.ac.ui.cs.advprog.log.model.Log;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
 @Repository
+@Profile("manual")
 public class LogRepository {
 
     private static LogRepository instance;

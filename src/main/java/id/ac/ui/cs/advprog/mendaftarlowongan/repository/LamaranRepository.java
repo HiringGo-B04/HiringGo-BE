@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.mendaftarlowongan.repository;
 
 import id.ac.ui.cs.advprog.mendaftarlowongan.model.Lamaran;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -8,6 +9,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
+@Profile("manual")
 public class LamaranRepository {
     private static LamaranRepository instance;
     private List<Lamaran> daftarLamaran;

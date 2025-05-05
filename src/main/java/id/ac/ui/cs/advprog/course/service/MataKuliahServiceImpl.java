@@ -6,6 +6,7 @@ import id.ac.ui.cs.advprog.course.mapper.MataKuliahMapper;
 import id.ac.ui.cs.advprog.course.model.MataKuliah;
 import id.ac.ui.cs.advprog.course.repository.MataKuliahRepository;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
