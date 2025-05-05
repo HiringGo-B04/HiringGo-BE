@@ -35,6 +35,9 @@ out/
 
 ### VS Code ###
 .vscode/
+<<<<<<< HEAD
 *.env
 *.pem
 
+=======
+>>>>>>> matakuliah/main

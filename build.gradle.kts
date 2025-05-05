@@ -48,6 +48,21 @@ dependencies {
     testImplementation("io.github.bonigarcia:selenium-jupiter:$seleniumJupiterVersion")
     testImplementation("io.github.bonigarcia:webdrivermanager:$webdrivermanagerVersion")
     testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
+    // VALIDATION  ➜ jakarta.validation.Valid  (@NotBlank, @Min, dst.)
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+
+    // SECURITY    ➜ PreAuthorize, EnableMethodSecurity, dll.
+    implementation("org.springframework.boot:spring-boot-starter-security")
+
+    testImplementation("org.springframework.security:spring-security-test")
+
+    // MapStruct runtime (dipanggil saat konversi DTO ↔ entity)
+    implementation("org.mapstruct:mapstruct:1.5.5.Final")
+
+    // Annotation‑processor: Gradle akan men‑generate class mapper
+    annotationProcessor("org.mapstruct:mapstruct-processor:1.5.5.Final")
+    testAnnotationProcessor("org.mapstruct:mapstruct-processor:1.5.5.Final")
+    implementation("org.springframework.data:spring-data-commons")
 }
 
 tasks.register<Test>("unitTest") {
@@ -82,4 +97,8 @@ tasks.test {
 
 tasks.jacocoTestReport {
     dependsOn(tasks.test)
+}
+
+tasks.withType<Test> {
+    useJUnitPlatform()
 }
