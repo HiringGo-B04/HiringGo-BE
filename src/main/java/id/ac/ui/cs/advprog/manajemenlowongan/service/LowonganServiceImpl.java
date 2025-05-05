@@ -70,6 +70,9 @@ public class LowonganServiceImpl implements LowonganService {
 
     @Override
     public Lowongan addLowongan(Lowongan lowongan) {
+        if (lowongan.getYear() < 2025) {
+            throw new IllegalArgumentException("Tahun ajaran harus lebih dari atau sama dengan 2025");
+        }
         validateLowongan(lowongan);
         return lowonganRepository.addLowongan(lowongan);
     }
@@ -96,14 +99,21 @@ public class LowonganServiceImpl implements LowonganService {
 
     @Override
     public boolean isLowonganExists(Lowongan lowongan) {
-        List<Lowongan> allLowongan = lowonganRepository.getLowongan();
-        // Memeriksa apakah ada lowongan dengan kombinasi mata kuliah, semester, dan tahun ajaran yang sama
-        // Kecuali untuk lowongan yang sedang diupdate (jika ID-nya sama)
-        return allLowongan.stream()
-                .anyMatch(l -> !l.getId().equals(lowongan.getId()) && // Abaikan lowongan yang sedang diupdate
-                        l.getMatkul().equals(lowongan.getMatkul()) &&
-                        l.getYear() == lowongan.getYear() &&
-                        l.getTerm().equals(lowongan.getTerm()));
+        List<Lowongan> existingLowongans = lowonganRepository.getLowongan();
+
+        for (Lowongan existing : existingLowongans) {
+            if (isSameLowongan(existing, lowongan)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean isSameLowongan(Lowongan a, Lowongan b) {
+        return a.getMatkul().equals(b.getMatkul()) &&
+                a.getYear() == b.getYear() &&
+                a.getTerm().equals(b.getTerm());
     }
 
     @Override
