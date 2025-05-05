@@ -6,7 +6,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication(
         scanBasePackages = {
                 "id.ac.ui.cs.advprog.mendaftarlowongan",
-                "id.ac.ui.cs.advprog.log"
+                "id.ac.ui.cs.advprog.log",
+                "id.ac.ui.cs.advprog.manajemenlowongan",
+                "id.ac.ui.cs.advprog.mendaftarlowongan"
         }
 )
 
