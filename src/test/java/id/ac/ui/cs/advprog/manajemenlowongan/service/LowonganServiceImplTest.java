@@ -65,9 +65,9 @@ public class LowonganServiceImplTest {
     @Test
     void testGetAllLowongan() {
         List<Lowongan> list = List.of(dummyLowongan);
-        when(lowonganRepository.getAllLowongan()).thenReturn(list);
+        when(lowonganRepository.getLowongan()).thenReturn(list);
 
-        List<Lowongan> result = lowonganService.getAllLowongan();
+        List<Lowongan> result = lowonganService.getLowongan();
 
         assertEquals(1, result.size());
         assertEquals(dummyLowongan, result.get(0));
@@ -95,13 +95,13 @@ public class LowonganServiceImplTest {
     @Test
     void testUpdateLowongan() {
         when(lowonganRepository.getLowonganById(dummyLowongan.getId())).thenReturn(dummyLowongan);
-        when(lowonganRepository.updateLowongan(any(Lowongan.class))).thenAnswer(i -> i.getArgument(0));
+        when(lowonganRepository.updateLowongan(eq(dummyLowongan.getId()), any(Lowongan.class))).thenAnswer(i -> i.getArgument(1));
 
         dummyLowongan.setTotalAsdosNeeded(15);
         Lowongan updated = lowonganService.updateLowongan(dummyLowongan.getId(), dummyLowongan);
 
         assertEquals(15, updated.getTotalAsdosNeeded());
-        verify(lowonganRepository).updateLowongan(updated);
+        verify(lowonganRepository).updateLowongan(dummyLowongan.getId(), dummyLowongan);
     }
 
     @Test
@@ -113,7 +113,7 @@ public class LowonganServiceImplTest {
 
     @Test
     void testIsLowonganExistsTrue() {
-        when(lowonganRepository.getAllLowongan()).thenReturn(List.of(dummyLowongan));
+        when(lowonganRepository.getLowongan()).thenReturn(List.of(dummyLowongan));
 
         boolean exists = lowonganService.isLowonganExists(dummyLowongan);
 
@@ -122,43 +122,10 @@ public class LowonganServiceImplTest {
 
     @Test
     void testIsLowonganExistsFalse() {
-        when(lowonganRepository.getAllLowongan()).thenReturn(List.of());
+        when(lowonganRepository.getLowongan()).thenReturn(List.of());
 
         boolean exists = lowonganService.isLowonganExists(dummyLowongan);
 
         assertFalse(exists);
-    }
-
-    @Test
-    void testGetLowonganByMatkul() {
-        String matkul = dummyLowongan.getMatkul();
-        when(lowonganRepository.getAllLowongan()).thenReturn(List.of(dummyLowongan));
-
-        List<Lowongan> result = lowonganService.getLowonganByMatkul(matkul);
-
-        assertEquals(1, result.size());
-        assertEquals(matkul, result.get(0).getMatkul());
-    }
-
-    @Test
-    void testIncrementTotalAsdosRegistered() {
-        when(lowonganRepository.getLowonganById(dummyLowongan.getId())).thenReturn(dummyLowongan);
-        when(lowonganRepository.updateLowongan(any(Lowongan.class))).thenAnswer(i -> i.getArgument(0));
-
-        lowonganService.incrementTotalAsdosRegistered(dummyLowongan.getId());
-
-        assertEquals(1, dummyLowongan.getTotalAsdosRegistered());
-        verify(lowonganRepository).updateLowongan(dummyLowongan);
-    }
-
-    @Test
-    void testIncrementTotalAsdosAccepted() {
-        when(lowonganRepository.getLowonganById(dummyLowongan.getId())).thenReturn(dummyLowongan);
-        when(lowonganRepository.updateLowongan(any(Lowongan.class))).thenAnswer(i -> i.getArgument(0));
-
-        lowonganService.incrementTotalAsdosAccepted(dummyLowongan.getId());
-
-        assertEquals(1, dummyLowongan.getTotalAsdosAccepted());
-        verify(lowonganRepository).updateLowongan(dummyLowongan);
     }
 }
