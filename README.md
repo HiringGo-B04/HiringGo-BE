@@ -1,6 +1,4 @@
-<<<<<<< HEAD
 Mendaftar Lowongan
-=======
 ##  Modul **Manajemen Mata Kuliah** – Penjelasan kalo misalnya gw sulit di kontak
 
 > Versi API : **v1**  
@@ -88,4 +86,3 @@ Semua dependensi MapStruct, Bean‑Validation, Spring‑Data di‑manage oleh **
 Silakan `@Autowire MataKuliahService` atau panggil endpoint di atas; tidak ada konfigurasi tambahan yang diperlukan dalam monolitik HiringGo‑BE.
 
 ---
->>>>>>> matakuliah/main
