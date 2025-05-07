@@ -44,7 +44,7 @@ public class LamaranServiceImpl implements LamaranService {
     @Override
     public Lamaran createLamaran(Lamaran lamaran) {
         if (!validateLamaran(lamaran)) {
-            throw new IllegalArgumentException("SKS/IPK tidak valid");
+            throw new IllegalArgumentException("SKS/IPK tidak valid atau Lowongan tidak ada");
         }
         return lamaranRepository.createLamaran(lamaran);
     }
