@@ -13,12 +13,21 @@ import java.util.UUID;
 @Entity
 @Table(name = "lamaran")
 public class Lamaran {
+
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
+
     private int sks;
     private float ipk;
+
+    @Enumerated(EnumType.STRING)
     private StatusLamaran status = StatusLamaran.MENUNGGU;
+
+    @Column(name = "id_mahasiswa", nullable = false)
     private UUID idMahasiswa;
+
+    @Column(name = "id_lowongan", nullable = false)
     private UUID idLowongan;
 
     private Lamaran(Builder builder) {

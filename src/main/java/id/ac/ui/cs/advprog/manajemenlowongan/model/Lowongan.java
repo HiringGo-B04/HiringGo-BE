@@ -2,17 +2,29 @@ package id.ac.ui.cs.advprog.manajemenlowongan.model;
 
 import java.util.UUID;
 
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter @Setter
+@Getter
+@Setter
+@Entity
+@Table(name = "lowongan")
 public class Lowongan {
+    @Id
     private UUID id;
+
     private String matkul;
     private int year;
     private String term;
+
+    @Column(name = "total_asdos_needed", nullable = false)
     private int totalAsdosNeeded;
+
+    @Column(name = "total_asdos_registered", nullable = false)
     private int totalAsdosRegistered;
+
+    @Column(name = "total_asdos_accepted", nullable = false)
     private int totalAsdosAccepted;
 
     private Lowongan(Builder builder) {
@@ -23,6 +35,10 @@ public class Lowongan {
         this.totalAsdosNeeded = builder.totalAsdosNeeded;
         this.totalAsdosRegistered = builder.totalAsdosRegistered;
         this.totalAsdosAccepted = builder.totalAsdosAccepted;
+    }
+
+    public Lowongan() {
+
     }
 
     public static class Builder {
