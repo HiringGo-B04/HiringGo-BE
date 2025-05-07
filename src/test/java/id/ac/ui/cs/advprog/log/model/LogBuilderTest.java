@@ -7,15 +7,21 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class LogBuilderTest {
 
     private Log log;
+    private UUID idLowongan;
+    private UUID idMahasiswa;
 
     @BeforeEach
     void setUp() {
+        idLowongan = UUID.randomUUID();
+        idMahasiswa = UUID.randomUUID();
+
         log = new LogBuilder()
                 .judul("Asistensi Minggu 1")
                 .keterangan("Membantu asistensi SDA")
@@ -25,6 +31,8 @@ public class LogBuilderTest {
                 .waktuSelesai(LocalTime.of(12, 0))
                 .pesanUntukDosen("Upload tugas selesai")
                 .status(StatusLog.MENUNGGU)
+                .idLowongan(idLowongan)
+                .idMahasiswa(idMahasiswa)
                 .build();
     }
 
@@ -37,6 +45,8 @@ public class LogBuilderTest {
         assertEquals(LocalTime.of(10, 0), log.getWaktuMulai());
         assertEquals(LocalTime.of(12, 0), log.getWaktuSelesai());
         assertEquals("Upload tugas selesai", log.getPesanUntukDosen());
+        assertEquals(idLowongan, log.getIdLowongan());
+        assertEquals(idMahasiswa, log.getIdMahasiswa());
     }
 
     @Test
@@ -50,6 +60,8 @@ public class LogBuilderTest {
                     .waktuMulai(LocalTime.of(9, 0))
                     .waktuSelesai(LocalTime.of(10, 0))
                     .status(StatusLog.MENUNGGU)
+                    .idLowongan(UUID.randomUUID())
+                    .idMahasiswa(UUID.randomUUID())
                     .build();
         });
         assertTrue(ex.getMessage().contains("Judul tidak boleh kosong"));
@@ -66,6 +78,8 @@ public class LogBuilderTest {
                     .waktuMulai(LocalTime.of(9, 0))
                     .waktuSelesai(LocalTime.of(11, 0))
                     .status(StatusLog.MENUNGGU)
+                    .idLowongan(UUID.randomUUID())
+                    .idMahasiswa(UUID.randomUUID())
                     .build();
         });
         assertTrue(ex.getMessage().contains("Tanggal log tidak boleh di masa depan"));
@@ -82,8 +96,44 @@ public class LogBuilderTest {
                     .waktuMulai(LocalTime.of(14, 0))
                     .waktuSelesai(LocalTime.of(13, 0))
                     .status(StatusLog.MENUNGGU)
+                    .idLowongan(UUID.randomUUID())
+                    .idMahasiswa(UUID.randomUUID())
                     .build();
         });
         assertTrue(ex.getMessage().contains("Waktu selesai harus setelah waktu mulai"));
+    }
+
+    @Test
+    void testBuildLog_MissingIdLowongan_ShouldThrowException() {
+        Exception ex = assertThrows(IllegalArgumentException.class, () -> {
+            new LogBuilder()
+                    .judul("Log Valid")
+                    .keterangan("Tetapi tanpa lowongan")
+                    .kategori(KategoriLog.ASISTENSI)
+                    .tanggalLog(LocalDate.now())
+                    .waktuMulai(LocalTime.of(9, 0))
+                    .waktuSelesai(LocalTime.of(11, 0))
+                    .status(StatusLog.MENUNGGU)
+                    .idMahasiswa(UUID.randomUUID())
+                    .build();
+        });
+        assertTrue(ex.getMessage().contains("ID Lowongan tidak boleh kosong"));
+    }
+
+    @Test
+    void testBuildLog_MissingIdMahasiswa_ShouldThrowException() {
+        Exception ex = assertThrows(IllegalArgumentException.class, () -> {
+            new LogBuilder()
+                    .judul("Log Valid")
+                    .keterangan("Tetapi tanpa mahasiswa")
+                    .kategori(KategoriLog.ASISTENSI)
+                    .tanggalLog(LocalDate.now())
+                    .waktuMulai(LocalTime.of(9, 0))
+                    .waktuSelesai(LocalTime.of(11, 0))
+                    .status(StatusLog.MENUNGGU)
+                    .idLowongan(UUID.randomUUID())
+                    .build();
+        });
+        assertTrue(ex.getMessage().contains("ID Mahasiswa tidak boleh kosong"));
     }
 }
