@@ -17,13 +17,11 @@ import java.util.stream.Collectors;
 @Profile("manual")
 public class LamaranServiceImpl implements LamaranService {
 
-    private final LamaranRepository lamaranRepository;
-    private LowonganRepository lowonganClient = LowonganRepository.getInstance();
+    @Autowired
+    private LamaranRepository lamaranRepository;
 
     @Autowired
-    public LamaranServiceImpl(LamaranRepository lamaranRepository) {
-        this.lamaranRepository = lamaranRepository;
-    }
+    private LowonganRepository lowonganClient;
 
     // Constructor for testing purposes
     public LamaranServiceImpl(LamaranRepository lamaranRepository, LowonganRepository lowonganRepository) {

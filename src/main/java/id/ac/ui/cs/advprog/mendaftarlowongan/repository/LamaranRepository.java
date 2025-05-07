@@ -9,21 +9,8 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-@Profile("manual")
 public class LamaranRepository {
-    private static LamaranRepository instance;
-    private List<Lamaran> daftarLamaran;
-
-    private LamaranRepository() {
-        this.daftarLamaran = new ArrayList<>();
-    }
-
-    public static LamaranRepository getInstance() {
-        if (instance == null) {
-            instance = new LamaranRepository();
-        }
-        return instance;
-    }
+    private List<Lamaran> daftarLamaran = new ArrayList<>();
 
     public List<Lamaran> getLamaran() {
         return daftarLamaran;
