@@ -18,7 +18,7 @@ class LogRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        repository = LogRepository.getInstance();
+        repository = new LogRepository();
         repository.clearAll(); // reset data
     }
 

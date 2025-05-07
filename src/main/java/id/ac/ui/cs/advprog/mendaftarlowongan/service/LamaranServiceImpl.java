@@ -1,8 +1,11 @@
 package id.ac.ui.cs.advprog.mendaftarlowongan.service;
 
+import id.ac.ui.cs.advprog.manajemenlowongan.model.Lowongan;
+import id.ac.ui.cs.advprog.manajemenlowongan.repository.LowonganRepository;
 import id.ac.ui.cs.advprog.mendaftarlowongan.enums.StatusLamaran;
 import id.ac.ui.cs.advprog.mendaftarlowongan.model.Lamaran;
 import id.ac.ui.cs.advprog.mendaftarlowongan.repository.LamaranRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -11,13 +14,18 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
-@Profile("manual")
 public class LamaranServiceImpl implements LamaranService {
 
-    private final LamaranRepository lamaranRepository;
+    @Autowired
+    private LamaranRepository lamaranRepository;
 
-    public LamaranServiceImpl(LamaranRepository lamaranRepository) {
+    @Autowired
+    private LowonganRepository lowonganClient;
+
+    // Constructor for testing purposes
+    public LamaranServiceImpl(LamaranRepository lamaranRepository, LowonganRepository lowonganRepository) {
         this.lamaranRepository = lamaranRepository;
+        this.lowonganClient = lowonganRepository;
     }
 
     @Override
@@ -33,7 +41,7 @@ public class LamaranServiceImpl implements LamaranService {
     @Override
     public Lamaran createLamaran(Lamaran lamaran) {
         if (!validateLamaran(lamaran)) {
-            throw new IllegalArgumentException("SKS/IPK tidak valid");
+            throw new IllegalArgumentException("SKS/IPK tidak valid atau Lowongan tidak ada");
         }
         return lamaranRepository.createLamaran(lamaran);
     }
@@ -63,7 +71,14 @@ public class LamaranServiceImpl implements LamaranService {
 
     @Override
     public boolean validateLamaran(Lamaran lamaran) {
-        return lamaran.getIpk() >= 0 && lamaran.getIpk() <= 4 && lamaran.getSks() >= 0;
+
+        boolean ipkValid = lamaran.getIpk() >= 0 && lamaran.getIpk() <= 4;
+        boolean sksValid = lamaran.getSks() >= 0 && lamaran.getSks() <= 24;
+
+        Lowongan lowongan = lowonganClient.getLowonganById(lamaran.getIdLowongan());
+        boolean lowonganExists = lowongan != null;
+
+        return ipkValid && sksValid && lowonganExists;
     }
 
     @Override

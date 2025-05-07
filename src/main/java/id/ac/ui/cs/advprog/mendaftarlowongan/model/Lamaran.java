@@ -3,18 +3,31 @@
 package id.ac.ui.cs.advprog.mendaftarlowongan.model;
 
 import id.ac.ui.cs.advprog.mendaftarlowongan.enums.StatusLamaran;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.UUID;
 
 @Getter @Setter
+@Entity
+@Table(name = "lamaran")
 public class Lamaran {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
+
     private int sks;
     private float ipk;
+
+    @Enumerated(EnumType.STRING)
     private StatusLamaran status = StatusLamaran.MENUNGGU;
+
+    @Column(name = "id_mahasiswa", nullable = false)
     private UUID idMahasiswa;
+
+    @Column(name = "id_lowongan", nullable = false)
     private UUID idLowongan;
 
     private Lamaran(Builder builder) {
@@ -25,6 +38,8 @@ public class Lamaran {
         this.idMahasiswa = builder.idMahasiswa;
         this.idLowongan = builder.idLowongan;
     }
+
+    public Lamaran() {}
 
     public static class Builder {
         private int sks;

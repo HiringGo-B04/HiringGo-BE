@@ -7,22 +7,9 @@ import org.springframework.stereotype.Repository;
 import java.util.*;
 
 @Repository
-@Profile("manual")
 public class LogRepository {
 
-    private static LogRepository instance;
-    private final List<Log> daftarLog;
-
-    private LogRepository() {
-        this.daftarLog = new ArrayList<>();
-    }
-
-    public static LogRepository getInstance() {
-        if (instance == null) {
-            instance = new LogRepository();
-        }
-        return instance;
-    }
+    private final List<Log> daftarLog  = new ArrayList<>();
 
     public List<Log> findAll() {
         return new ArrayList<>(daftarLog);

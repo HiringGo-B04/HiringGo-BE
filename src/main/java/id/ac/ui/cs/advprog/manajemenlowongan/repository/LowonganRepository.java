@@ -10,21 +10,8 @@ import java.util.Iterator;
 import java.util.UUID;
 
 @Repository
-@Profile("manual")
 public class LowonganRepository {
-    private static LowonganRepository instance;
-    private List<Lowongan> daftarLowongan;
-
-    private LowonganRepository() {
-        this.daftarLowongan = new ArrayList<>();
-    }
-
-    public static LowonganRepository getInstance() {
-        if (instance == null) {
-            instance = new LowonganRepository();
-        }
-        return instance;
-    }
+    private List<Lowongan> daftarLowongan = new ArrayList<>();;
 
     public List<Lowongan> getLowongan() {
         return daftarLowongan;

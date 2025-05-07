@@ -1,5 +1,7 @@
 package id.ac.ui.cs.advprog.mendaftarlowongan.service;
 
+import id.ac.ui.cs.advprog.manajemenlowongan.model.Lowongan;
+import id.ac.ui.cs.advprog.manajemenlowongan.repository.LowonganRepository;
 import id.ac.ui.cs.advprog.mendaftarlowongan.enums.StatusLamaran;
 import id.ac.ui.cs.advprog.mendaftarlowongan.model.Lamaran;
 import id.ac.ui.cs.advprog.mendaftarlowongan.repository.LamaranRepository;
@@ -16,13 +18,15 @@ public class LamaranServiceImplTest {
 
     private LamaranRepository lamaranRepository;
     private LamaranServiceImpl lamaranService;
+    private LowonganRepository lowonganRepository;
 
     private Lamaran dummyLamaran;
 
     @BeforeEach
     void setUp() {
         lamaranRepository = mock(LamaranRepository.class);
-        lamaranService = new LamaranServiceImpl(lamaranRepository);
+        lowonganRepository = mock(LowonganRepository.class);
+        lamaranService = new LamaranServiceImpl(lamaranRepository, lowonganRepository);
 
         dummyLamaran = new Lamaran.Builder()
                 .sks(20)
@@ -35,6 +39,9 @@ public class LamaranServiceImplTest {
 
     @Test
     void testCreateLamaranSuccess() {
+        when(lowonganRepository.getLowonganById(dummyLamaran.getIdLowongan()))
+                .thenReturn(mock(Lowongan.class));
+
         when(lamaranRepository.createLamaran(any(Lamaran.class))).thenReturn(dummyLamaran);
 
         Lamaran created = lamaranService.createLamaran(dummyLamaran);

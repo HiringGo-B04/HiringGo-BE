@@ -14,7 +14,7 @@ class LamaranRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        repository = LamaranRepository.getInstance();
+        repository = new LamaranRepository();
         repository.getLamaran().clear();
     }
 

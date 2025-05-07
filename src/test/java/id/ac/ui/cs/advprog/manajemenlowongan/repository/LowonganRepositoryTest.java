@@ -13,7 +13,7 @@ public class LowonganRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        repository = LowonganRepository.getInstance();
+        repository = new LowonganRepository();
         repository.getLowongan().clear();
     }
 

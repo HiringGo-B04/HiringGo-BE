@@ -2,6 +2,7 @@ package id.ac.ui.cs.advprog.log.service;
 
 import id.ac.ui.cs.advprog.log.model.Log;
 import id.ac.ui.cs.advprog.log.repository.LogRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +13,8 @@ import java.util.UUID;
 @Profile("manual")
 public class LogServiceImpl implements LogService {
 
-    private final LogRepository logRepository = LogRepository.getInstance();
+    @Autowired
+    private LogRepository logRepository;
 
     @Override
     public Log create(Log log) {

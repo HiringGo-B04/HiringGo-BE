@@ -2,6 +2,7 @@ package id.ac.ui.cs.advprog.manajemenlowongan.service;
 
 import id.ac.ui.cs.advprog.manajemenlowongan.model.Lowongan;
 import id.ac.ui.cs.advprog.manajemenlowongan.repository.LowonganRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -12,8 +13,9 @@ import java.util.stream.Collectors;
 @Service
 @Profile("manual")
 public class LowonganServiceImpl implements LowonganService {
-    
-    private final LowonganRepository lowonganRepository;
+
+    @Autowired
+    private LowonganRepository lowonganRepository;
 
     public boolean validateLowongan(Lowongan lowongan) {
         // Validasi data lowongan dasar
