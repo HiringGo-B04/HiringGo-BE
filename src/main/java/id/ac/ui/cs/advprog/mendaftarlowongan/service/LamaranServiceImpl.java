@@ -14,7 +14,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
-@Profile("manual")
 public class LamaranServiceImpl implements LamaranService {
 
     @Autowired
