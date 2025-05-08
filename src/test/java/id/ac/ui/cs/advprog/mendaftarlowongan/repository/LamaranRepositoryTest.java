@@ -2,70 +2,72 @@ package id.ac.ui.cs.advprog.mendaftarlowongan.repository;
 
 import id.ac.ui.cs.advprog.mendaftarlowongan.enums.StatusLamaran;
 import id.ac.ui.cs.advprog.mendaftarlowongan.model.Lamaran;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
-import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@DataJpaTest
 class LamaranRepositoryTest {
+
+    @Autowired
     private LamaranRepository repository;
 
-    @BeforeEach
-    void setUp() {
-        repository = new LamaranRepository();
-        repository.getLamaran().clear();
+    @Test
+    void testCreateAndFindAll() {
+        Lamaran lamaran = new Lamaran.Builder()
+                .lowongan(UUID.randomUUID())
+                .mahasiswa(UUID.randomUUID())
+                .ipk(3.5f)
+                .sks(120)
+                .status(StatusLamaran.MENUNGGU)
+                .build();
+
+        repository.save(lamaran);
+
+        assertEquals(1, repository.findAll().size());
+        assertTrue(repository.findAll().contains(lamaran));
     }
 
-    @Test
-    void testGetLamaran() {
-        Lamaran lamaran = new Lamaran.Builder().build();
-        repository.createLamaran(lamaran);
-
-        List<Lamaran> lamarans = repository.getLamaran();
-        assertEquals(1, lamarans.size());
-        assertTrue(lamarans.contains(lamaran));
-    }
 
     @Test
-    void testGetLamaranById() {
+    void testFindById() {
         Lamaran lamaran = new Lamaran.Builder().build();
-        repository.createLamaran(lamaran);
+        repository.save(lamaran);
 
-        Lamaran fetchedLamaran = repository.getLamaranById(lamaran.getId());
-        assertNotNull(fetchedLamaran);
-        assertEquals(lamaran.getId(), fetchedLamaran.getId());
-    }
-
-    @Test
-    void testAddLamaran() {
-        Lamaran lamaran = new Lamaran.Builder().build();
-        Lamaran addedLamaran = repository.createLamaran(lamaran);
-
-        assertNotNull(addedLamaran);
-        assertEquals(lamaran, addedLamaran);
+        Optional<Lamaran> found = repository.findById(lamaran.getId());
+        assertTrue(found.isPresent());
+        assertEquals(lamaran.getId(), found.get().getId());
     }
 
     @Test
     void testUpdateLamaran() {
         Lamaran lamaran = new Lamaran.Builder().build();
-        repository.createLamaran(lamaran);
+        repository.save(lamaran);
 
-        Lamaran updatedLamaran = new Lamaran.Builder().sks(150).ipk(3.8f).status(StatusLamaran.DITERIMA).build();
+        lamaran.setIpk(3.8f);
+        lamaran.setSks(150);
+        lamaran.setStatus(StatusLamaran.DITERIMA);
+        repository.save(lamaran);  // update
 
-        Lamaran result = repository.updateLamaran(lamaran.getId(), updatedLamaran);
-        assertNotNull(result);
-        assertEquals(150, result.getSks());
-        assertEquals(3.8f, result.getIpk());
-        assertEquals(StatusLamaran.DITERIMA, result.getStatus());
+        Lamaran updated = repository.findById(lamaran.getId()).orElse(null);
+        assertNotNull(updated);
+        assertEquals(150, updated.getSks());
+        assertEquals(3.8f, updated.getIpk());
+        assertEquals(StatusLamaran.DITERIMA, updated.getStatus());
     }
 
     @Test
     void testDeleteLamaran() {
         Lamaran lamaran = new Lamaran.Builder().build();
-        repository.createLamaran(lamaran);
-        repository.deleteLamaran(lamaran.getId());
-        assertNull(repository.getLamaranById(lamaran.getId()));
+        repository.save(lamaran);
+
+        repository.deleteById(lamaran.getId());
+
+        assertFalse(repository.findById(lamaran.getId()).isPresent());
     }
 }
