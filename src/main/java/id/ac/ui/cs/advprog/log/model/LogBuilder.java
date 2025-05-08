@@ -37,6 +37,9 @@ public class LogBuilder {
     }
 
     public LogBuilder keterangan(String keterangan) {
+        if (keterangan == null || keterangan.trim().isEmpty()) {
+            throw new IllegalArgumentException("Keterangan tidak boleh kosong");
+        }
         this.keterangan = keterangan;
         return this;
     }
@@ -103,6 +106,9 @@ public class LogBuilder {
     }
 
     public LogBuilder idDosen(UUID idDosen) {
+        if (idDosen == null) {
+            throw new IllegalArgumentException("ID Dosen tidak boleh kosong");
+        }
         this.idDosen = idDosen;
         return this;
     }
@@ -115,6 +121,10 @@ public class LogBuilder {
     private void validateBeforeBuild() {
         if (this.judul == null || this.judul.trim().isEmpty()) {
             throw new IllegalArgumentException("Judul tidak boleh kosong");
+        }
+
+        if (this.keterangan == null || this.keterangan.trim().isEmpty()) {
+            throw new IllegalArgumentException("Keterangan tidak boleh kosong");
         }
 
         if (this.kategori == null) {
@@ -143,6 +153,10 @@ public class LogBuilder {
 
         if (this.idMahasiswa == null) {
             throw new IllegalArgumentException("ID Mahasiswa tidak boleh kosong");
+        }
+
+        if (this.idDosen == null) {
+            throw new IllegalArgumentException("ID Dosen tidak boleh kosong");
         }
     }
 }
