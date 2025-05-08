@@ -22,6 +22,7 @@ public class Log {
     @Column(nullable = false)
     private String judul;
 
+    @Column(nullable = false)
     private String keterangan;
 
     @Enumerated(EnumType.STRING)
@@ -50,14 +51,12 @@ public class Log {
     @Column(name = "id_mahasiswa", nullable = false)
     private UUID idMahasiswa;
 
-    @Column(name = "id_dosen")
+    @Column(name = "id_dosen", nullable = false)
     private UUID idDosen;
 
-    // No-args constructor required by JPA
     public Log() {
     }
 
-    // Constructor with builder
     Log(LogBuilder builder) {
         if (builder.getId() == null) {
             this.id = UUID.randomUUID();
