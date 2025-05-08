@@ -77,4 +77,17 @@ public class Lamaran {
             return new Lamaran(this);
         }
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Lamaran)) return false;
+        Lamaran lamaran = (Lamaran) o;
+        return id != null && id.equals(lamaran.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return 31;
+    }
 }
