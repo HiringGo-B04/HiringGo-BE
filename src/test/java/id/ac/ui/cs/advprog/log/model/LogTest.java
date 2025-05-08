@@ -28,7 +28,7 @@ public class LogTest {
         log.setId(UUID.randomUUID());
         log.setJudul("Asistensi");
         log.setKeterangan("Membantu asistensi");
-        log.setKategori(KategoriLog.ASISTENSI);
+        log.setKategori(KategoriLog.LAIN_LAIN);
         log.setTanggalLog(LocalDate.now());
         log.setWaktuMulai(LocalTime.of(10, 0));
         log.setWaktuSelesai(LocalTime.of(12, 0));
@@ -43,6 +43,12 @@ public class LogTest {
     void testSetAndGetJudul() {
         log.setJudul("Asistensi Baru");
         assertEquals("Asistensi Baru", log.getJudul());
+    }
+
+    @Test
+    void testSetAndGetKeterangan() {
+        log.setKeterangan("Keterangan Baru");
+        assertEquals("Keterangan Baru", log.getKeterangan());
     }
 
     @Test
@@ -76,5 +82,38 @@ public class LogTest {
         UUID newId = UUID.randomUUID();
         log.setIdDosen(newId);
         assertEquals(newId, log.getIdDosen());
+    }
+
+    @Test
+    void testConstructorAndGetters() {
+        UUID id = UUID.randomUUID();
+
+        Log logFromBuilder = new LogBuilder()
+                .id(id)
+                .judul("Test Log")
+                .keterangan("Keterangan Test")
+                .kategori(KategoriLog.ASISTENSI)
+                .tanggalLog(LocalDate.of(2025, 3, 15))
+                .waktuMulai(LocalTime.of(8, 0))
+                .waktuSelesai(LocalTime.of(10, 0))
+                .pesanUntukDosen("Test Pesan")
+                .status(StatusLog.MENUNGGU)
+                .idLowongan(idLowongan)
+                .idMahasiswa(idMahasiswa)
+                .idDosen(idDosen)
+                .build();
+
+        assertEquals(id, logFromBuilder.getId());
+        assertEquals("Test Log", logFromBuilder.getJudul());
+        assertEquals("Keterangan Test", logFromBuilder.getKeterangan());
+        assertEquals(KategoriLog.ASISTENSI, logFromBuilder.getKategori());
+        assertEquals(LocalDate.of(2025, 3, 15), logFromBuilder.getTanggalLog());
+        assertEquals(LocalTime.of(8, 0), logFromBuilder.getWaktuMulai());
+        assertEquals(LocalTime.of(10, 0), logFromBuilder.getWaktuSelesai());
+        assertEquals("Test Pesan", logFromBuilder.getPesanUntukDosen());
+        assertEquals(StatusLog.MENUNGGU, logFromBuilder.getStatus());
+        assertEquals(idLowongan, logFromBuilder.getIdLowongan());
+        assertEquals(idMahasiswa, logFromBuilder.getIdMahasiswa());
+        assertEquals(idDosen, logFromBuilder.getIdDosen());
     }
 }
