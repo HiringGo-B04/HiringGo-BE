@@ -30,12 +30,12 @@ public class LamaranServiceImpl implements LamaranService {
 
     @Override
     public List<Lamaran> getLamaran() {
-        return lamaranRepository.getLamaran();
+        return lamaranRepository.findAll();
     }
 
     @Override
     public Lamaran getLamaranById(UUID id) {
-        return lamaranRepository.getLamaranById(id);
+        return lamaranRepository.findById(id).orElse(null);
     }
 
     @Override
@@ -43,7 +43,7 @@ public class LamaranServiceImpl implements LamaranService {
         if (!validateLamaran(lamaran)) {
             throw new IllegalArgumentException("SKS/IPK tidak valid atau Lowongan tidak ada");
         }
-        return lamaranRepository.createLamaran(lamaran);
+        return lamaranRepository.save(lamaran);
     }
 
     @Override
@@ -54,17 +54,20 @@ public class LamaranServiceImpl implements LamaranService {
         existing.setIpk(lamaran.getIpk());
         existing.setSks(lamaran.getSks());
         existing.setStatus(lamaran.getStatus());
-        return lamaranRepository.createLamaran(existing);
+        existing.setIdMahasiswa(lamaran.getIdMahasiswa());
+        existing.setIdLowongan(lamaran.getIdLowongan());
+
+        return lamaranRepository.save(existing);
     }
 
     @Override
     public void deleteLamaran(UUID id) {
-        lamaranRepository.deleteLamaran(id);
+        lamaranRepository.deleteById(id);
     }
 
     @Override
     public boolean isLamaranExists(Lamaran lamaran) {
-        return lamaranRepository.getLamaran().stream()
+        return lamaranRepository.findAll().stream()
                 .anyMatch(l -> l.getIdMahasiswa().equals(lamaran.getIdMahasiswa())
                         && l.getIdLowongan().equals(lamaran.getIdLowongan()));
     }
@@ -83,7 +86,7 @@ public class LamaranServiceImpl implements LamaranService {
 
     @Override
     public List<Lamaran> getLamaranByLowonganId(UUID idLowongan) {
-        return lamaranRepository.getLamaran().stream()
+        return lamaranRepository.findAll().stream()
                 .filter(l -> l.getIdLowongan().equals(idLowongan))
                 .collect(Collectors.toList());
     }
@@ -93,7 +96,7 @@ public class LamaranServiceImpl implements LamaranService {
         Lamaran lamaran = getLamaranById(id);
         if (lamaran != null) {
             lamaran.setStatus(StatusLamaran.DITERIMA);
-            lamaranRepository.createLamaran(lamaran);
+            lamaranRepository.save(lamaran);
         }
     }
 
@@ -102,7 +105,7 @@ public class LamaranServiceImpl implements LamaranService {
         Lamaran lamaran = getLamaranById(id);
         if (lamaran != null) {
             lamaran.setStatus(StatusLamaran.DITOLAK);
-            lamaranRepository.createLamaran(lamaran);
+            lamaranRepository.save(lamaran);
         }
     }
 }
