@@ -49,7 +49,7 @@ public class StudentRegistrationCommandTest {
         assertEquals("accept", response.status());
         assertEquals("Success register", response.messages());
         assertEquals(validStudentDTO.username(), response.username());
-        assertEquals("LECTURER", response.role());
+        assertEquals("STUDENT", response.role());
 
         verify(userRepository).existsByNim(validStudentDTO.nim());
         verify(userRepository).existsByUsername(validStudentDTO.username());
