@@ -1,13 +1,17 @@
 package id.ac.ui.cs.advprog.course.service;
 
+import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
 import id.ac.ui.cs.advprog.course.dto.MataKuliahDto;
 import id.ac.ui.cs.advprog.course.dto.MataKuliahPatch;
 import id.ac.ui.cs.advprog.course.mapper.MataKuliahMapper;
-import id.ac.ui.cs.advprog.course.mapper.MataKuliahMapperImpl;
+import id.ac.ui.cs.advprog.course.mapper.MataKuliahMapper;
+import org.mapstruct.factory.Mappers;
 import id.ac.ui.cs.advprog.course.repository.InMemoryMataKuliahRepository;
 import id.ac.ui.cs.advprog.course.repository.MataKuliahRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mapstruct.factory.Mappers;
+import org.mockito.Mockito;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
@@ -22,15 +26,17 @@ class MataKuliahServiceImplTest {
     @BeforeEach
     void setUp() {
         MataKuliahRepository repo  = new InMemoryMataKuliahRepository();
-        MataKuliahMapper     map   = new MataKuliahMapperImpl(); // MapStruct impl
-        service = new MataKuliahServiceImpl(repo, map);
+        MataKuliahMapper     mapper = Mappers.getMapper(MataKuliahMapper.class);
+        UserRepository       userRepo = Mockito.mock(UserRepository.class);
+
+        service = new MataKuliahServiceImpl(repo, mapper, userRepo);
     }
 
     /* ---------- CREATE SUCCESS ---------- */
     @Test
     void create_shouldStoreAndReturnDto() {
-        MataKuliahDto dto = new MataKuliahDto("IF1234", "Algoritma", 3,
-                "Desc", List.of());
+        MataKuliahDto dto = new MataKuliahDto(
+                "IF1234", "Algoritma", 3, "Desc", List.of());
 
         MataKuliahDto saved = service.create(dto);
 
@@ -44,8 +50,10 @@ class MataKuliahServiceImplTest {
         var dto = new MataKuliahDto("IF1234", "Algoritma", 3, null, List.of());
         service.create(dto);
 
-        RuntimeException ex = assertThrows(RuntimeException.class, () -> service.create(dto));
-        assertTrue(ex.getMessage().contains("Kode sudah ada"));
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> service.create(dto));
+
+        assertTrue(ex.getMessage().contains("Kode mata kuliah"));
     }
 
     /* ---------- PAGING FINDALL ---------- */
@@ -66,7 +74,7 @@ class MataKuliahServiceImplTest {
         service.create(new MataKuliahDto("IF1", "Old", 2, "Old", List.of()));
 
         MataKuliahDto updated = service.update("IF1",
-                new MataKuliahDto("XIGNORED", "New", 4, "NewDesc", List.of()));
+                new MataKuliahDto("IGNORED", "New", 4, "NewDesc", List.of()));
 
         assertEquals(4, updated.sks());
         assertEquals("New", updated.nama());
@@ -81,7 +89,7 @@ class MataKuliahServiceImplTest {
         MataKuliahDto after   = service.partialUpdate("IF1", patch);
 
         assertEquals(5, after.sks());
-        assertEquals("Old", after.deskripsi());          // field null = tak berubah
+        assertEquals("Old", after.deskripsi());          // field null → tidak berubah
     }
 
     /* ---------- DELETE ---------- */
