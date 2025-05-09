@@ -1,5 +1,7 @@
 package id.ac.ui.cs.advprog.account.service;
 
+import id.ac.ui.cs.advprog.account.dto.delete.DeleteRequestDTO;
+import id.ac.ui.cs.advprog.account.dto.delete.DeleteResponseDTO;
 import id.ac.ui.cs.advprog.authjwt.model.User;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
 
@@ -21,28 +23,23 @@ public class AccountService{
     }
 
     @Transactional
-    public ResponseEntity<Map<String, String>> delete(String email){
-        Map<String, String> response = new HashMap<>();
+    public ResponseEntity<DeleteResponseDTO> delete(DeleteRequestDTO email){
         try {
-            if(email == null || email.isEmpty()) {
-                throw new IllegalArgumentException("Email is empty");
-            }
-
-            User user = userRepository.findByUsername(email);
+            User user = userRepository.findByUsername(email.email());
             if(user == null) {
                 throw new IllegalArgumentException("User not found");
             }
 
             userRepository.deleteByUsername(user.getUsername());
 
-            response.put("status", "error");
-            response.put("messages", "Succes delete user");
-            return new ResponseEntity<>(response, HttpStatus.valueOf(200));
+            return new ResponseEntity<>(
+                    new DeleteResponseDTO("error", "Succes delete user"),
+                    HttpStatus.valueOf(200));
         }
         catch (Exception e) {
-            response.put("status", "error");
-            response.put("messages", e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.valueOf(403));
+            return new ResponseEntity<>(
+                    new DeleteResponseDTO("error", e.getMessage()),
+                    HttpStatus.valueOf(403));
         }
     }
 }
