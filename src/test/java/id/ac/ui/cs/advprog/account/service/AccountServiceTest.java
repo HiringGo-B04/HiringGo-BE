@@ -60,7 +60,7 @@ public class AccountServiceTest {
         ResponseEntity<DeleteResponseDTO> response = accountService.delete(request);
 
         // Then
-        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals("error", response.getBody().status());
         assertEquals("User not found", response.getBody().message());
@@ -80,7 +80,7 @@ public class AccountServiceTest {
         ResponseEntity<DeleteResponseDTO> response = accountService.delete(request);
 
         // Then
-        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals("error", response.getBody().status());
         assertEquals("Unexpected failure", response.getBody().message());
