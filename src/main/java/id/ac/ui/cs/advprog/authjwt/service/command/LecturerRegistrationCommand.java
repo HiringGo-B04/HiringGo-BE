@@ -1,5 +1,7 @@
 package id.ac.ui.cs.advprog.authjwt.service.command;
 
+import id.ac.ui.cs.advprog.authjwt.dto.registration.LecturerRegistrationDTO;
+import id.ac.ui.cs.advprog.authjwt.dto.registration.RegisterResponseDTO;
 import id.ac.ui.cs.advprog.authjwt.model.User;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
 import org.springframework.http.HttpStatus;
@@ -7,70 +9,56 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 public class LecturerRegistrationCommand extends RegistrationCommand {
-    public LecturerRegistrationCommand(UserRepository userRepository, PasswordEncoder passwordEncoder, User user) {
+    public LecturerRegistrationCommand(UserRepository userRepository, PasswordEncoder passwordEncoder, LecturerRegistrationDTO user) {
         super(userRepository,passwordEncoder,user);
     }
 
     @Override
     @Transactional
-    public ResponseEntity<Map<String, String>> addUser() {
-        Map<String, String> response = new HashMap<>();
+    public ResponseEntity<RegisterResponseDTO> addUser() {
+        LecturerRegistrationDTO lecturer = (LecturerRegistrationDTO) user;
+
         Map<String, String> validity = check_invalid_input("lecturer");
-
-        if(user.getPassword() == null
-                || user.getUsername() == null
-                || user.getFullName() == null
-                || user.getNip() == null
-                || user.getPassword().isEmpty()
-                || user.getUsername().isEmpty()
-                || user.getFullName().isEmpty()
-                || user.getNip().isEmpty()
-        ) {
-            response.put("status", "error");
-            response.put("message", "Invalid payload");
-            return new ResponseEntity<>(response, HttpStatus.valueOf(403));
-        }
-
         if(!"valid".equals(validity.get("message"))) {
-            response.put("status", "error");
-            response.put("message", validity.get("message"));
-            return new ResponseEntity<>(response, HttpStatus.valueOf(Integer.parseInt(validity.get("code"))));
+            return new ResponseEntity<>(
+                    new RegisterResponseDTO("error", validity.get("message")),
+                    HttpStatus.valueOf(400));
         }
 
-        if(userRepository.existsByNip(user.getNip())) {
-            response.put("status", "error");
-            response.put("message", "Nip already exists");
-            return new ResponseEntity<>(response, HttpStatus.valueOf(404));
+        if(userRepository.existsByNip(lecturer.nip())) {
+            return new ResponseEntity<>(
+                    new RegisterResponseDTO("error", "NIP Already exists"),
+                    HttpStatus.valueOf(400));
         }
 
         try{
             User newUser = new User(
                     UUID.randomUUID(),
-                    user.getUsername(),
-                    passwordEncoder.encode(user.getPassword()),
-                    user.getFullName(),
+                    user.username(),
+                    passwordEncoder.encode(user.password()),
+                    ((LecturerRegistrationDTO) user).fullName(),
                     true,
-                    user.getNip()
+                    ((LecturerRegistrationDTO) user).nip()
             );
 
             userRepository.save(newUser);
 
-            response.put("status", "accept");
-            response.put("messages", "Success register");
-            response.put("username", newUser.getUsername());
-            response.put("role", "LECTURER");
-
-            return new ResponseEntity<>(response, HttpStatus.valueOf(200));
+            return new ResponseEntity<>(
+                    new RegisterResponseDTO(
+                            "accept",
+                            "Success register",
+                            newUser.getUsername(),
+                            "LECTURER"),
+                    HttpStatus.valueOf(200));
         }
         catch (Exception e) {
-            response.put("status", "error");
-            response.put("messages", e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.valueOf(401));
+            return new ResponseEntity<>(
+                    new RegisterResponseDTO("error", e.getMessage()),
+                    HttpStatus.valueOf(400));
         }
     }
 

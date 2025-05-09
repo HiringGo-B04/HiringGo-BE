@@ -1,22 +1,19 @@
 package id.ac.ui.cs.advprog.log.dto;
 
-import id.ac.ui.cs.advprog.log.enums.KategoriLog;
-import id.ac.ui.cs.advprog.log.enums.StatusLog;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.UUID;
 
-@Getter
-@Setter
-public class LogRequestDTO {
+@Data
+public class LogDTO {
     private String judul;
     private String keterangan;
-    private KategoriLog kategori;
+    private String kategori;
     private LocalDate tanggalLog;
     private LocalTime waktuMulai;
     private LocalTime waktuSelesai;
     private String pesanUntukDosen;
-    private StatusLog status;
+    private UUID idLowongan;
 }
