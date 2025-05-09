@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.authjwt.dto;
+package id.ac.ui.cs.advprog.authjwt.dto.registration;
 
 
 import jakarta.validation.constraints.NotBlank;

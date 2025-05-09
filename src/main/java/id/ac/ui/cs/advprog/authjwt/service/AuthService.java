@@ -1,7 +1,7 @@
 package id.ac.ui.cs.advprog.authjwt.service;
 
 import id.ac.ui.cs.advprog.authjwt.config.JwtUtil;
-import id.ac.ui.cs.advprog.authjwt.dto.*;
+import id.ac.ui.cs.advprog.authjwt.dto.registration.*;
 import id.ac.ui.cs.advprog.authjwt.facade.AuthenticationFacade;
 import id.ac.ui.cs.advprog.authjwt.model.Token;
 import id.ac.ui.cs.advprog.authjwt.model.User;

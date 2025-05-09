@@ -1,6 +1,9 @@
 package id.ac.ui.cs.advprog.authjwt.service.command;
 import id.ac.ui.cs.advprog.authjwt.config.GeneralUtils;
-import id.ac.ui.cs.advprog.authjwt.dto.*;
+import id.ac.ui.cs.advprog.authjwt.dto.registration.LecturerRegistrationDTO;
+import id.ac.ui.cs.advprog.authjwt.dto.registration.RegisterResponseDTO;
+import id.ac.ui.cs.advprog.authjwt.dto.registration.StudentRegistrationDTO;
+import id.ac.ui.cs.advprog.authjwt.dto.registration.UserDTO;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;

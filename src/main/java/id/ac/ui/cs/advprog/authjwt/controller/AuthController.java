@@ -1,8 +1,8 @@
 package id.ac.ui.cs.advprog.authjwt.controller;
-import id.ac.ui.cs.advprog.authjwt.dto.AdminRegistrationDTO;
-import id.ac.ui.cs.advprog.authjwt.dto.LecturerRegistrationDTO;
-import id.ac.ui.cs.advprog.authjwt.dto.RegisterResponseDTO;
-import id.ac.ui.cs.advprog.authjwt.dto.StudentRegistrationDTO;
+import id.ac.ui.cs.advprog.authjwt.dto.registration.AdminRegistrationDTO;
+import id.ac.ui.cs.advprog.authjwt.dto.registration.LecturerRegistrationDTO;
+import id.ac.ui.cs.advprog.authjwt.dto.registration.RegisterResponseDTO;
+import id.ac.ui.cs.advprog.authjwt.dto.registration.StudentRegistrationDTO;
 import id.ac.ui.cs.advprog.authjwt.facade.AuthenticationFacade;
 import id.ac.ui.cs.advprog.authjwt.model.Token;
 import id.ac.ui.cs.advprog.authjwt.model.User;
