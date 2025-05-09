@@ -1,6 +1,8 @@
 package id.ac.ui.cs.advprog.authjwt.controller;
 import id.ac.ui.cs.advprog.authjwt.dto.login.LoginRequestDTO;
 import id.ac.ui.cs.advprog.authjwt.dto.login.LoginResponseDTO;
+import id.ac.ui.cs.advprog.authjwt.dto.logout.LogoutRequestDTO;
+import id.ac.ui.cs.advprog.authjwt.dto.logout.LogoutResponseDTO;
 import id.ac.ui.cs.advprog.authjwt.dto.registration.AdminRegistrationDTO;
 import id.ac.ui.cs.advprog.authjwt.dto.registration.LecturerRegistrationDTO;
 import id.ac.ui.cs.advprog.authjwt.dto.registration.RegisterResponseDTO;
@@ -41,8 +43,8 @@ public class AuthController {
         return authFacade.register(user, "LECTURER");
     }
 
-//    @PostMapping("/user/logout")
-//    public ResponseEntity<Map<String, String>> logout(@RequestBody Token token) {
-//        return authFacade.logout(token);
-//    }
+    @PostMapping("/user/logout")
+    public ResponseEntity<LogoutResponseDTO> logout(@Valid @RequestBody LogoutRequestDTO token) {
+        return authFacade.logout(token);
+    }
 }
