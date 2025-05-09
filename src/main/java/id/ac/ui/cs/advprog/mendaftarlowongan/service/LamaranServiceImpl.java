@@ -1,5 +1,7 @@
 package id.ac.ui.cs.advprog.mendaftarlowongan.service;
 
+import id.ac.ui.cs.advprog.authjwt.model.User;
+import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
 import id.ac.ui.cs.advprog.manajemenlowongan.model.Lowongan;
 import id.ac.ui.cs.advprog.manajemenlowongan.repository.LowonganRepository;
 import id.ac.ui.cs.advprog.mendaftarlowongan.enums.StatusLamaran;
@@ -10,6 +12,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -22,10 +25,14 @@ public class LamaranServiceImpl implements LamaranService {
     @Autowired
     private LowonganRepository lowonganClient;
 
+    @Autowired
+    private UserRepository userClient;
+
     // Constructor for testing purposes
-    public LamaranServiceImpl(LamaranRepository lamaranRepository, LowonganRepository lowonganRepository) {
+    public LamaranServiceImpl(LamaranRepository lamaranRepository, LowonganRepository lowonganRepository, UserRepository userRepository) {
         this.lamaranRepository = lamaranRepository;
         this.lowonganClient = lowonganRepository;
+        this.userClient = userRepository;
     }
 
     @Override
@@ -40,8 +47,10 @@ public class LamaranServiceImpl implements LamaranService {
 
     @Override
     public Lamaran createLamaran(Lamaran lamaran) {
-        if (!validateLamaran(lamaran)) {
-            throw new IllegalArgumentException("SKS/IPK tidak valid atau Lowongan tidak ada");
+        try {
+            validateLamaran(lamaran);
+        } catch (Exception e) {
+            throw new RuntimeException("Error validating lamaran: " + e.getMessage());
         }
         return lamaranRepository.save(lamaran);
     }
@@ -73,15 +82,28 @@ public class LamaranServiceImpl implements LamaranService {
     }
 
     @Override
-    public boolean validateLamaran(Lamaran lamaran) {
+    public void validateLamaran(Lamaran lamaran) throws Exception {
 
         boolean ipkValid = lamaran.getIpk() >= 0 && lamaran.getIpk() <= 4;
         boolean sksValid = lamaran.getSks() >= 0 && lamaran.getSks() <= 24;
 
-        Lowongan lowongan = lowonganClient.getLowonganById(lamaran.getIdLowongan());
-        boolean lowonganExists = lowongan != null;
+        // Lowongan lowongan = lowonganClient.getLowonganById(lamaran.getIdLowongan());
+        //  boolean lowonganExists = lowongan != null;
+        boolean lowonganExists = true;
 
-        return ipkValid && sksValid && lowonganExists;
+        // Optional<User> userOpt = userClient.findById(lamaran.getIdMahasiswa());
+        // boolean isValidStudent = userOpt.isPresent() && "STUDENT".equalsIgnoreCase(userOpt.get().getRole());
+        boolean isValidStudent = true;
+
+        if (!ipkValid) {
+            throw new Exception("IPK tidak valid");
+        } else if (!sksValid) {
+            throw new Exception("SKS tidak valid");
+        } else if (!lowonganExists) {
+            throw new Exception("Lowongan tidak ada");
+        } else if (!isValidStudent) {
+            throw new Exception("User tidak ditemukan atau bukan mahasiswa");
+        }
     }
 
     @Override

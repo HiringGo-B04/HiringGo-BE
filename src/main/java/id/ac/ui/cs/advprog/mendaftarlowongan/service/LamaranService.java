@@ -12,7 +12,7 @@ public interface LamaranService {
     Lamaran updateLamaran(UUID id, Lamaran lamaran);
     void deleteLamaran(UUID id);
     boolean isLamaranExists(Lamaran lamaran);
-    boolean validateLamaran(Lamaran lamaran);
+    void validateLamaran(Lamaran lamaran) throws Exception;
     List<Lamaran> getLamaranByLowonganId(UUID idLowongan);
     void acceptLamaran(UUID id);
     void rejectLamaran(UUID id);
