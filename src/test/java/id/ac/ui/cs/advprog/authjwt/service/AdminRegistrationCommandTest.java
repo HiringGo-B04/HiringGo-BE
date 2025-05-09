@@ -67,44 +67,6 @@ public class AdminRegistrationCommandTest {
         verify(passwordEncoder).encode("password");
     }
 
-//    @Test
-//    void testAddUser_InvalidPayload_EmptyUsername() {
-//        validUser.setUsername("");
-//        validUser.setPassword("password");
-//
-//        AdminRegistrationCommand adminRegistrationCommand = new AdminRegistrationCommand(userRepository, passwordEncoder, validUser);
-//        ResponseEntity<RegisterResponseDTO> responseEntity = adminRegistrationCommand.addUser();
-//
-//        // Assert the status code
-//        assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
-//
-//        RegisterResponseDTO response = responseEntity.getBody();
-//        assertNotNull(response);
-//        assertEquals("error", response.status());
-//        assertEquals("Username must be a valid email address", response.messages());
-//
-//        verify(userRepository, never()).save(any(User.class));
-//    }
-//
-//    @Test
-//    void testAddUser_InvalidPayload_EmptyPassword() {
-//        validUser.setUsername("admin@gmail.com");
-//        validUser.setPassword("");
-//
-//        AdminRegistrationCommand adminRegistrationCommand = new AdminRegistrationCommand(userRepository, passwordEncoder, validUser);
-//        ResponseEntity<RegisterResponseDTO> responseEntity = adminRegistrationCommand.addUser();
-//
-//        // Assert the status code
-//        assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
-//
-//        RegisterResponseDTO response = responseEntity.getBody();
-//        assertNotNull(response);
-//        assertEquals("error", response.status());
-//        assertEquals("Invalid payload", response.messages());
-//
-//        verify(userRepository, never()).save(any(User.class));
-//    }
-
     @Test
     void testAddUser_UsernameAlreadyExists() {
         AdminRegistrationDTO user = new AdminRegistrationDTO( "admin@gmail.com", "password");
@@ -114,8 +76,7 @@ public class AdminRegistrationCommandTest {
         AdminRegistrationCommand adminRegistrationCommand = new AdminRegistrationCommand(userRepository, passwordEncoder, user);
         ResponseEntity<RegisterResponseDTO> responseEntity = adminRegistrationCommand.addUser();
 
-        // Assert the status code
-        assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+        assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
 
         RegisterResponseDTO response = responseEntity.getBody();
         assertNotNull(response);

@@ -148,6 +148,46 @@ public class AuthServiceTest {
         assertEquals("Success register", actualResponse.getBody().messages());
     }
 
+    @Test
+    void testRegister_AdminRole_Fail() {
+        // Given
+        AdminRegistrationDTO validUser = new AdminRegistrationDTO("adminUser@gmail.com", "password123");
+        when(userRepository.existsByUsername("adminUser@gmail.com")).thenReturn(true);
+        when(passwordEncoder.encode("password123")).thenReturn("encodedPassword");
+
+        RegisterResponseDTO responseDTO = new RegisterResponseDTO("error","There existing username");
+        ResponseEntity<RegisterResponseDTO> expectedResponse = new ResponseEntity<>(responseDTO, HttpStatus.FORBIDDEN);
+
+        // When
+        ResponseEntity<RegisterResponseDTO> actualResponse = authService.register(validUser, "admin");
+
+        // Then
+        assertEquals(HttpStatus.FORBIDDEN, actualResponse.getStatusCode());
+        assertEquals("Username already exists", actualResponse.getBody().messages());
+    }
+
+    @Test
+    public void testRegister_NullRole_ShouldReturnErrorResponse() {
+        AdminRegistrationDTO dto = new AdminRegistrationDTO("admin@gmail.com", "password123");
+
+        ResponseEntity<RegisterResponseDTO> response = authService.register(dto, null);
+
+        assertEquals(401, response.getStatusCodeValue());
+        assertEquals("error", response.getBody().status());
+        assertEquals("Role is empty", response.getBody().messages());
+    }
+
+    @Test
+    public void testRegister_EmptyRole_ShouldReturnErrorResponse() {
+        AdminRegistrationDTO dto = new AdminRegistrationDTO("admin@gmail.com", "password123");
+
+        ResponseEntity<RegisterResponseDTO> response = authService.register(dto, "");
+
+        assertEquals(401, response.getStatusCodeValue());
+        assertEquals("error", response.getBody().status());
+        assertEquals("Role is empty", response.getBody().messages());
+    }
+
 //    @Test
 //    void testRegister_LecturerRole_Success() {
 //        User validUser = new User(UUID.randomUUID(), "lecturerUser@gmail.com", "password123", "Lecturer User", true, "1234");
