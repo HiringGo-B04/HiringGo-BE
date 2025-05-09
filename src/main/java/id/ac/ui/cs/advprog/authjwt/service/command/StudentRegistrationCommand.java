@@ -25,7 +25,7 @@ public class StudentRegistrationCommand extends RegistrationCommand {
         if(!"valid".equals(validity.get("message"))) {
             return new ResponseEntity<>(
                     new RegisterResponseDTO("error", validity.get("message")),
-                    HttpStatus.valueOf(Integer.parseInt(validity.get("code"))));
+                    HttpStatus.valueOf(400));
         }
 
         StudentRegistrationDTO student = (StudentRegistrationDTO) user;

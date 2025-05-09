@@ -26,7 +26,7 @@ public class AdminRegistrationCommand extends RegistrationCommand {
         if(!"valid".equals(validity.get("message"))) {
             return new ResponseEntity<>(
                     new RegisterResponseDTO("error", validity.get("message")),
-                    HttpStatus.valueOf(Integer.parseInt(validity.get("code"))));
+                    HttpStatus.valueOf(400));
         }
 
 
