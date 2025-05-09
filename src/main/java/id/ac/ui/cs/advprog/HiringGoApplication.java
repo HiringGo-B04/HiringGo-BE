@@ -8,8 +8,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
         "id.ac.ui.cs.advprog.log",
         "id.ac.ui.cs.advprog.manajemenlowongan",
         "id.ac.ui.cs.advprog.mendaftarlowongan",
-        "id.ac.ui.cs.advprog.authjwt"
-
+        "id.ac.ui.cs.advprog.authjwt",
+        "id.ac.ui.cs.advprog.account"
 })
 
 public class HiringGoApplication {
