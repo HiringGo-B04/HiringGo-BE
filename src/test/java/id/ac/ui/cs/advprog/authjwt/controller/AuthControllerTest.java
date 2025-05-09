@@ -2,9 +2,7 @@ package id.ac.ui.cs.advprog.authjwt.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import id.ac.ui.cs.advprog.authjwt.config.SecurityConfig;
-import id.ac.ui.cs.advprog.authjwt.dto.AdminRegistrationDTO;
-import id.ac.ui.cs.advprog.authjwt.dto.LecturerRegistrationDTO;
-import id.ac.ui.cs.advprog.authjwt.dto.RegisterResponseDTO;
+import id.ac.ui.cs.advprog.authjwt.dto.*;
 import id.ac.ui.cs.advprog.authjwt.facade.AuthenticationFacade;
 import id.ac.ui.cs.advprog.course.service.MataKuliahService;
 import org.junit.jupiter.api.Test;
@@ -36,7 +34,7 @@ public class AuthControllerTest {
 
     private String AdminRegistration = "/api/auth/admin/signup";
     private final String LECTURER_REGISTRATION_ENDPOINT = "/api/auth/admin/signup/lecturer";
-
+    private final String STUDENT_REGISTRATION_ENDPOINT =  "/api/auth/public/signup/student";
 
     @Autowired
     private MockMvc mockMvc;
@@ -163,5 +161,54 @@ public class AuthControllerTest {
                 .andExpect(jsonPath("$.messages").value("Password is too weak"));
     }
 
+    @Test
+    @WithMockUser
+    void registerStudent_shouldReturn200() throws Exception {
+        var request = new StudentRegistrationDTO("student@mail.com", "strongpassword", "2106701234", "Jane Doe");
+        var response = new RegisterResponseDTO("accept", "Success register");
 
+        when(authFacade.register(any(StudentRegistrationDTO.class), eq("STUDENT")))
+                .thenReturn(new ResponseEntity<>(response, HttpStatus.OK));
+
+        mockMvc.perform(post(STUDENT_REGISTRATION_ENDPOINT)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("accept"))
+                .andExpect(jsonPath("$.messages").value("Success register"));
+    }
+
+    @Test
+    @WithMockUser
+    void registerStudent_invalidEmail_shouldReturn401() throws Exception {
+        var request = new StudentRegistrationDTO("invalid-email", "strongpassword", "2106701234", "Jane Doe");
+        var response = new RegisterResponseDTO("error", "Username must be a valid email address");
+
+        when(authFacade.register(any(StudentRegistrationDTO.class), eq("STUDENT")))
+                .thenReturn(new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED));
+
+        mockMvc.perform(post(STUDENT_REGISTRATION_ENDPOINT)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value("error"))
+                .andExpect(jsonPath("$.messages").value("Username must be a valid email address"));
+    }
+
+    @Test
+    @WithMockUser
+    void registerStudent_weakPassword_shouldReturn400() throws Exception {
+        var request = new StudentRegistrationDTO("student@mail.com", "123", "2106701234", "Jane Doe");
+        var response = new RegisterResponseDTO("error", "Password is too weak");
+
+        when(authFacade.register(any(StudentRegistrationDTO.class), eq("STUDENT")))
+                .thenReturn(new ResponseEntity<>(response, HttpStatus.BAD_REQUEST));
+
+        mockMvc.perform(post(STUDENT_REGISTRATION_ENDPOINT)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value("error"))
+                .andExpect(jsonPath("$.messages").value("Password is too weak"));
+    }
 }
