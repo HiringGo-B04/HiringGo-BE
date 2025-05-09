@@ -1,12 +1,19 @@
 package id.ac.ui.cs.advprog.authjwt.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import id.ac.ui.cs.advprog.authjwt.config.JwtUtil;
 import id.ac.ui.cs.advprog.authjwt.config.SecurityConfig;
+import id.ac.ui.cs.advprog.authjwt.dto.login.LoginRequestDTO;
+import id.ac.ui.cs.advprog.authjwt.dto.login.LoginResponseDTO;
+import id.ac.ui.cs.advprog.authjwt.dto.logout.LogoutRequestDTO;
+import id.ac.ui.cs.advprog.authjwt.dto.logout.LogoutResponseDTO;
 import id.ac.ui.cs.advprog.authjwt.dto.registration.AdminRegistrationDTO;
 import id.ac.ui.cs.advprog.authjwt.dto.registration.LecturerRegistrationDTO;
 import id.ac.ui.cs.advprog.authjwt.dto.registration.RegisterResponseDTO;
 import id.ac.ui.cs.advprog.authjwt.dto.registration.StudentRegistrationDTO;
 import id.ac.ui.cs.advprog.authjwt.facade.AuthenticationFacade;
+import id.ac.ui.cs.advprog.authjwt.model.User;
+import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +23,9 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -30,9 +39,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import(SecurityConfig.class)
 public class AuthControllerTest {
 
-    private String AdminRegistration = "/api/auth/admin/signup";
+    private final String AdminRegistration = "/api/auth/admin/signup";
     private final String LECTURER_REGISTRATION_ENDPOINT = "/api/auth/admin/signup/lecturer";
     private final String STUDENT_REGISTRATION_ENDPOINT =  "/api/auth/public/signup/student";
+    private final String LOGIN_ENDPOINT = "/api/auth/public/signin";
+    private final String LOGOUT_ENDPOINT = "/api/auth/user/logout";
 
     @Autowired
     private MockMvc mockMvc;
@@ -50,6 +61,77 @@ public class AuthControllerTest {
         AuthenticationFacade authenticationFacade() {
             return Mockito.mock(AuthenticationFacade.class);
         }
+    }
+
+    @Test
+    @WithMockUser // Simulate an authenticated user
+    void logout_shouldReturn200() throws Exception {
+        var request = new LogoutRequestDTO("validToken");
+        var response = new LogoutResponseDTO("accept", "Succes to logout");
+
+        // Mock the logout method
+        when(authFacade.logout(any(LogoutRequestDTO.class)))
+                .thenReturn(new ResponseEntity<>(response, HttpStatus.OK));
+
+        // Perform the POST request to the endpoint
+        mockMvc.perform(post(LOGOUT_ENDPOINT)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("accept"))
+                .andExpect(jsonPath("$.message").value("Succes to logout"));
+    }
+
+    @Test
+    @WithMockUser // Simulate an authenticated user
+    void logout_invalidToken_shouldReturn400() throws Exception {
+        var request = new LogoutRequestDTO("invalidToken");
+        var response = new LogoutResponseDTO("error", "Token not found");
+
+        // Mock the logout method
+        when(authFacade.logout(any(LogoutRequestDTO.class)))
+                .thenReturn(new ResponseEntity<>(response, HttpStatus.BAD_REQUEST));
+
+        // Perform the POST request to the endpoint
+        mockMvc.perform(post(LOGOUT_ENDPOINT)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value("error"))
+                .andExpect(jsonPath("$.message").value("Token not found"));
+    }
+
+    @Test
+    void login_validRequest_shouldReturnSuccess() throws Exception {
+        // Correct login request DTO
+        var validLoginRequest = new LoginRequestDTO("user@example.com", "securePassword");
+
+        // Expected response DTO
+        var response = new LoginResponseDTO("accept", "Success to login", "123");
+
+        // Mock the login method of the facade
+        when(authFacade.login(any(LoginRequestDTO.class)))
+                .thenReturn(new ResponseEntity<>(response, HttpStatus.OK));
+
+        // Perform the POST request
+        mockMvc.perform(post("/api/auth/public/signin")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(validLoginRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("accept"))
+                .andExpect(jsonPath("$.message").value("Success to login"))
+                .andExpect(jsonPath("$.token").value("123"));
+    }
+
+
+    @Test
+    public void login_invalidRequest_shouldReturnBadRequest() throws Exception {
+        LoginRequestDTO invalidLoginRequest = new LoginRequestDTO("", "");
+
+        mockMvc.perform(post(LOGIN_ENDPOINT)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidLoginRequest)))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
