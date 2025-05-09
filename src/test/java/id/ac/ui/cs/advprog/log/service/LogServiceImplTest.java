@@ -76,7 +76,7 @@ public class LogServiceImplTest {
         lowongan = new Lowongan();
         lowongan.setId(idLowongan);
         lowongan.setMatkul("Pemrograman");
-        lowongan.setYear(2024);
+        lowongan.setTahun(2024);
         lowongan.setTerm("Ganjil");
 
         lamaran = new Lamaran();
@@ -184,7 +184,7 @@ public class LogServiceImplTest {
         when(userRepository.findById(idMahasiswa)).thenReturn(Optional.of(mahasiswa));
         when(userRepository.findById(idDosen)).thenReturn(Optional.of(dosen));
         when(lowonganRepository.getLowonganById(idLowongan)).thenReturn(lowongan);
-        when(lamaranRepository.getLamaran()).thenReturn(Collections.singletonList(lamaran));
+        when(lamaranRepository.findAll()).thenReturn(Collections.singletonList(lamaran));
         when(logRepository.save(any(Log.class))).thenReturn(sampleLog);
 
         Log result = logService.createLogForMahasiswa(logDTO, idMahasiswa, idDosen);
@@ -193,7 +193,7 @@ public class LogServiceImplTest {
         verify(userRepository).findById(idMahasiswa);
         verify(userRepository).findById(idDosen);
         verify(lowonganRepository).getLowonganById(idLowongan);
-        verify(lamaranRepository).getLamaran();
+        verify(lamaranRepository).findAll();
         verify(logRepository).save(any(Log.class));
     }
 
