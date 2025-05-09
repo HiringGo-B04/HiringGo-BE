@@ -19,10 +19,10 @@ public class AuthController {
     @Autowired
     private AuthenticationFacade authFacade;
 
-    @PostMapping("/public/signin")
-    public ResponseEntity<Map<String, String>> login(@RequestBody User user) {
-        return authFacade.login(user);
-    }
+//    @PostMapping("/public/signin")
+//    public ResponseEntity<Map<String, String>> login(@RequestBody User user) {
+//        return authFacade.login(user);
+//    }
 
     @PostMapping("/admin/signup")
     public ResponseEntity<RegisterResponseDTO> registerAdmin(@Valid @RequestBody AdminRegistrationDTO user) {

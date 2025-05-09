@@ -1,6 +1,8 @@
 package id.ac.ui.cs.advprog.authjwt.service;
 
 import id.ac.ui.cs.advprog.authjwt.config.JwtUtil;
+import id.ac.ui.cs.advprog.authjwt.dto.login.LoginRequestDTO;
+import id.ac.ui.cs.advprog.authjwt.dto.login.LoginResponseDTO;
 import id.ac.ui.cs.advprog.authjwt.dto.registration.*;
 import id.ac.ui.cs.advprog.authjwt.facade.AuthenticationFacade;
 import id.ac.ui.cs.advprog.authjwt.model.Token;
@@ -37,36 +39,35 @@ public class AuthService implements AuthenticationFacade {
     private PasswordEncoder passwordEncoder;
 
     @Override
-    public ResponseEntity<Map<String, String>> login(User user){
-        User exist_user = userRepository.findByUsername(user.getUsername());
-        Map<String, String> response = new HashMap<>();
+    @Transactional
+    public ResponseEntity<LoginResponseDTO> login(LoginRequestDTO user){
+        User exist_user = userRepository.findByUsername(user.username());
 
         if(exist_user == null) {
-            response.put("status", "error");
-            response.put("messages", "User not found");
-            return new ResponseEntity<>(response, HttpStatus.valueOf(404));
+            return new ResponseEntity<>(
+                    new LoginResponseDTO("error", "User not found"),
+                    HttpStatus.valueOf(400));
         }
 
-        if (!encoder.matches(user.getPassword(), exist_user.getPassword())) {
-            response.put("status", "error");
-            response.put("messages", "Invalid password");
-            return new ResponseEntity<>(response, HttpStatus.valueOf(404));
+        if (!encoder.matches(user.password(), exist_user.getPassword())) {
+            return new ResponseEntity<>(
+                    new LoginResponseDTO("error", "Invalid Password"),
+                    HttpStatus.valueOf(400));
         }
 
         try{
-            String jwt_token = jwtUtils.generateToken(user.getUsername(), exist_user.getRole());
+            String jwt_token = jwtUtils.generateToken(user.username(), exist_user.getRole());
             Token user_token = new Token(jwt_token);
             tokenRepository.save(user_token);
 
-            response.put("status", "accept");
-            response.put("messages", "Success login");
-            response.put("token", jwt_token);
-            return new ResponseEntity<>(response, HttpStatus.valueOf(200));
+            return new ResponseEntity<>(
+                    new LoginResponseDTO("accept", "Success login", jwt_token),
+                    HttpStatus.valueOf(200));
         }
         catch (Exception e) {
-            response.put("status", "error");
-            response.put("messages", e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.valueOf(401));
+            return new ResponseEntity<>(
+                    new LoginResponseDTO("error", e.getMessage()),
+                    HttpStatus.valueOf(400));
         }
     }
 
