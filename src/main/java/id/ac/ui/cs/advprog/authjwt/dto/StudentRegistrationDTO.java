@@ -1,7 +1,23 @@
-public record StudentDto(
-        UUID userId,
+package id.ac.ui.cs.advprog.authjwt.dto;
+
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
+public record StudentRegistrationDTO(
+        @NotBlank
+        @NotNull
         String username,
-        String fullName,
-        String role,
-        String nim
-) implements UserDto {}
+
+        @NotBlank
+        @NotNull
+        String password,
+
+        @NotBlank
+        @NotNull
+        String nim,
+
+        @NotBlank
+        @NotNull
+        String fullName
+) implements UserDTO {}
