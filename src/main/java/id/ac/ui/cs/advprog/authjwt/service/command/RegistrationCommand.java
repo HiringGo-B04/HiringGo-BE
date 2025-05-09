@@ -54,7 +54,7 @@ public abstract class RegistrationCommand {
         return response;
     }
 
-    RegistrationCommand(UserRepository userRepository, PasswordEncoder passwordEncoder, UserDTO user) {
+    protected RegistrationCommand(UserRepository userRepository, PasswordEncoder passwordEncoder, UserDTO user) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.user = user;

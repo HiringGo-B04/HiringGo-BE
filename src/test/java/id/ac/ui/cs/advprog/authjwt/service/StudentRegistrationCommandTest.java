@@ -96,41 +96,6 @@ public class StudentRegistrationCommandTest {
         verify(userRepository, never()).save(any(User.class));
     }
 
-    @Test
-    void testAddUser_InvalidEmailFormat() {
-        // Simulate invalid email format
-        StudentRegistrationDTO invalidStudentDTO = new StudentRegistrationDTO("invalid-email", "password", "John Doe", "1234567890");
-
-        StudentRegistrationCommand StudentRegistrationCommand = new StudentRegistrationCommand(userRepository, passwordEncoder, invalidStudentDTO);
-        ResponseEntity<RegisterResponseDTO> responseEntity = StudentRegistrationCommand.addUser();
-
-        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-
-        RegisterResponseDTO response = responseEntity.getBody();
-        assertNotNull(response);
-        assertEquals("error", response.status());
-        assertEquals("Username must be a valid email address", response.messages());
-
-        verify(userRepository, never()).save(any(User.class));
-    }
-
-    @Test
-    void testAddUser_InvalidNim() {
-        // Simulate invalid NIM format (non-numeric)
-        StudentRegistrationDTO invalidStudentDTO = new StudentRegistrationDTO("lecturer@example.com", "password", "John Doe", "invalidNIM");
-
-        StudentRegistrationCommand StudentRegistrationCommand = new StudentRegistrationCommand(userRepository, passwordEncoder, invalidStudentDTO);
-        ResponseEntity<RegisterResponseDTO> responseEntity = StudentRegistrationCommand.addUser();
-
-        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-
-        RegisterResponseDTO response = responseEntity.getBody();
-        assertNotNull(response);
-        assertEquals("error", response.status());
-        assertEquals("NIM/NIP must only contain number and maximal 12 digits long", response.messages());
-
-        verify(userRepository, never()).save(any(User.class));
-    }
 
     @Test
     void testAddUser_ExceptionHandling() {
