@@ -131,6 +131,43 @@ public class AuthServiceTest {
         assertEquals("Invalid Password", response.getBody().message());
     }
 
+    @Test
+    void login_userNotFound_shouldReturnErrorResponse() {
+        // Arrange
+        LoginRequestDTO request = new LoginRequestDTO("notfound@example.com", "password");
+        when(userRepository.findByUsername("notfound@example.com")).thenReturn(null);
+
+        // Act
+        ResponseEntity<LoginResponseDTO> response = authService.login(request);
+
+        // Assert
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("error", response.getBody().status());
+        assertEquals("User didn't exist", response.getBody().message());
+    }
+
+    @Test
+    void login_exceptionDuringTokenGeneration_shouldReturnErrorResponse() {
+        // Arrange
+        var request = new LoginRequestDTO("user@example.com", "password");
+        var user = new User();
+        user.setUsername("user@example.com");
+        user.setPassword("encodedPass");
+        user.setRole("STUDENT");
+
+        when(userRepository.findByUsername("user@example.com")).thenReturn(user);
+        when(passwordEncoder.matches("password", "encodedPass")).thenReturn(true);
+        when(jwtUtils.generateToken("user@example.com", "STUDENT")).thenThrow(new RuntimeException("JWT failure"));
+
+        // Act
+        ResponseEntity<LoginResponseDTO> response = authService.login(request);
+
+        // Assert
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("error on prod", response.getBody().status());
+        assertEquals("JWT failure", response.getBody().message());
+    }
+
 
     // Test successful registration for a Student
     @Test
