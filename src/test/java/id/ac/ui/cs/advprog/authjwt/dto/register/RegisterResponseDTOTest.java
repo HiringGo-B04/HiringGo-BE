@@ -1,5 +1,6 @@
-package id.ac.ui.cs.advprog.authjwt.dto;
+package id.ac.ui.cs.advprog.authjwt.dto.register;
 
+import id.ac.ui.cs.advprog.authjwt.dto.registration.RegisterResponseDTO;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

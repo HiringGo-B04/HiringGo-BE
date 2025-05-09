@@ -1,7 +1,7 @@
 package id.ac.ui.cs.advprog.authjwt.service;
 
-import id.ac.ui.cs.advprog.authjwt.dto.AdminRegistrationDTO;
-import id.ac.ui.cs.advprog.authjwt.dto.RegisterResponseDTO;
+import id.ac.ui.cs.advprog.authjwt.dto.registration.AdminRegistrationDTO;
+import id.ac.ui.cs.advprog.authjwt.dto.registration.RegisterResponseDTO;
 import id.ac.ui.cs.advprog.authjwt.model.User;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
 import id.ac.ui.cs.advprog.authjwt.service.command.AdminRegistrationCommand;

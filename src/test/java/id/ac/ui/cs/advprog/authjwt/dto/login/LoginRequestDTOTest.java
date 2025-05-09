@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.authjwt.dto;
+package id.ac.ui.cs.advprog.authjwt.dto.login;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
@@ -12,7 +12,7 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class LecturerRegistrationDTOTest {
+public class LoginRequestDTOTest {
 
     private static Validator validator;
 
@@ -24,40 +24,34 @@ public class LecturerRegistrationDTOTest {
 
     @Test
     public void whenAllFieldsValid_thenNoViolations() {
-        LecturerRegistrationDTO dto = new LecturerRegistrationDTO(
-                "lecturer1",
-                "securePass123",
-                "12345678",
-                "John Doe"
+        LoginRequestDTO dto = new LoginRequestDTO(
+                "user@example.com",
+                "securePassword"
         );
 
-        Set<ConstraintViolation<LecturerRegistrationDTO>> violations = validator.validate(dto);
+        Set<ConstraintViolation<LoginRequestDTO>> violations = validator.validate(dto);
         assertTrue(violations.isEmpty(), "Expected no constraint violations");
     }
 
     @Test
     public void whenFieldsBlank_thenViolations() {
-        LecturerRegistrationDTO dto = new LecturerRegistrationDTO(
-                "",
-                "",
+        LoginRequestDTO dto = new LoginRequestDTO(
                 "",
                 ""
         );
 
-        Set<ConstraintViolation<LecturerRegistrationDTO>> violations = validator.validate(dto);
-        assertEquals(4, violations.size(), "Expected 4 constraint violations for blank fields");
+        Set<ConstraintViolation<LoginRequestDTO>> violations = validator.validate(dto);
+        assertEquals(2, violations.size(), "Expected 4 constraint violations for blank fields");
     }
 
     @Test
     public void whenFieldsNull_thenViolations() {
-        LecturerRegistrationDTO dto = new LecturerRegistrationDTO(
-                null,
-                null,
+        LoginRequestDTO dto = new LoginRequestDTO(
                 null,
                 null
         );
 
-        Set<ConstraintViolation<LecturerRegistrationDTO>> violations = validator.validate(dto);
-        assertEquals(8, violations.size(), "Expected 4 constraint violations for null fields");
+        Set<ConstraintViolation<LoginRequestDTO>> violations = validator.validate(dto);
+        assertEquals(4, violations.size(), "Expected 4 constraint violations for null fields");
     }
 }

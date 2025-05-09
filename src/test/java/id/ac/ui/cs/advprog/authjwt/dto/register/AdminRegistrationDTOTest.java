@@ -1,5 +1,6 @@
-package id.ac.ui.cs.advprog.authjwt.dto;
+package id.ac.ui.cs.advprog.authjwt.dto.register;
 
+import id.ac.ui.cs.advprog.authjwt.dto.registration.AdminRegistrationDTO;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;

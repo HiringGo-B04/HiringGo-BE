@@ -2,7 +2,10 @@ package id.ac.ui.cs.advprog.authjwt.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import id.ac.ui.cs.advprog.authjwt.config.SecurityConfig;
-import id.ac.ui.cs.advprog.authjwt.dto.*;
+import id.ac.ui.cs.advprog.authjwt.dto.registration.AdminRegistrationDTO;
+import id.ac.ui.cs.advprog.authjwt.dto.registration.LecturerRegistrationDTO;
+import id.ac.ui.cs.advprog.authjwt.dto.registration.RegisterResponseDTO;
+import id.ac.ui.cs.advprog.authjwt.dto.registration.StudentRegistrationDTO;
 import id.ac.ui.cs.advprog.authjwt.facade.AuthenticationFacade;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;

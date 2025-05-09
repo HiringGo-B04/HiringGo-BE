@@ -1,6 +1,9 @@
 package id.ac.ui.cs.advprog.authjwt.service;
 
-import id.ac.ui.cs.advprog.authjwt.dto.*;
+import id.ac.ui.cs.advprog.authjwt.dto.registration.AdminRegistrationDTO;
+import id.ac.ui.cs.advprog.authjwt.dto.registration.LecturerRegistrationDTO;
+import id.ac.ui.cs.advprog.authjwt.dto.registration.RegisterResponseDTO;
+import id.ac.ui.cs.advprog.authjwt.dto.registration.StudentRegistrationDTO;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
