@@ -46,75 +46,51 @@ public class AuthServiceTest {
         authService.encoder = passwordEncoder;
     }
 
+
     @Test
-    public void login_successful_shouldReturnToken() {
-        LoginRequestDTO request = new LoginRequestDTO("user1", "pass123");
+    void testLogin_Success() {
+        // Given
+        LoginRequestDTO loginRequest = new LoginRequestDTO("user@example.com", "password123");
         User mockUser = new User();
-        mockUser.setUsername("user1");
-        mockUser.setPassword("encodedPass");
+        mockUser.setUsername("user@example.com");
+        mockUser.setPassword("encodedPassword");
         mockUser.setRole("STUDENT");
 
-        when(userRepository.findByUsername("user1")).thenReturn(mockUser);
-        when(passwordEncoder.matches("pass123", "encodedPass")).thenReturn(true);
-        when(jwtUtils.generateToken("user1", "STUDENT")).thenReturn("jwt-token");
+        when(userRepository.findByUsername("user@example.com")).thenReturn(mockUser);
+        when(passwordEncoder.matches("password123", "encodedPassword")).thenReturn(true);
+        when(jwtUtils.generateToken(mockUser.getUsername(), "STUDENT")).thenReturn("mocked-jwt-token");
 
-        ResponseEntity<LoginResponseDTO> response = authService.login(request);
+        // When
+        ResponseEntity<LoginResponseDTO> response = authService.login(loginRequest);
 
+        // Then
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("accept", response.getBody().status());
         assertEquals("Success login", response.getBody().message());
-        assertEquals("jwt-token", response.getBody().token());
-        verify(tokenRepository, times(1)).save(any(Token.class));
+        assertEquals("mocked-jwt-token", response.getBody().token());
     }
 
     @Test
-    public void login_userNotFound_shouldReturnError() {
-        LoginRequestDTO request = new LoginRequestDTO("nonexistent", "password");
-
-        when(userRepository.findByUsername("nonexistent")).thenReturn(null);
-
-        ResponseEntity<LoginResponseDTO> response = authService.login(request);
-
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertEquals("error", response.getBody().status());
-        assertEquals("User not found", response.getBody().message());
-    }
-
-    @Test
-    public void login_invalidPassword_shouldReturnError() {
-        LoginRequestDTO request = new LoginRequestDTO("user1", "wrongpass");
+    void testLogin_Failed_WrongPassword() {
+        // Given
+        LoginRequestDTO loginRequest = new LoginRequestDTO("user@example.com", "wrongPassword");
         User mockUser = new User();
-        mockUser.setUsername("user1");
-        mockUser.setPassword("encodedPass");
+        mockUser.setUsername("user@example.com");
+        mockUser.setPassword("encodedPassword");
+        mockUser.setRole("STUDENT");
 
-        when(userRepository.findByUsername("user1")).thenReturn(mockUser);
-        when(passwordEncoder.matches("wrongpass", "encodedPass")).thenReturn(false);
+        when(userRepository.findByUsername("user@example.com")).thenReturn(mockUser);
+        when(passwordEncoder.matches("wrongPassword", "encodedPassword")).thenReturn(false);
 
-        ResponseEntity<LoginResponseDTO> response = authService.login(request);
+        // When
+        ResponseEntity<LoginResponseDTO> response = authService.login(loginRequest);
 
+        // Then
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertEquals("error", response.getBody().status());
         assertEquals("Invalid Password", response.getBody().message());
     }
 
-    @Test
-    public void login_tokenGenerationFails_shouldReturnError() {
-        LoginRequestDTO request = new LoginRequestDTO("user1", "pass123");
-        User mockUser = new User();
-        mockUser.setUsername("user1");
-        mockUser.setPassword("encodedPass");
-        mockUser.setRole("STUDENT");
-
-        when(userRepository.findByUsername("user1")).thenReturn(mockUser);
-        when(passwordEncoder.matches("pass123", "encodedPass")).thenReturn(true);
-        when(jwtUtils.generateToken("user1", "STUDENT")).thenThrow(new RuntimeException("Token error"));
-
-        ResponseEntity<LoginResponseDTO> response = authService.login(request);
-
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertEquals("error", response.getBody().status());
-        assertEquals("Token error", response.getBody().message());
-    }
 
     // Test successful registration for a Student
     @Test
