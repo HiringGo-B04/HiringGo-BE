@@ -1,9 +1,15 @@
 package id.ac.ui.cs.advprog.authjwt.service;
 
+import id.ac.ui.cs.advprog.authjwt.config.JwtUtil;
+import id.ac.ui.cs.advprog.authjwt.dto.login.LoginRequestDTO;
+import id.ac.ui.cs.advprog.authjwt.dto.login.LoginResponseDTO;
 import id.ac.ui.cs.advprog.authjwt.dto.registration.AdminRegistrationDTO;
 import id.ac.ui.cs.advprog.authjwt.dto.registration.LecturerRegistrationDTO;
 import id.ac.ui.cs.advprog.authjwt.dto.registration.RegisterResponseDTO;
 import id.ac.ui.cs.advprog.authjwt.dto.registration.StudentRegistrationDTO;
+import id.ac.ui.cs.advprog.authjwt.model.Token;
+import id.ac.ui.cs.advprog.authjwt.model.User;
+import id.ac.ui.cs.advprog.authjwt.repository.TokenRepository;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,16 +28,92 @@ public class AuthServiceTest {
 
     private AuthService authService;
     private UserRepository userRepository;
+    private TokenRepository tokenRepository;
+    private JwtUtil jwtUtils;
     private PasswordEncoder passwordEncoder;
 
     @BeforeEach
     public void setUp() {
         userRepository = mock(UserRepository.class);
+        tokenRepository = mock(TokenRepository.class);
+        jwtUtils = mock(JwtUtil.class);
         passwordEncoder = mock(PasswordEncoder.class);
 
         authService = new AuthService();
         authService.userRepository = userRepository;
+        authService.tokenRepository = tokenRepository;
+        authService.jwtUtils = jwtUtils;
         authService.encoder = passwordEncoder;
+    }
+
+    @Test
+    public void login_successful_shouldReturnToken() {
+        LoginRequestDTO request = new LoginRequestDTO("user1", "pass123");
+        User mockUser = new User();
+        mockUser.setUsername("user1");
+        mockUser.setPassword("encodedPass");
+        mockUser.setRole("STUDENT");
+
+        when(userRepository.findByUsername("user1")).thenReturn(mockUser);
+        when(passwordEncoder.matches("pass123", "encodedPass")).thenReturn(true);
+        when(jwtUtils.generateToken("user1", "STUDENT")).thenReturn("jwt-token");
+
+        ResponseEntity<LoginResponseDTO> response = authService.login(request);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("accept", response.getBody().status());
+        assertEquals("Success login", response.getBody().message());
+        assertEquals("jwt-token", response.getBody().token());
+        verify(tokenRepository, times(1)).save(any(Token.class));
+    }
+
+    @Test
+    public void login_userNotFound_shouldReturnError() {
+        LoginRequestDTO request = new LoginRequestDTO("nonexistent", "password");
+
+        when(userRepository.findByUsername("nonexistent")).thenReturn(null);
+
+        ResponseEntity<LoginResponseDTO> response = authService.login(request);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("error", response.getBody().status());
+        assertEquals("User not found", response.getBody().message());
+    }
+
+    @Test
+    public void login_invalidPassword_shouldReturnError() {
+        LoginRequestDTO request = new LoginRequestDTO("user1", "wrongpass");
+        User mockUser = new User();
+        mockUser.setUsername("user1");
+        mockUser.setPassword("encodedPass");
+
+        when(userRepository.findByUsername("user1")).thenReturn(mockUser);
+        when(passwordEncoder.matches("wrongpass", "encodedPass")).thenReturn(false);
+
+        ResponseEntity<LoginResponseDTO> response = authService.login(request);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("error", response.getBody().status());
+        assertEquals("Invalid Password", response.getBody().message());
+    }
+
+    @Test
+    public void login_tokenGenerationFails_shouldReturnError() {
+        LoginRequestDTO request = new LoginRequestDTO("user1", "pass123");
+        User mockUser = new User();
+        mockUser.setUsername("user1");
+        mockUser.setPassword("encodedPass");
+        mockUser.setRole("STUDENT");
+
+        when(userRepository.findByUsername("user1")).thenReturn(mockUser);
+        when(passwordEncoder.matches("pass123", "encodedPass")).thenReturn(true);
+        when(jwtUtils.generateToken("user1", "STUDENT")).thenThrow(new RuntimeException("Token error"));
+
+        ResponseEntity<LoginResponseDTO> response = authService.login(request);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("error", response.getBody().status());
+        assertEquals("Token error", response.getBody().message());
     }
 
     // Test successful registration for a Student
