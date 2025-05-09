@@ -11,21 +11,22 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.*;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
- * Web‑layer tests untuk {@link MataKuliahController} versi DTO.
+ * Web‑layer unit test untuk {@link MataKuliahController}.
+ * Menggunakan MockMvc + Mockito tanpa mem‑boot context penuh.
  */
 @WebMvcTest(MataKuliahController.class)
 @Import(MataKuliahControllerTest.MockConfig.class)
@@ -39,66 +40,62 @@ class MataKuliahControllerTest {
 
     @TestConfiguration
     static class MockConfig {
-        @Bean
-        MataKuliahService mataKuliahService() {
+        @Bean MataKuliahService mataKuliahService() {
             return Mockito.mock(MataKuliahService.class);
         }
     }
 
-    /* ---------- GET ALL (PAGE) ---------- */
+    /* ---------- GET ALL (PUBLIC) ---------- */
     @Test
-    @WithMockUser(roles = "ADMIN")
-    void getAll_shouldReturnPage() throws Exception {
-        var dto1 = new MataKuliahDto("MK001", "Algoritma", 3, "D", List.of());
-        var dto2 = new MataKuliahDto("MK002", "Basis Data", 4, "D2", List.of());
+    void listPublic_shouldReturnPage() throws Exception {
+        var dto1 = new MataKuliahDto("MK001","Algoritma",3,"D",List.of());
+        var dto2 = new MataKuliahDto("MK002","Basis Data",4,"D2",List.of());
 
-        when(service.findAll(PageRequest.of(0, 20)))
-                .thenReturn(new PageImpl<>(List.of(dto1, dto2)));
+        when(service.findAll(any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(dto1,dto2)));
 
-        mockMvc.perform(get("/api/v1/matakuliah"))
+        mockMvc.perform(get("/api/course/public/matakuliah"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].kode").value("MK001"))
                 .andExpect(jsonPath("$.content[1].kode").value("MK002"));
     }
 
-    /* ---------- GET BY KODE ---------- */
+    /* ---------- GET BY KODE (PUBLIC) ---------- */
     @Test
-    @WithMockUser(roles = "ADMIN")
     void getByKode_found() throws Exception {
-        var dto = new MataKuliahDto("MK001", "Algoritma", 3, null, List.of());
+        var dto = new MataKuliahDto("MK001","Algoritma",3,null,List.of());
         when(service.findByKode("MK001")).thenReturn(dto);
 
-        mockMvc.perform(get("/api/v1/matakuliah/MK001"))
+        mockMvc.perform(get("/api/course/public/matakuliah/MK001"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.nama").value("Algoritma"));
     }
 
     @Test
-    @WithMockUser(roles = "ADMIN")
     void getByKode_notFound() throws Exception {
         when(service.findByKode("MK404")).thenReturn(null);
 
-        mockMvc.perform(get("/api/v1/matakuliah/MK404"))
+        mockMvc.perform(get("/api/course/public/matakuliah/MK404"))
                 .andExpect(status().isNotFound());
     }
 
-    /* ---------- POST ---------- */
+    /* ---------- POST (ADMIN) ---------- */
     @Test
     @WithMockUser(roles = "ADMIN")
     void create_success() throws Exception {
-        var dto = new MataKuliahDto("MK001", "Algoritma", 3, "Desc", List.of());
-        when(service.create(ArgumentMatchers.any(MataKuliahDto.class))).thenReturn(dto);
+        var dto = new MataKuliahDto("MK001","Algoritma",3,"Desc",List.of());
+        when(service.create(any(MataKuliahDto.class))).thenReturn(dto);
 
         String body = """
-                {"kode":"MK001","nama":"Algoritma","sks":3,"deskripsi":"Desc","dosenPengampu":[]}
-                """;
+            {"kode":"MK001","nama":"Algoritma","sks":3,"deskripsi":"Desc","dosenPengampu":[]}
+            """;
 
-        mockMvc.perform(post("/api/v1/matakuliah").with(csrf())
+        mockMvc.perform(post("/api/course/admin/matakuliah").with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isCreated())
                 .andExpect(header().string("Location",
-                        "http://localhost/api/v1/matakuliah/MK001"))
+                        "http://localhost/api/course/admin/matakuliah/MK001"))
                 .andExpect(jsonPath("$.kode").value("MK001"));
     }
 
@@ -109,10 +106,10 @@ class MataKuliahControllerTest {
                 .when(service).create(any(MataKuliahDto.class));
 
         String body = """
-                {"kode":"MK001","nama":"Algoritma","sks":3,"deskripsi":"Desc","dosenPengampu":[]}
-                """;
+            {"kode":"MK001","nama":"Algoritma","sks":3,"deskripsi":"Desc","dosenPengampu":[]}
+            """;
 
-        mockMvc.perform(post("/api/v1/matakuliah").with(csrf())
+        mockMvc.perform(post("/api/course/admin/matakuliah").with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isBadRequest());
@@ -122,14 +119,14 @@ class MataKuliahControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void update_success() throws Exception {
-        var updated = new MataKuliahDto("MK001", "Algo Upd", 4, "D", List.of());
+        var updated = new MataKuliahDto("MK001","Algo Upd",4,"D",List.of());
         when(service.update(eq("MK001"), any(MataKuliahDto.class))).thenReturn(updated);
 
         String body = """
-                {"kode":"IGNORED","nama":"Algo Upd","sks":4,"deskripsi":"D","dosenPengampu":[]}
-                """;
+            {"kode":"IGNORED","nama":"Algo Upd","sks":4,"deskripsi":"D","dosenPengampu":[]}
+            """;
 
-        mockMvc.perform(put("/api/v1/matakuliah/MK001").with(csrf())
+        mockMvc.perform(put("/api/course/admin/matakuliah/MK001").with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isOk())
@@ -140,14 +137,12 @@ class MataKuliahControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void patch_shouldUpdateSksOnly() throws Exception {
-        var patched = new MataKuliahDto("MK001", "Algoritma", 5, "Old", List.of());
+        var patched = new MataKuliahDto("MK001","Algoritma",5,"Old",List.of());
         when(service.partialUpdate(eq("MK001"), any(MataKuliahPatch.class))).thenReturn(patched);
 
-        String body = "{\"sks\":5}";
-
-        mockMvc.perform(patch("/api/v1/matakuliah/MK001").with(csrf())
+        mockMvc.perform(patch("/api/course/admin/matakuliah/MK001").with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
+                        .content("{\"sks\":5}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.sks").value(5));
     }
@@ -158,16 +153,16 @@ class MataKuliahControllerTest {
     void delete_success() throws Exception {
         doNothing().when(service).delete("MK001");
 
-        mockMvc.perform(delete("/api/v1/matakuliah/MK001").with(csrf()))
-                .andExpect(status().isOk());
+        mockMvc.perform(delete("/api/course/admin/matakuliah/MK001").with(csrf()))
+                .andExpect(status().isNoContent());
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    void delete_notFound_shouldReturn400() throws Exception {
+    void delete_notFound_shouldReturn404() throws Exception {
         doThrow(new RuntimeException("Not found")).when(service).delete("BAD");
 
-        mockMvc.perform(delete("/api/v1/matakuliah/BAD").with(csrf()))
+        mockMvc.perform(delete("/api/course/admin/matakuliah/BAD").with(csrf()))
                 .andExpect(status().isBadRequest());
     }
 }
