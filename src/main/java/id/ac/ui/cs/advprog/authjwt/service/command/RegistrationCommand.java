@@ -16,15 +16,16 @@ public abstract class RegistrationCommand {
 
     public Map<String, String> check_invalid_input(String status) {
         Map<String, String> response = new HashMap<>();
-        if(userRepository.existsByUsername(user.username())) {
-            response.put("code", "400");
-            response.put("message", "Username already exists");
-            return response;
-        }
 
         if(!GeneralUtils.isValidEmail(user.username())) {
             response.put("code", "400");
             response.put("message", "Username must be a valid email address");
+            return response;
+        }
+
+        if(userRepository.existsByUsername(user.username())) {
+            response.put("code", "400");
+            response.put("message", "Username already exists");
             return response;
         }
 
@@ -40,15 +41,15 @@ public abstract class RegistrationCommand {
                 fullName = lecturer.fullName();
             }
 
-            if (!GeneralUtils.isValidInt(idNumber)) {
-                response.put("code", "400");
-                response.put("message", "NIM/NIP must only contain number and maximal 12 digits long");
-                return response;
-            }
-
             if(!GeneralUtils.isValidString(fullName)) {
                 response.put("code", "400");
                 response.put("message", "Name must only contain letter character");
+                return response;
+            }
+
+            if (!GeneralUtils.isValidInt(idNumber)) {
+                response.put("code", "400");
+                response.put("message", "NIM/NIP must only contain number and maximal 12 digits long");
                 return response;
             }
         }
