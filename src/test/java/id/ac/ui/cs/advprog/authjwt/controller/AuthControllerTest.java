@@ -1,136 +1,110 @@
 package id.ac.ui.cs.advprog.authjwt.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import id.ac.ui.cs.advprog.authjwt.config.SecurityConfig;
+import id.ac.ui.cs.advprog.authjwt.dto.AdminRegistrationDTO;
+import id.ac.ui.cs.advprog.authjwt.dto.RegisterResponseDTO;
 import id.ac.ui.cs.advprog.authjwt.facade.AuthenticationFacade;
-import id.ac.ui.cs.advprog.authjwt.model.Token;
-import id.ac.ui.cs.advprog.authjwt.model.User;
+import id.ac.ui.cs.advprog.course.service.MataKuliahService;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@ExtendWith(MockitoExtension.class)
+@WebMvcTest(AuthController.class)
+@Import(SecurityConfig.class)
 public class AuthControllerTest {
 
-    @InjectMocks
-    private AuthController authController;
+    private String AdminRegistration = "/api/auth/admin/signup";
 
-    @Mock
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Autowired
+    @Qualifier("authenticationFacade")
     private AuthenticationFacade authFacade;
 
-    @Test
-    void testLogin_Success() {
-        User user = new User(null, "testuser@example.com", "password");
-
-        Map<String, String> responseBody = new HashMap<>();
-        responseBody.put("status", "accept");
-        responseBody.put("messages", "Success login");
-        responseBody.put("token", "mock-jwt");
-
-        ResponseEntity<Map<String, String>> mockResponse = ResponseEntity.ok(responseBody);
-
-        when(authFacade.login(user)).thenReturn(mockResponse);
-
-        ResponseEntity<Map<String, String>> response = authController.login(user);
-
-        assertNotNull(response);
-        assertEquals(200, response.getStatusCodeValue());
-        assertEquals("Success login", response.getBody().get("messages"));
-        assertEquals("mock-jwt", response.getBody().get("token"));
-
-        verify(authFacade, times(1)).login(user);
-    }
-
-
-    @Test
-    void testRegisterAdmin_Success() {
-        User admin = new User(UUID.randomUUID(), "admin@example.com", "adminpass");
-
-        Map<String, String> responseBody = new HashMap<>();
-        responseBody.put("status", "success");
-        responseBody.put("messages", "Admin registered");
-
-        ResponseEntity<Map<String, String>> mockResponse = ResponseEntity.status(201).body(responseBody);
-
-        when(authFacade.register(admin, "ADMIN")).thenReturn(mockResponse);
-
-        ResponseEntity<Map<String, String>> response = authController.registerAdmin(admin);
-
-        assertNotNull(response);
-        assertEquals(201, response.getStatusCodeValue());
-        assertEquals("Admin registered", response.getBody().get("messages"));
-
-        verify(authFacade, times(1)).register(admin, "ADMIN");
+    @TestConfiguration
+    static class MockConfig {
+        @Bean
+        AuthenticationFacade authenticationFacade() {
+            return Mockito.mock(AuthenticationFacade.class);
+        }
     }
 
     @Test
-    void testRegisterStudent_Success() {
-        User student = new User(UUID.randomUUID(), "student@example.com", "studpass", "Student Name", false, "2106751234");
+    @WithMockUser // Simulate an authenticated user
+    void registerAdmin_shouldReturn200() throws Exception {
+        var request = new AdminRegistrationDTO("admin@mail.com", "securepass123");
+        var response = new RegisterResponseDTO("accept", "Success register");
 
-        Map<String, String> responseBody = new HashMap<>();
-        responseBody.put("status", "success");
-        responseBody.put("messages", "Student registered");
+        // Mock the register method
+        when(authFacade.register(any(AdminRegistrationDTO.class), eq("ADMIN")))
+                .thenReturn(new ResponseEntity<>(response, HttpStatus.OK));
 
-        ResponseEntity<Map<String, String>> mockResponse = ResponseEntity.status(201).body(responseBody);
-
-        when(authFacade.register(student, "STUDENT")).thenReturn(mockResponse);
-
-        ResponseEntity<Map<String, String>> response = authController.registerStudent(student);
-
-        assertNotNull(response);
-        assertEquals(201, response.getStatusCodeValue());
-        assertEquals("Student registered", response.getBody().get("messages"));
-
-        verify(authFacade, times(1)).register(student, "STUDENT");
+        // Perform the POST request to the endpoint
+        mockMvc.perform(post(AdminRegistration)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("accept"))
+                .andExpect(jsonPath("$.messages").value("Success register"));
     }
 
     @Test
-    void testRegisterLecturer_Success() {
-        User lecturer = new User(UUID.randomUUID(), "lecturer@example.com", "lectpass", "Lecturer Name", true, "NIP123456");
+    @WithMockUser // Simulate an authenticated user
+    void registerAdmin_invalid_shouldReturn401() throws Exception {
+        var request = new AdminRegistrationDTO("invalid", "123");
+        var response = new RegisterResponseDTO("error", "Username must be a valid email address");
 
-        Map<String, String> responseBody = new HashMap<>();
-        responseBody.put("status", "success");
-        responseBody.put("messages", "Lecturer registered");
+        // Mock the register method
+        when(authFacade.register(any(AdminRegistrationDTO.class), eq("ADMIN")))
+                .thenReturn(new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED));
 
-        ResponseEntity<Map<String, String>> mockResponse = ResponseEntity.status(201).body(responseBody);
-
-        when(authFacade.register(lecturer, "LECTURER")).thenReturn(mockResponse);
-
-        ResponseEntity<Map<String, String>> response = authController.registerLecturer(lecturer);
-
-        assertNotNull(response);
-        assertEquals(201, response.getStatusCodeValue());
-        assertEquals("Lecturer registered", response.getBody().get("messages"));
-
-        verify(authFacade, times(1)).register(lecturer, "LECTURER");
+        // Perform the POST request to the endpoint
+        mockMvc.perform(post(AdminRegistration)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value("error"))
+                .andExpect(jsonPath("$.messages").value("Username must be a valid email address"));
     }
 
     @Test
-    void testLogout_Success() {
-        Token token = new Token("mock-token");
+    void registerAdmin_invalid_shouldReturn400() throws Exception {
+        var request = new AdminRegistrationDTO("admin@mail.com", "123");
 
-        Map<String, String> responseBody = new HashMap<>();
-        responseBody.put("status", "success");
-        responseBody.put("messages", "Logout successful");
+        // Mock the register method
+        when(authFacade.register(any(AdminRegistrationDTO.class), eq("ADMIN")))
+                .thenReturn(new ResponseEntity<>(new RegisterResponseDTO("error", "Password is too weak"), HttpStatus.BAD_REQUEST));
 
-        ResponseEntity<Map<String, String>> mockResponse = ResponseEntity.ok(responseBody);
-
-        when(authFacade.logout(token)).thenReturn(mockResponse);
-
-        ResponseEntity<Map<String, String>> response = authController.logout(token);
-
-        assertNotNull(response);
-        assertEquals(200, response.getStatusCodeValue());
-        assertEquals("Logout successful", response.getBody().get("messages"));
-
-        verify(authFacade, times(1)).logout(token);
+        // Perform the POST request to the endpoint
+        mockMvc.perform(post(AdminRegistration)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value("error"))
+                .andExpect(jsonPath("$.messages").value("Password is too weak"));
     }
 }

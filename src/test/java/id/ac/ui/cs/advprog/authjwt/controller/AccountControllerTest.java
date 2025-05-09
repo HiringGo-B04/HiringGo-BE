@@ -32,7 +32,7 @@ public class AccountControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
+    @Autowired
     private AccountService accountService;
 
     @Test
