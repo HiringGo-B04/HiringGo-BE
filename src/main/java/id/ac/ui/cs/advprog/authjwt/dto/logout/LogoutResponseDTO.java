@@ -1,11 +1,7 @@
-package id.ac.ui.cs.advprog.authjwt.dto.login;
+package id.ac.ui.cs.advprog.authjwt.dto.logout;
 
-public record LoginResponseDTO (
+public record LogoutResponseDTO(
         String status,
-        String message,
-        String token
+        String message
 ) {
-    public LoginResponseDTO(String status, String message) {
-        this(status, message, null);
-    }
 }

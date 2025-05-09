@@ -89,7 +89,7 @@ public class AuthService implements AuthenticationFacade {
         catch (Exception e) {
             response.put("status", "error");
             response.put("messages", e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.valueOf(401));
+            return new ResponseEntity<>(response, HttpStatus.valueOf(400));
         }
     }
 
