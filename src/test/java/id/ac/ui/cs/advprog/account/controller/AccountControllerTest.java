@@ -1,9 +1,9 @@
-package id.ac.ui.cs.advprog.authjwt.controller;
+package id.ac.ui.cs.advprog.account.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import id.ac.ui.cs.advprog.authjwt.config.SecurityConfig;
 import id.ac.ui.cs.advprog.authjwt.model.User;
-import id.ac.ui.cs.advprog.authjwt.service.AccountService;
+import id.ac.ui.cs.advprog.account.service.AccountService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;

@@ -20,30 +20,36 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
+    public static final String REGISTER_ADMIN = "/admin/signup";
+    public static final String REGISTER_LECTURER = "/admin/signup/lecturer";
+    public static final String REGISTER_STUDENT =  "/public/signup/student";
+    public static final String LOGIN = "/public/signin";
+    public static final String LOGOUT = "/user/logout";
+
     @Autowired
     private AuthenticationFacade authFacade;
 
-    @PostMapping("/public/signin")
+    @PostMapping(LOGIN)
     public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO user) {
         return authFacade.login(user);
     }
 
-    @PostMapping("/admin/signup")
+    @PostMapping(REGISTER_ADMIN)
     public ResponseEntity<RegisterResponseDTO> registerAdmin(@Valid @RequestBody AdminRegistrationDTO user) {
         return authFacade.register(user, "ADMIN");
     }
 
-    @PostMapping("/public/signup/student")
+    @PostMapping(REGISTER_STUDENT)
     public ResponseEntity<RegisterResponseDTO> registerStudent(@Valid @RequestBody StudentRegistrationDTO user) {
         return authFacade.register(user, "STUDENT");
     }
 
-    @PostMapping("/admin/signup/lecturer")
+    @PostMapping(REGISTER_LECTURER)
     public ResponseEntity<RegisterResponseDTO> registerLecturer(@Valid @RequestBody LecturerRegistrationDTO user) {
         return authFacade.register(user, "LECTURER");
     }
 
-    @PostMapping("/user/logout")
+    @PostMapping(LOGOUT)
     public ResponseEntity<LogoutResponseDTO> logout(@Valid @RequestBody LogoutRequestDTO token) {
         return authFacade.logout(token);
     }

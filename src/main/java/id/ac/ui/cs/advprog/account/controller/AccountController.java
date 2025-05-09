@@ -1,5 +1,5 @@
-package id.ac.ui.cs.advprog.authjwt.controller;
-import id.ac.ui.cs.advprog.authjwt.service.AccountService;
+package id.ac.ui.cs.advprog.account.controller;
+import id.ac.ui.cs.advprog.account.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;

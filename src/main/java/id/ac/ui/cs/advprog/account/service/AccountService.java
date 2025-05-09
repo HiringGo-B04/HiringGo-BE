@@ -1,6 +1,8 @@
-package id.ac.ui.cs.advprog.authjwt.service;
+package id.ac.ui.cs.advprog.account.service;
+
 import id.ac.ui.cs.advprog.authjwt.model.User;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,8 +14,11 @@ import java.util.Map;
 
 @Service
 public class AccountService{
-    @Autowired
-    UserRepository userRepository;
+    private final UserRepository userRepository;
+
+    public AccountService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     @Transactional
     public ResponseEntity<Map<String, String>> delete(String email){

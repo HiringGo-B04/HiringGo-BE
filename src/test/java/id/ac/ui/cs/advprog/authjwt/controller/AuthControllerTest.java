@@ -12,8 +12,6 @@ import id.ac.ui.cs.advprog.authjwt.dto.registration.LecturerRegistrationDTO;
 import id.ac.ui.cs.advprog.authjwt.dto.registration.RegisterResponseDTO;
 import id.ac.ui.cs.advprog.authjwt.dto.registration.StudentRegistrationDTO;
 import id.ac.ui.cs.advprog.authjwt.facade.AuthenticationFacade;
-import id.ac.ui.cs.advprog.authjwt.model.User;
-import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +23,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -34,16 +31,17 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static id.ac.ui.cs.advprog.authjwt.controller.AuthController.*;
 
 @WebMvcTest(AuthController.class)
 @Import(SecurityConfig.class)
 public class AuthControllerTest {
-
-    private final String AdminRegistration = "/api/auth/admin/signup";
-    private final String LECTURER_REGISTRATION_ENDPOINT = "/api/auth/admin/signup/lecturer";
-    private final String STUDENT_REGISTRATION_ENDPOINT =  "/api/auth/public/signup/student";
-    private final String LOGIN_ENDPOINT = "/api/auth/public/signin";
-    private final String LOGOUT_ENDPOINT = "/api/auth/user/logout";
+    private final String path = "/api/auth";
+    private final String ADMIN_REGISTRATION = path + REGISTER_ADMIN ;
+    private final String LECTURER_REGISTRATION_ENDPOINT = path + REGISTER_LECTURER;
+    private final String STUDENT_REGISTRATION_ENDPOINT =  path + REGISTER_STUDENT;
+    private final String LOGIN_ENDPOINT = path + LOGIN;
+    private final String LOGOUT_ENDPOINT = path + LOGOUT;
 
     @Autowired
     private MockMvc mockMvc;
@@ -145,7 +143,7 @@ public class AuthControllerTest {
                 .thenReturn(new ResponseEntity<>(response, HttpStatus.OK));
 
         // Perform the POST request to the endpoint
-        mockMvc.perform(post(AdminRegistration)
+        mockMvc.perform(post(ADMIN_REGISTRATION)
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -164,7 +162,7 @@ public class AuthControllerTest {
                 .thenReturn(new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED));
 
         // Perform the POST request to the endpoint
-        mockMvc.perform(post(AdminRegistration)
+        mockMvc.perform(post(ADMIN_REGISTRATION)
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isUnauthorized())
@@ -181,7 +179,7 @@ public class AuthControllerTest {
                 .thenReturn(new ResponseEntity<>(new RegisterResponseDTO("error", "Password is too weak"), HttpStatus.BAD_REQUEST));
 
         // Perform the POST request to the endpoint
-        mockMvc.perform(post(AdminRegistration)
+        mockMvc.perform(post(ADMIN_REGISTRATION)
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
