@@ -15,7 +15,7 @@ public class Lowongan {
     private UUID id;
 
     private String matkul;
-    private int year;
+    private int tahun;
     private String term;
 
     @Column(name = "total_asdos_needed", nullable = false)
@@ -30,7 +30,7 @@ public class Lowongan {
     private Lowongan(Builder builder) {
         this.id = UUID.randomUUID();
         this.matkul = builder.matkul;
-        this.year = builder.year;
+        this.tahun = builder.tahun;
         this.term = builder.term;
         this.totalAsdosNeeded = builder.totalAsdosNeeded;
         this.totalAsdosRegistered = builder.totalAsdosRegistered;
@@ -43,7 +43,7 @@ public class Lowongan {
 
     public static class Builder {
         private String matkul;
-        private int year;
+        private int tahun;
         private String term;
         private int totalAsdosNeeded;
         private int totalAsdosRegistered = 0;
@@ -54,8 +54,8 @@ public class Lowongan {
             return this;
         }
 
-        public Builder year(int year) {
-            this.year = year;
+        public Builder tahun(int tahun) {
+            this.tahun = tahun;
             return this;
         }
 

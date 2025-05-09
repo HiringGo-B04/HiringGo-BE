@@ -32,7 +32,7 @@ public class LowonganServiceImpl implements LowonganService {
             throw new IllegalArgumentException("Semester harus Genap atau Ganjil");
         }
 
-        if (lowongan.getYear() <= 0) {
+        if (lowongan.getTahun() <= 0) {
             throw new IllegalArgumentException("Tahun ajaran tidak valid");
         }
 
@@ -47,7 +47,7 @@ public class LowonganServiceImpl implements LowonganService {
                 .anyMatch(l -> !l.getId().equals(lowongan.getId()) && // Abaikan lowongan yang sedang diupdate
                         l.getMatkul().equals(lowongan.getMatkul()) &&
                         l.getTerm().equals(lowongan.getTerm()) &&
-                        l.getYear() == lowongan.getYear());
+                        l.getTahun() == lowongan.getTahun());
 
         if (isDuplicate) {
             throw new IllegalArgumentException("Lowongan dengan kombinasi mata kuliah, semester, dan tahun ajaran yang sama sudah ada");
@@ -72,7 +72,7 @@ public class LowonganServiceImpl implements LowonganService {
 
     @Override
     public Lowongan addLowongan(Lowongan lowongan) {
-        if (lowongan.getYear() < 2025) {
+        if (lowongan.getTahun() < 2025) {
             throw new IllegalArgumentException("Tahun ajaran harus lebih dari atau sama dengan 2025");
         }
         validateLowongan(lowongan);
@@ -114,7 +114,7 @@ public class LowonganServiceImpl implements LowonganService {
 
     private boolean isSameLowongan(Lowongan a, Lowongan b) {
         return a.getMatkul().equals(b.getMatkul()) &&
-                a.getYear() == b.getYear() &&
+                a.getTahun() == b.getTahun() &&
                 a.getTerm().equals(b.getTerm());
     }
 
