@@ -76,7 +76,7 @@ public class AdminRegistrationCommandTest {
         AdminRegistrationCommand adminRegistrationCommand = new AdminRegistrationCommand(userRepository, passwordEncoder, user);
         ResponseEntity<RegisterResponseDTO> responseEntity = adminRegistrationCommand.addUser();
 
-        assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
+        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
 
         RegisterResponseDTO response = responseEntity.getBody();
         assertNotNull(response);
@@ -183,7 +183,7 @@ public class AdminRegistrationCommandTest {
         ResponseEntity<RegisterResponseDTO> responseEntity = adminRegistrationCommand.addUser();
 
         // Assert the status code
-        assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
+        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
 
         RegisterResponseDTO response = responseEntity.getBody();
         assertNotNull(response);

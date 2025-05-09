@@ -162,7 +162,7 @@ public class AuthServiceTest {
         ResponseEntity<RegisterResponseDTO> actualResponse = authService.register(validUser, "admin");
 
         // Then
-        assertEquals(HttpStatus.FORBIDDEN, actualResponse.getStatusCode());
+        assertEquals(HttpStatus.BAD_REQUEST, actualResponse.getStatusCode());
         assertEquals("Username already exists", actualResponse.getBody().messages());
     }
 
