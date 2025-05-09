@@ -53,7 +53,7 @@ public class StudentRegistrationCommand extends RegistrationCommand {
                             "accept",
                             "Success register",
                             newUser.getUsername(),
-                            "LECTURER"),
+                            "STUDENT"),
                     HttpStatus.valueOf(200));
         }
         catch (Exception e) {
