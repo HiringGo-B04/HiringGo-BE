@@ -4,6 +4,5 @@ import jakarta.validation.constraints.Min;
 
 public record MataKuliahPatch(
         @Min(0) Integer sks,
-        String deskripsi
-
-) { }
+        String          deskripsi
+) {}
