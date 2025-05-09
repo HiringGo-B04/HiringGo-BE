@@ -1,10 +1,9 @@
-package id.ac.ui.cs.advprog.authjwt.service;
+package id.ac.ui.cs.advprog.authjwt.service.command;
 
 import id.ac.ui.cs.advprog.authjwt.dto.registration.AdminRegistrationDTO;
 import id.ac.ui.cs.advprog.authjwt.dto.registration.RegisterResponseDTO;
 import id.ac.ui.cs.advprog.authjwt.model.User;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
-import id.ac.ui.cs.advprog.authjwt.service.command.AdminRegistrationCommand;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
