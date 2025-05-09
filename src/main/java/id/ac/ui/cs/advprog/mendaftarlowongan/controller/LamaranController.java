@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.mendaftarlowongan;
+package id.ac.ui.cs.advprog.mendaftarlowongan.controller;
 
 import id.ac.ui.cs.advprog.mendaftarlowongan.model.Lamaran;
 import id.ac.ui.cs.advprog.mendaftarlowongan.service.LamaranService;
