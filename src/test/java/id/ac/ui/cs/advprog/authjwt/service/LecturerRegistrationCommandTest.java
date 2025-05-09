@@ -1,372 +1,153 @@
-//package id.ac.ui.cs.advprog.authjwt.service;
-//
-//import id.ac.ui.cs.advprog.authjwt.model.User;
-//import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
-//import id.ac.ui.cs.advprog.authjwt.service.command.LecturerRegistrationCommand;
-//import org.junit.jupiter.api.BeforeEach;
-//import org.junit.jupiter.api.Test;
-//import org.mockito.*;
-//import org.springframework.http.HttpStatus;
-//import org.springframework.http.ResponseEntity;
-//import org.springframework.security.crypto.password.PasswordEncoder;
-//
-//import static org.junit.jupiter.api.Assertions.*;
-//import static org.mockito.Mockito.*;
-//import java.util.Map;
-//import java.util.UUID;
-//
-//class LecturerRegistrationCommandTest {
-//
-//    @Mock
-//    private UserRepository userRepository;
-//
-//    @Mock
-//    private PasswordEncoder passwordEncoder;
-//
-//    private LecturerRegistrationCommand lecturerRegistrationCommand;
-//    private User user;
-//
-//    @BeforeEach
-//    void setUp() {
-//        MockitoAnnotations.openMocks(this);
-//        user = new User();
-//        user.setUsername("lecturer1@gmail.com");
-//        user.setPassword("password");
-//        user.setFullName("Lecturer One");
-//        user.setNip("12345678");
-//
-//        lecturerRegistrationCommand = new LecturerRegistrationCommand(userRepository, passwordEncoder, user);
-//    }
-//
-//    @Test
-//    void testAddUser_InvalidUsername() {
-//        User invalidUser = new User();
-//        invalidUser.setUsername("");
-//        invalidUser.setPassword("password");
-//        invalidUser.setFullName("Lecturer One");
-//        invalidUser.setNip("12345678");
-//
-//        lecturerRegistrationCommand = new LecturerRegistrationCommand(userRepository, passwordEncoder, invalidUser);
-//
-//        ResponseEntity<Map<String, String>> responseEntity = lecturerRegistrationCommand.addUser();
-//
-//        assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
-//        Map<String, String> response = responseEntity.getBody();
-//        assertNotNull(response);
-//        assertEquals("error", response.get("status"));
-//        assertEquals("Invalid payload", response.get("message"));
-//    }
-//
-//    @Test
-//    void testAddUser_NNUllUsername() {
-//        User invalidUser = new User();
-//        invalidUser.setUsername(null);
-//        invalidUser.setPassword("password");
-//        invalidUser.setFullName("Lecturer One");
-//        invalidUser.setNip("12345678");
-//
-//        lecturerRegistrationCommand = new LecturerRegistrationCommand(userRepository, passwordEncoder, invalidUser);
-//
-//        ResponseEntity<Map<String, String>> responseEntity = lecturerRegistrationCommand.addUser();
-//
-//        assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
-//        Map<String, String> response = responseEntity.getBody();
-//        assertNotNull(response);
-//        assertEquals("error", response.get("status"));
-//        assertEquals("Invalid payload", response.get("message"));
-//    }
-//
-//    @Test
-//    void testAddUser_InvalidPassword() {
-//        User invalidUser = new User();
-//        invalidUser.setUsername("lecturer1@gmail.com");
-//        invalidUser.setPassword(""); // Empty password
-//        invalidUser.setFullName("Lecturer One");
-//        invalidUser.setNip("12345678");
-//
-//        lecturerRegistrationCommand = new LecturerRegistrationCommand(userRepository, passwordEncoder, invalidUser);
-//
-//        ResponseEntity<Map<String, String>> responseEntity = lecturerRegistrationCommand.addUser();
-//
-//        assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
-//        Map<String, String> response = responseEntity.getBody();
-//        assertNotNull(response);
-//        assertEquals("error", response.get("status"));
-//        assertEquals("Invalid payload", response.get("message"));
-//    }
-//
-//    @Test
-//    void testAddUser_InvalidFullName() {
-//        User invalidUser = new User();
-//        invalidUser.setUsername("lecturer1@gmail.com");
-//        invalidUser.setPassword("password");
-//        invalidUser.setFullName("");
-//        invalidUser.setNip("12345678");
-//
-//        lecturerRegistrationCommand = new LecturerRegistrationCommand(userRepository, passwordEncoder, invalidUser);
-//
-//        ResponseEntity<Map<String, String>> responseEntity = lecturerRegistrationCommand.addUser();
-//
-//        assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
-//        Map<String, String> response = responseEntity.getBody();
-//        assertNotNull(response);
-//        assertEquals("error", response.get("status"));
-//        assertEquals("Invalid payload", response.get("message"));
-//    }
-//
-//    @Test
-//    void testAddUser_InvalidNip() {
-//        User invalidUser = new User();
-//        invalidUser.setUsername("lecturer1@gmail.com");
-//        invalidUser.setPassword("password");
-//        invalidUser.setFullName("Lecturer One");
-//        invalidUser.setNip("");
-//
-//        lecturerRegistrationCommand = new LecturerRegistrationCommand(userRepository, passwordEncoder, invalidUser);
-//
-//        ResponseEntity<Map<String, String>> responseEntity = lecturerRegistrationCommand.addUser();
-//
-//        assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
-//        Map<String, String> response = responseEntity.getBody();
-//        assertNotNull(response);
-//        assertEquals("error", response.get("status"));
-//        assertEquals("Invalid payload", response.get("message"));
-//    }
-//
-//    @Test
-//    void testAddUser_UsernameAlreadyExists() {
-//        User validUser = new User();
-//        validUser.setUsername("lecturer1@gmail.com");
-//        validUser.setPassword("password");
-//        validUser.setFullName("Lecturer One");
-//        validUser.setNip("12345678");
-//
-//        when(userRepository.existsByUsername(validUser.getUsername())).thenReturn(true);
-//
-//        lecturerRegistrationCommand = new LecturerRegistrationCommand(userRepository, passwordEncoder, validUser);
-//
-//        ResponseEntity<Map<String, String>> responseEntity = lecturerRegistrationCommand.addUser();
-//
-//        assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
-//        Map<String, String> response = responseEntity.getBody();
-//        assertNotNull(response);
-//        assertEquals("error", response.get("status"));
-//        assertEquals("Username already exists", response.get("message"));
-//    }
-//
-//    @Test
-//    void testAddUser_NIPAlreadyExists() {
-//        when(userRepository.existsByNip("12345678")).thenReturn(true);
-//
-//        ResponseEntity<Map<String, String>> responseEntity = lecturerRegistrationCommand.addUser();
-//
-//        assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
-//        Map<String, String> response = responseEntity.getBody();
-//        assertNotNull(response);
-//        assertEquals("error", response.get("status"));
-//        assertEquals("Nip already exists", response.get("message"));
-//    }
-//
-//    @Test
-//    void testAddUser_Success() {
-//        when(userRepository.existsByUsername("lecturer1@gmail.com")).thenReturn(false);
-//        when(passwordEncoder.encode("password")).thenReturn("encodedPassword");
-//
-//        User newUser = new User(UUID.randomUUID(), "lecturer1@gmail.com", "encodedPassword", "Lecturer One", false, "12345678");
-//        when(userRepository.save(any(User.class))).thenReturn(newUser);
-//
-//        ResponseEntity<Map<String, String>> responseEntity = lecturerRegistrationCommand.addUser();
-//
-//        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-//        Map<String, String> response = responseEntity.getBody();
-//        assertNotNull(response);
-//        assertEquals("accept", response.get("status"));
-//        assertEquals("Success register", response.get("messages"));
-//        assertEquals("lecturer1@gmail.com", response.get("username"));
-//        assertEquals("LECTURER", response.get("role"));
-//
-//        verify(userRepository).existsByUsername("lecturer1@gmail.com");
-//        verify(userRepository).save(any(User.class));
-//        verify(passwordEncoder).encode("password");
-//    }
-//
-//    @Test
-//    void testAddUser_Lecturer_InvalidPayload() {
-//        User invalidUser = new User(UUID.randomUUID(), null, null, null, true, null);
-//
-//        when(userRepository.existsByUsername(anyString())).thenReturn(false);
-//
-//        LecturerRegistrationCommand lecturerRegistrationCommand = new LecturerRegistrationCommand(userRepository, passwordEncoder, invalidUser);
-//
-//        ResponseEntity<Map<String, String>> responseEntity = lecturerRegistrationCommand.addUser();
-//
-//        assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
-//        Map<String, String> response = responseEntity.getBody();
-//        assertNotNull(response);
-//        assertEquals("error", response.get("status"));
-//        assertEquals("Invalid payload", response.get("message"));
-//
-//        verify(userRepository, never()).save(any(User.class));
-//    }
-//
-//    @Test
-//    void testAddUser_Lecturer_ExceptionHandling() {
-//        User validUser = new User(UUID.randomUUID(), "lecturer1@gmail.com", "encodedPassword", "Lecturer One", true, "12345678");
-//
-//        when(userRepository.existsByUsername(anyString())).thenReturn(false);
-//        when(passwordEncoder.encode("encodedPassword")).thenReturn("encodedPassword");
-//
-//        doThrow(new RuntimeException("Unexpected database error")).when(userRepository).save(any(User.class));
-//
-//        LecturerRegistrationCommand lecturerRegistrationCommand = new LecturerRegistrationCommand(userRepository, passwordEncoder, validUser);
-//
-//        ResponseEntity<Map<String, String>> responseEntity = lecturerRegistrationCommand.addUser();
-//
-//        assertEquals(HttpStatus.UNAUTHORIZED, responseEntity.getStatusCode());
-//        Map<String, String> response = responseEntity.getBody();
-//        assertNotNull(response);
-//        assertEquals("error", response.get("status"));
-//        assertEquals("Unexpected database error", response.get("messages"));
-//
-//        verify(userRepository).existsByUsername("lecturer1@gmail.com");
-//        verify(userRepository).save(any(User.class));
-//        verify(passwordEncoder).encode("encodedPassword");
-//    }
-//
-//
-//    @Test
-//    void testAddUser_Lecturer_EmptyFields() {
-//        User invalidUser = new User(UUID.randomUUID(), "", "", "", true, "");  // All required fields are empty strings
-//
-//        when(userRepository.existsByUsername(anyString())).thenReturn(false);
-//
-//        LecturerRegistrationCommand lecturerRegistrationCommand = new LecturerRegistrationCommand(userRepository, passwordEncoder, invalidUser);
-//
-//        ResponseEntity<Map<String, String>> responseEntity = lecturerRegistrationCommand.addUser();
-//
-//        assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
-//        Map<String, String> response = responseEntity.getBody();
-//        assertNotNull(response);
-//        assertEquals("error", response.get("status"));
-//        assertEquals("Invalid payload", response.get("message"));
-//
-//        verify(userRepository, never()).save(any(User.class));
-//    }
-//
-//    @Test
-//    void testAddUser_Lecturer_NullPassword() {
-//        User invalidUser = new User(UUID.randomUUID(), "lecturer1@gmail.com", null, "Lecturer One", true, "12345678");
-//
-//        when(userRepository.existsByUsername(anyString())).thenReturn(false);
-//
-//        LecturerRegistrationCommand lecturerRegistrationCommand = new LecturerRegistrationCommand(userRepository, passwordEncoder, invalidUser);
-//
-//        ResponseEntity<Map<String, String>> responseEntity = lecturerRegistrationCommand.addUser();
-//
-//        assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
-//        Map<String, String> response = responseEntity.getBody();
-//        assertNotNull(response);
-//        assertEquals("error", response.get("status"));
-//        assertEquals("Invalid payload", response.get("message"));
-//
-//        verify(userRepository, never()).save(any(User.class));
-//    }
-//
-//    @Test
-//    void testAddUser_Lecturer_NullFullname() {
-//        User invalidUser = new User(UUID.randomUUID(), "lecturer1@gmail.com", "aksj", null, true, "12345678");
-//
-//        when(userRepository.existsByUsername(anyString())).thenReturn(false);
-//
-//        LecturerRegistrationCommand lecturerRegistrationCommand = new LecturerRegistrationCommand(userRepository, passwordEncoder, invalidUser);
-//
-//        ResponseEntity<Map<String, String>> responseEntity = lecturerRegistrationCommand.addUser();
-//
-//        assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
-//        Map<String, String> response = responseEntity.getBody();
-//        assertNotNull(response);
-//        assertEquals("error", response.get("status"));
-//        assertEquals("Invalid payload", response.get("message"));
-//
-//        verify(userRepository, never()).save(any(User.class));
-//    }
-//
-//    @Test
-//    void testAddUser_Lecturer_NullNIP() {
-//        User invalidUser = new User(UUID.randomUUID(), "lecturer1@gmail.com", "aaa", "Lecturer One", true, null);
-//
-//        when(userRepository.existsByUsername(anyString())).thenReturn(false);
-//
-//        LecturerRegistrationCommand lecturerRegistrationCommand = new LecturerRegistrationCommand(userRepository, passwordEncoder, invalidUser);
-//
-//        ResponseEntity<Map<String, String>> responseEntity = lecturerRegistrationCommand.addUser();
-//
-//        assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
-//        Map<String, String> response = responseEntity.getBody();
-//        assertNotNull(response);
-//        assertEquals("error", response.get("status"));
-//        assertEquals("Invalid payload", response.get("message"));
-//
-//        verify(userRepository, never()).save(any(User.class));
-//    }
-//
-//
-//    @Test
-//    void testAddUser_Lecturer_InvalidUsername() {
-//        User invalidUser = new User(UUID.randomUUID(), "lecturer1", "aaa", "Lecturer One", true, "12345678" );
-//
-//        when(userRepository.existsByUsername(anyString())).thenReturn(false);
-//
-//        LecturerRegistrationCommand lecturerRegistrationCommand = new LecturerRegistrationCommand(userRepository, passwordEncoder, invalidUser);
-//
-//        ResponseEntity<Map<String, String>> responseEntity = lecturerRegistrationCommand.addUser();
-//
-//        assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
-//        Map<String, String> response = responseEntity.getBody();
-//        assertNotNull(response);
-//        assertEquals("error", response.get("status"));
-//        assertEquals("Username must be a valid email address", response.get("message"));
-//
-//        verify(userRepository, never()).save(any(User.class));
-//    }
-//
-//    @Test
-//    void testAddUser_Lecturer_InvalidNIP() {
-//        User invalidUser = new User(UUID.randomUUID(), "lecturer1@gmail.com", "aaa", "Lecturer One", true, "1234567jdksjd8" );
-//
-//        when(userRepository.existsByUsername(anyString())).thenReturn(false);
-//
-//        LecturerRegistrationCommand lecturerRegistrationCommand = new LecturerRegistrationCommand(userRepository, passwordEncoder, invalidUser);
-//
-//        ResponseEntity<Map<String, String>> responseEntity = lecturerRegistrationCommand.addUser();
-//
-//        assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
-//        Map<String, String> response = responseEntity.getBody();
-//        assertNotNull(response);
-//        assertEquals("error", response.get("status"));
-//        assertEquals("NIM/NIP must only contain number and maximal 12 digits long", response.get("message"));
-//
-//        verify(userRepository, never()).save(any(User.class));
-//    }
-//
-//    @Test
-//    void testAddUser_Lecturer_InvalidName() {
-//        User invalidUser = new User(UUID.randomUUID(), "lecturer1@gmail.com", "aaa", "Lecturer 123", true, "12345678" );
-//
-//        when(userRepository.existsByUsername(anyString())).thenReturn(false);
-//
-//        LecturerRegistrationCommand lecturerRegistrationCommand = new LecturerRegistrationCommand(userRepository, passwordEncoder, invalidUser);
-//
-//        ResponseEntity<Map<String, String>> responseEntity = lecturerRegistrationCommand.addUser();
-//
-//        assertEquals(HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
-//        Map<String, String> response = responseEntity.getBody();
-//        assertNotNull(response);
-//        assertEquals("error", response.get("status"));
-//        assertEquals("Name must only contain letter character", response.get("message"));
-//
-//        verify(userRepository, never()).save(any(User.class));
-//    }
-//
-//
-//}
+package id.ac.ui.cs.advprog.authjwt.service;
+
+import id.ac.ui.cs.advprog.authjwt.dto.LecturerRegistrationDTO;
+import id.ac.ui.cs.advprog.authjwt.dto.RegisterResponseDTO;
+import id.ac.ui.cs.advprog.authjwt.model.User;
+import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
+import id.ac.ui.cs.advprog.authjwt.service.command.LecturerRegistrationCommand;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+public class LecturerRegistrationCommandTest {
+
+    @Mock
+    private UserRepository userRepository;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
+    private LecturerRegistrationDTO validLecturerDTO;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+        validLecturerDTO = new LecturerRegistrationDTO("lecturer@example.com", "password", "1234567890", "lecturer");
+    }
+
+    @Test
+    void testAddUser_Success() {
+        // Simulate valid lecturer data and ensure user does not exist in the repo
+        when(userRepository.existsByNip(validLecturerDTO.nip())).thenReturn(false);
+        when(userRepository.existsByUsername(validLecturerDTO.username())).thenReturn(false);
+        when(passwordEncoder.encode(validLecturerDTO.password())).thenReturn("encodedPassword");
+
+        LecturerRegistrationCommand lecturerRegistrationCommand = new LecturerRegistrationCommand(userRepository, passwordEncoder, validLecturerDTO);
+        ResponseEntity<RegisterResponseDTO> responseEntity = lecturerRegistrationCommand.addUser();
+
+        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        RegisterResponseDTO response = responseEntity.getBody();
+        assertNotNull(response);
+
+        assertEquals("accept", response.status());
+        assertEquals("Success register", response.messages());
+        assertEquals(validLecturerDTO.username(), response.username());
+        assertEquals("LECTURER", response.role());
+
+        verify(userRepository).existsByNip(validLecturerDTO.nip());
+        verify(userRepository).existsByUsername(validLecturerDTO.username());
+        verify(passwordEncoder).encode(validLecturerDTO.password());
+        verify(userRepository).save(any(User.class));
+    }
+
+    @Test
+    void testAddUser_NipAlreadyExists() {
+        // Simulate NIP already existing in the repository
+        when(userRepository.existsByNip(validLecturerDTO.nip())).thenReturn(true);
+
+        LecturerRegistrationCommand lecturerRegistrationCommand = new LecturerRegistrationCommand(userRepository, passwordEncoder, validLecturerDTO);
+        ResponseEntity<RegisterResponseDTO> responseEntity = lecturerRegistrationCommand.addUser();
+
+        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+
+        RegisterResponseDTO response = responseEntity.getBody();
+        assertNotNull(response);
+        assertEquals("error", response.status());
+        assertEquals("NIP Already exists", response.messages());
+
+        verify(userRepository).existsByNip(validLecturerDTO.nip());
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void testAddUser_UsernameAlreadyExists() {
+        when(userRepository.existsByUsername(validLecturerDTO.username())).thenReturn(true);
+        when(userRepository.existsByNip(validLecturerDTO.nip())).thenReturn(false);
+
+        LecturerRegistrationCommand lecturerRegistrationCommand = new LecturerRegistrationCommand(userRepository, passwordEncoder, validLecturerDTO);
+        ResponseEntity<RegisterResponseDTO> responseEntity = lecturerRegistrationCommand.addUser();
+
+        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+
+        RegisterResponseDTO response = responseEntity.getBody();
+        assertNotNull(response);
+        assertEquals("error", response.status());
+        assertEquals("Username already exists", response.messages());
+
+        verify(userRepository).existsByUsername(validLecturerDTO.username());
+        verify(userRepository, never()).existsByNip(validLecturerDTO.nip());
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void testAddUser_InvalidEmailFormat() {
+        // Simulate invalid email format
+        LecturerRegistrationDTO invalidLecturerDTO = new LecturerRegistrationDTO("invalid-email", "password", "John Doe", "1234567890");
+
+        LecturerRegistrationCommand lecturerRegistrationCommand = new LecturerRegistrationCommand(userRepository, passwordEncoder, invalidLecturerDTO);
+        ResponseEntity<RegisterResponseDTO> responseEntity = lecturerRegistrationCommand.addUser();
+
+        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+
+        RegisterResponseDTO response = responseEntity.getBody();
+        assertNotNull(response);
+        assertEquals("error", response.status());
+        assertEquals("Username must be a valid email address", response.messages());
+
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void testAddUser_InvalidNip() {
+        // Simulate invalid NIP format (non-numeric)
+        LecturerRegistrationDTO invalidLecturerDTO = new LecturerRegistrationDTO("lecturer@example.com", "password", "John Doe", "invalidNIP");
+
+        LecturerRegistrationCommand lecturerRegistrationCommand = new LecturerRegistrationCommand(userRepository, passwordEncoder, invalidLecturerDTO);
+        ResponseEntity<RegisterResponseDTO> responseEntity = lecturerRegistrationCommand.addUser();
+
+        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+
+        RegisterResponseDTO response = responseEntity.getBody();
+        assertNotNull(response);
+        assertEquals("error", response.status());
+        assertEquals("NIM/NIP must only contain number and maximal 12 digits long", response.messages());
+
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void testAddUser_ExceptionHandling() {
+        // Simulate unexpected error during user registration
+        when(userRepository.existsByNip(validLecturerDTO.nip())).thenReturn(false);
+        when(userRepository.existsByUsername(validLecturerDTO.username())).thenReturn(false);
+        when(passwordEncoder.encode(validLecturerDTO.password())).thenReturn("encodedPassword");
+        doThrow(new RuntimeException("Unexpected error")).when(userRepository).save(any(User.class));
+
+        LecturerRegistrationCommand lecturerRegistrationCommand = new LecturerRegistrationCommand(userRepository, passwordEncoder, validLecturerDTO);
+        ResponseEntity<RegisterResponseDTO> responseEntity = lecturerRegistrationCommand.addUser();
+
+        assertEquals(HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+
+        RegisterResponseDTO response = responseEntity.getBody();
+        assertNotNull(response);
+        assertEquals("error", response.status());
+        assertEquals("Unexpected error", response.messages());
+    }
+}
