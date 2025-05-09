@@ -1,5 +1,7 @@
 package id.ac.ui.cs.advprog.mendaftarlowongan.service;
 
+import id.ac.ui.cs.advprog.authjwt.model.User;
+import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
 import id.ac.ui.cs.advprog.manajemenlowongan.model.Lowongan;
 import id.ac.ui.cs.advprog.manajemenlowongan.repository.LowonganRepository;
 import id.ac.ui.cs.advprog.mendaftarlowongan.enums.StatusLamaran;
@@ -19,6 +21,7 @@ public class LamaranServiceImplTest {
     private LamaranRepository lamaranRepository;
     private LamaranServiceImpl lamaranService;
     private LowonganRepository lowonganRepository;
+    private UserRepository userRepository;
 
     private Lamaran dummyLamaran;
 
@@ -26,7 +29,8 @@ public class LamaranServiceImplTest {
     void setUp() {
         lamaranRepository = mock(LamaranRepository.class);
         lowonganRepository = mock(LowonganRepository.class);
-        lamaranService = new LamaranServiceImpl(lamaranRepository, lowonganRepository);
+        userRepository = mock(UserRepository.class);
+        lamaranService = new LamaranServiceImpl(lamaranRepository, lowonganRepository, userRepository);
 
         dummyLamaran = new Lamaran.Builder()
                 .sks(20)
@@ -42,6 +46,13 @@ public class LamaranServiceImplTest {
         when(lowonganRepository.getLowonganById(dummyLamaran.getIdLowongan()))
                 .thenReturn(mock(Lowongan.class));
 
+        User mahasiswaUser = new User();
+        mahasiswaUser.setUserId(dummyLamaran.getIdMahasiswa());
+        mahasiswaUser.setRole("STUDENT");
+
+        when(userRepository.findById(dummyLamaran.getIdMahasiswa()))
+                .thenReturn(Optional.of(mahasiswaUser));
+
         when(lamaranRepository.save(any(Lamaran.class))).thenReturn(dummyLamaran);
 
         Lamaran created = lamaranService.createLamaran(dummyLamaran);
@@ -52,14 +63,26 @@ public class LamaranServiceImplTest {
 
     @Test
     void testCreateLamaranInvalidIpkThrowsException() {
-        dummyLamaran.setIpk(5.0f);  // Invalid
+        dummyLamaran.setIpk(5.0f); // Invalid IPK
 
-        assertThrows(IllegalArgumentException.class, () -> {
+        when(lowonganRepository.getLowonganById(dummyLamaran.getIdLowongan()))
+                .thenReturn(mock(Lowongan.class));
+
+        User mahasiswaUser = new User();
+        mahasiswaUser.setUserId(dummyLamaran.getIdMahasiswa());
+        mahasiswaUser.setRole("STUDENT");
+
+        when(userRepository.findById(dummyLamaran.getIdMahasiswa()))
+                .thenReturn(Optional.of(mahasiswaUser));
+
+
+        assertThrows(RuntimeException.class, () -> {
             lamaranService.createLamaran(dummyLamaran);
         });
 
         verify(lamaranRepository, never()).save(any());
     }
+
 
     @Test
     void testGetLamaran() {

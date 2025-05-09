@@ -21,7 +21,7 @@ public class Lamaran {
     private int sks;
     private float ipk;
 
-    @Enumerated(EnumType.STRING)
+    @Enumerated(EnumType.ORDINAL)
     private StatusLamaran status = StatusLamaran.MENUNGGU;
 
     @Column(name = "id_mahasiswa", nullable = false)
