@@ -9,15 +9,23 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class LogCommandTest {
 
     private Log log;
+    private UUID idLowongan;
+    private UUID idMahasiswa;
+    private UUID idDosen;
 
     @BeforeEach
     void setUp() {
+        idLowongan = UUID.randomUUID();
+        idMahasiswa = UUID.randomUUID();
+        idDosen = UUID.randomUUID();
+
         log = new LogBuilder()
                 .judul("Asistensi 1")
                 .keterangan("Membantu Asistensi PBP")
@@ -26,6 +34,9 @@ public class LogCommandTest {
                 .waktuMulai(LocalTime.of(10, 0))
                 .waktuSelesai(LocalTime.of(12, 0))
                 .status(StatusLog.MENUNGGU)
+                .idLowongan(idLowongan)
+                .idMahasiswa(idMahasiswa)
+                .idDosen(idDosen)
                 .build();
     }
 
