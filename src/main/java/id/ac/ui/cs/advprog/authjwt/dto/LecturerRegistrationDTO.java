@@ -4,7 +4,7 @@ package id.ac.ui.cs.advprog.authjwt.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-public record StudentRegistrationDTO(
+public record LecturerRegistrationDTO(
         @NotBlank
         @NotNull
         String username,
@@ -15,7 +15,7 @@ public record StudentRegistrationDTO(
 
         @NotBlank
         @NotNull
-        String nim,
+        String nip,
 
         @NotBlank
         @NotNull
