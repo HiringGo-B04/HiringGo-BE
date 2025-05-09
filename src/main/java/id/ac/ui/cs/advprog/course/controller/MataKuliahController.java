@@ -4,6 +4,8 @@ import id.ac.ui.cs.advprog.course.dto.MataKuliahDto;
 import id.ac.ui.cs.advprog.course.dto.MataKuliahPatch;
 import id.ac.ui.cs.advprog.course.service.MataKuliahService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -14,79 +16,70 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 
 @RestController
-@RequestMapping("/api/v1/matakuliah")
-@PreAuthorize("hasRole('ADMIN')")
+@RequestMapping("/api/course")
+@RequiredArgsConstructor
 public class MataKuliahController {
 
     private final MataKuliahService service;
 
-    public MataKuliahController(MataKuliahService service) {
-        this.service = service;
-    }
+    /* ---------- PUBLIC (tanpa auth) ---------- */
 
-    /* ---------- READ ---------- */
-
-    @GetMapping
-    public ResponseEntity<Page<MataKuliahDto>> list(Pageable pageable) {
+    @GetMapping("/public/matakuliah")
+    public ResponseEntity<Page<MataKuliahDto>> listPublic(Pageable pageable) {
         return ResponseEntity.ok(service.findAll(pageable));
     }
 
-    @GetMapping("/{kode}")
-    public ResponseEntity<MataKuliahDto> get(@PathVariable String kode) {
+    @GetMapping("/public/matakuliah/{kode}")
+    public ResponseEntity<MataKuliahDto> getPublic(@PathVariable String kode) {
         MataKuliahDto dto = service.findByKode(kode);
-        return (dto == null) ? ResponseEntity.notFound().build()
-                : ResponseEntity.ok(dto);
+        return (dto == null) ? ResponseEntity.notFound().build() : ResponseEntity.ok(dto);
     }
 
-    /* ---------- CREATE ---------- */
+    /* ---------- ADMIN CRUD ---------- */
 
-    @PostMapping
-    public ResponseEntity<?> create(@Valid @RequestBody MataKuliahDto dto) {
-        try {
-            MataKuliahDto saved = service.create(dto);
-            URI loc = ServletUriComponentsBuilder.fromCurrentRequest()
-                    .path("/{kode}").buildAndExpand(saved.kode()).toUri();
-            return ResponseEntity.created(loc).body(saved);
-        } catch (RuntimeException ex) {
-            return ResponseEntity.badRequest().body(ex.getMessage());
-        }
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/admin/matakuliah")
+    public ResponseEntity<MataKuliahDto> create(@Valid @RequestBody MataKuliahDto dto) {
+        MataKuliahDto saved = service.create(dto);
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{kode}").buildAndExpand(saved.kode()).toUri();
+        return ResponseEntity.created(location).body(saved);
     }
 
-    /* ---------- FULL UPDATE ---------- */
-
-    @PutMapping("/{kode}")
-    public ResponseEntity<?> replace(@PathVariable String kode,
-                                     @Valid @RequestBody MataKuliahDto dto) {
-        try {
-            MataKuliahDto updated = service.update(kode, dto);
-            return ResponseEntity.ok(updated);
-        } catch (RuntimeException ex) {
-            return ResponseEntity.badRequest().body(ex.getMessage());
-        }
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/admin/matakuliah/{kode}")
+    public ResponseEntity<MataKuliahDto> replace(@PathVariable String kode,
+                                                 @Valid @RequestBody MataKuliahDto dto) {
+        return ResponseEntity.ok(service.update(kode, dto));
     }
 
-    /* ---------- PARTIAL UPDATE ---------- */
-
-    @PatchMapping("/{kode}")
-    public ResponseEntity<?> patch(@PathVariable String kode,
-                                   @Valid @RequestBody MataKuliahPatch patch) {
-        try {
-            MataKuliahDto patched = service.partialUpdate(kode, patch);
-            return ResponseEntity.ok(patched);
-        } catch (RuntimeException ex) {
-            return ResponseEntity.badRequest().body(ex.getMessage());
-        }
+    @PreAuthorize("hasRole('ADMIN')")
+    @PatchMapping("/admin/matakuliah/{kode}")
+    public ResponseEntity<MataKuliahDto> patch(@PathVariable String kode,
+                                               @Valid @RequestBody MataKuliahPatch patch) {
+        return ResponseEntity.ok(service.partialUpdate(kode, patch));
     }
 
-    /* ---------- DELETE ---------- */
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/admin/matakuliah/{kode}")
+    public ResponseEntity<Void> delete(@PathVariable String kode) {
+        service.delete(kode);
+        return ResponseEntity.noContent().build();
+    }
 
-    @DeleteMapping("/{kode}")
-    public ResponseEntity<?> delete(@PathVariable String kode) {
-        try {
-            service.delete(kode);
-            return ResponseEntity.ok().build();
-        } catch (RuntimeException ex) {
-            return ResponseEntity.badRequest().body(ex.getMessage());
-        }
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/admin/matakuliah/{kode}/dosen/{userId}")
+    public ResponseEntity<Void> addLecturer(@PathVariable String kode,
+                                            @PathVariable UUID userId) {
+        service.addLecturer(kode, userId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/admin/matakuliah/{kode}/dosen/{userId}")
+    public ResponseEntity<Void> removeLecturer(@PathVariable String kode,
+                                               @PathVariable UUID userId) {
+        service.removeLecturer(kode, userId);
+        return ResponseEntity.noContent().build();
     }
 }
