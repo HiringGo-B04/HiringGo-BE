@@ -3,6 +3,8 @@ package id.ac.ui.cs.advprog.authjwt.service;
 import id.ac.ui.cs.advprog.authjwt.config.JwtUtil;
 import id.ac.ui.cs.advprog.authjwt.dto.login.LoginRequestDTO;
 import id.ac.ui.cs.advprog.authjwt.dto.login.LoginResponseDTO;
+import id.ac.ui.cs.advprog.authjwt.dto.logout.LogoutRequestDTO;
+import id.ac.ui.cs.advprog.authjwt.dto.logout.LogoutResponseDTO;
 import id.ac.ui.cs.advprog.authjwt.dto.registration.*;
 import id.ac.ui.cs.advprog.authjwt.facade.AuthenticationFacade;
 import id.ac.ui.cs.advprog.authjwt.model.Token;
@@ -73,23 +75,17 @@ public class AuthService implements AuthenticationFacade {
 
     @Transactional
     @Override
-    public ResponseEntity<Map<String, String>> logout(Token token){
-        Map<String, String> response = new HashMap<>();
+    public ResponseEntity<LogoutResponseDTO> logout(LogoutRequestDTO token){
         try{
-            if(tokenRepository.findByToken(token.getToken()) == null) {
-                throw new IllegalArgumentException("Invalid Token");
-            }
-
-            tokenRepository.deleteByToken(token.getToken());
-
-            response.put("status", "accept");
-            response.put("messages", "Success to logout");
-            return new ResponseEntity<>(response, HttpStatus.valueOf(200));
+            tokenRepository.deleteByToken(token.token());
+            return new ResponseEntity<>(
+                    new LogoutResponseDTO("accept", "Succes to logout"),
+                    HttpStatus.valueOf(200));
         }
         catch (Exception e) {
-            response.put("status", "error");
-            response.put("messages", e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.valueOf(400));
+            return new ResponseEntity<>(
+                    new LogoutResponseDTO("error", e.getMessage()),
+                    HttpStatus.valueOf(400));
         }
     }
 

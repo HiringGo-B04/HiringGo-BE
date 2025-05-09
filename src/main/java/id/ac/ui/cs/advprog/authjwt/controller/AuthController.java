@@ -41,8 +41,8 @@ public class AuthController {
         return authFacade.register(user, "LECTURER");
     }
 
-    @PostMapping("/user/logout")
-    public ResponseEntity<Map<String, String>> logout(@RequestBody Token token) {
-        return authFacade.logout(token);
-    }
+//    @PostMapping("/user/logout")
+//    public ResponseEntity<Map<String, String>> logout(@RequestBody Token token) {
+//        return authFacade.logout(token);
+//    }
 }
