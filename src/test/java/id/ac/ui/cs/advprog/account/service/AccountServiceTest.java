@@ -42,7 +42,7 @@ public class AccountServiceTest {
         // Then
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals("error", response.getBody().status()); // You might want to change this to "success"
+        assertEquals("accept", response.getBody().status()); // You might want to change this to "success"
         assertEquals("Succes delete user", response.getBody().message());
         verify(userRepository, times(1)).findByUsername(email);
         verify(userRepository, times(1)).deleteByUsername(email);

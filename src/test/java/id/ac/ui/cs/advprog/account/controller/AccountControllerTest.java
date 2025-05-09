@@ -64,17 +64,17 @@ public class AccountControllerTest {
     }
 
     @Test
-    void deleteUser_notFound_shouldReturn403() throws Exception {
+    void deleteUser_notFound_shouldReturn400() throws Exception {
         DeleteRequestDTO request = new DeleteRequestDTO("nonexistent@example.com");
         DeleteResponseDTO response = new DeleteResponseDTO("error", "User not found");
 
         when(accountService.delete(any(DeleteRequestDTO.class)))
-                .thenReturn(new ResponseEntity<>(response, HttpStatus.FORBIDDEN));
+                .thenReturn(new ResponseEntity<>(response, HttpStatus.BAD_REQUEST));
 
         mockMvc.perform(delete(DELETE_ENDPOINT)
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isForbidden())
+                .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value("error"))
                 .andExpect(jsonPath("$.message").value("User not found"));
     }
