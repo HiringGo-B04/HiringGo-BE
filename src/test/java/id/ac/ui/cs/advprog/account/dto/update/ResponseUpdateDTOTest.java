@@ -1,6 +1,6 @@
 package id.ac.ui.cs.advprog.account.dto.update;
 
-import id.ac.ui.cs.advprog.account.dto.delete.ResponseUpdateDTO;
+import id.ac.ui.cs.advprog.account.dto.update.ResponseUpdateDTO;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
