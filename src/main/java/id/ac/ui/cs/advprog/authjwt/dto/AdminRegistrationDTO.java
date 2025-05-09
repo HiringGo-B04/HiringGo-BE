@@ -4,20 +4,12 @@ package id.ac.ui.cs.advprog.authjwt.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-public record LecturerRegistrationDTO(
+public record AdminRegistrationDTO (
         @NotBlank
         @NotNull
         String username,
 
         @NotBlank
         @NotNull
-        String password,
-
-        @NotBlank
-        @NotNull
-        String nip,
-
-        @NotBlank
-        @NotNull
-        String fullName
+        String password
 ) implements UserDTO {}
