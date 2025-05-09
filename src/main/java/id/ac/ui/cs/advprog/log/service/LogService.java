@@ -4,7 +4,6 @@ import id.ac.ui.cs.advprog.log.dto.LogDTO;
 import id.ac.ui.cs.advprog.log.enums.StatusLog;
 import id.ac.ui.cs.advprog.log.model.Log;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 

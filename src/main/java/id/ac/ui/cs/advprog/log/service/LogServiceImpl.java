@@ -94,7 +94,6 @@ public class LogServiceImpl implements LogService {
 
     @Override
     public Log createLogForMahasiswa(LogDTO logDTO, UUID idMahasiswa, UUID idDosen) {
-        // Validasi
         if (!validateMahasiswa(idMahasiswa)) {
             throw new ResourceNotFoundException("Mahasiswa tidak ditemukan");
         }
@@ -133,12 +132,10 @@ public class LogServiceImpl implements LogService {
     public Log updateLogForMahasiswa(UUID id, LogDTO logDTO, UUID idMahasiswa) {
         Log log = findById(id);
 
-        // Validasi kepemilikan log
         if (!log.getIdMahasiswa().equals(idMahasiswa)) {
             throw new BadRequestException("Anda tidak dapat mengubah log milik mahasiswa lain");
         }
 
-        // Validasi status log
         if (log.getStatus() != StatusLog.MENUNGGU) {
             throw new BadRequestException("Tidak dapat mengubah log yang sudah diverifikasi");
         }
@@ -165,12 +162,10 @@ public class LogServiceImpl implements LogService {
     public void deleteLogForMahasiswa(UUID id, UUID idMahasiswa) {
         Log log = findById(id);
 
-        // Validasi kepemilikan log
         if (!log.getIdMahasiswa().equals(idMahasiswa)) {
             throw new BadRequestException("Anda tidak dapat menghapus log milik mahasiswa lain");
         }
 
-        // Validasi status log
         if (log.getStatus() != StatusLog.MENUNGGU) {
             throw new BadRequestException("Tidak dapat menghapus log yang sudah diverifikasi");
         }
@@ -208,12 +203,10 @@ public class LogServiceImpl implements LogService {
     public Log verifyLog(UUID logId, StatusLog status, UUID idDosen) {
         Log log = findById(logId);
 
-        // Validasi kepemilikan log
         if (!log.getIdDosen().equals(idDosen)) {
             throw new BadRequestException("Anda tidak dapat memverifikasi log mahasiswa yang bukan asisten anda");
         }
 
-        // Validasi status
         if (status != StatusLog.DITERIMA && status != StatusLog.DITOLAK) {
             throw new BadRequestException("Status tidak valid. Gunakan DITERIMA atau DITOLAK.");
         }
@@ -240,8 +233,6 @@ public class LogServiceImpl implements LogService {
 
         return logRepository.findByIdLowongan(idLowongan);
     }
-
-    // Validasi
 
     @Override
     public boolean validateLowongan(UUID idLowongan) {

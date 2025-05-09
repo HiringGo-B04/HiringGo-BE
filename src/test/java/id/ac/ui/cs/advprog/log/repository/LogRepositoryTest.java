@@ -229,7 +229,7 @@ class LogRepositoryTest {
 
     private Log buildSampleLog() {
         return new LogBuilder()
-                .id(UUID.randomUUID())  // Explicitly set ID for testing
+                .id(UUID.randomUUID())
                 .judul("Asistensi Kalkulus")
                 .keterangan("Membantu menyampaikan materi integral")
                 .kategori(KategoriLog.ASISTENSI)
