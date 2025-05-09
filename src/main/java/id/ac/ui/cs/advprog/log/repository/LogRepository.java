@@ -1,56 +1,30 @@
 package id.ac.ui.cs.advprog.log.repository;
 
 import id.ac.ui.cs.advprog.log.model.Log;
-import org.springframework.context.annotation.Profile;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
 @Repository
-public class LogRepository {
+public interface LogRepository extends JpaRepository<Log, UUID> {
 
-    private final List<Log> daftarLog  = new ArrayList<>();
+    List<Log> findByIdLowongan(UUID idLowongan);
 
-    public List<Log> findAll() {
-        return new ArrayList<>(daftarLog);
-    }
+    List<Log> findByIdMahasiswa(UUID idMahasiswa);
 
-    public Log findById(UUID id) {
-        return daftarLog.stream()
-                .filter(log -> log.getId().equals(id))
-                .findFirst()
-                .orElse(null);
-    }
+    List<Log> findByIdDosen(UUID idDosen);
 
-    public Log save(Log log) {
-        if (log.getId() == null) {
-            log.setId(UUID.randomUUID());
-        }
-        daftarLog.add(log);
-        return log;
-    }
+    List<Log> findByIdMahasiswaAndIdLowongan(UUID idMahasiswa, UUID idLowongan);
 
-    public Log update(UUID id, Log updatedLog) {
-        Log existingLog = findById(id);
-        if (existingLog != null) {
-            existingLog.setJudul(updatedLog.getJudul());
-            existingLog.setKeterangan(updatedLog.getKeterangan());
-            existingLog.setKategori(updatedLog.getKategori());
-            existingLog.setTanggalLog(updatedLog.getTanggalLog());
-            existingLog.setWaktuMulai(updatedLog.getWaktuMulai());
-            existingLog.setWaktuSelesai(updatedLog.getWaktuSelesai());
-            existingLog.setPesanUntukDosen(updatedLog.getPesanUntukDosen());
-            existingLog.setStatus(updatedLog.getStatus());
-        }
-        return existingLog;
-    }
-
-    public void deleteById(UUID id) {
-        daftarLog.removeIf(log -> log.getId().equals(id));
-    }
-
-    public void clearAll() {
-        daftarLog.clear();
-    }
+    @Query("SELECT l FROM Log l WHERE l.idMahasiswa = :idMahasiswa AND l.idLowongan = :idLowongan " +
+            "AND l.status = id.ac.ui.cs.advprog.log.enums.StatusLog.DITERIMA " +
+            "AND YEAR(l.tanggalLog) = :tahun AND MONTH(l.tanggalLog) = :bulan")
+    List<Log> findAcceptedLogsByMahasiswaAndLowonganAndMonth(
+            @Param("idMahasiswa") UUID idMahasiswa,
+            @Param("idLowongan") UUID idLowongan,
+            @Param("tahun") int tahun,
+            @Param("bulan") int bulan);
 }
-
