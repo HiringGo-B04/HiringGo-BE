@@ -47,7 +47,7 @@ public class AuthService implements AuthenticationFacade {
 
         if(exist_user == null) {
             return new ResponseEntity<>(
-                    new LoginResponseDTO("error", "User not found"),
+                    new LoginResponseDTO("error", "User didn't exist"),
                     HttpStatus.valueOf(400));
         }
 
@@ -68,7 +68,7 @@ public class AuthService implements AuthenticationFacade {
         }
         catch (Exception e) {
             return new ResponseEntity<>(
-                    new LoginResponseDTO("error", e.getMessage()),
+                    new LoginResponseDTO("error on prod", e.getMessage()),
                     HttpStatus.valueOf(400));
         }
     }
