@@ -1,7 +1,10 @@
 package id.ac.ui.cs.advprog.authjwt.controller;
+import id.ac.ui.cs.advprog.authjwt.dto.AdminRegistrationDTO;
+import id.ac.ui.cs.advprog.authjwt.dto.RegisterResponseDTO;
 import id.ac.ui.cs.advprog.authjwt.facade.AuthenticationFacade;
 import id.ac.ui.cs.advprog.authjwt.model.Token;
 import id.ac.ui.cs.advprog.authjwt.model.User;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
@@ -20,19 +23,19 @@ public class AuthController {
     }
 
     @PostMapping("/admin/signup")
-    public ResponseEntity<Map<String, String>> registerAdmin(@RequestBody User user) {
+    public ResponseEntity<RegisterResponseDTO> registerAdmin(@Valid @RequestBody AdminRegistrationDTO user) {
         return authFacade.register(user, "ADMIN");
     }
-
-    @PostMapping("/public/signup/student")
-    public ResponseEntity<Map<String, String>> registerStudent(@RequestBody User user) {
-        return authFacade.register(user, "STUDENT");
-    }
-
-    @PostMapping("/admin/signup/lecturer")
-    public ResponseEntity<Map<String, String>> registerLecturer(@RequestBody User user) {
-        return authFacade.register(user, "LECTURER");
-    }
+//
+//    @PostMapping("/public/signup/student")
+//    public ResponseEntity<Map<String, String>> registerStudent(@RequestBody User user) {
+//        return authFacade.register(user, "STUDENT");
+//    }
+//
+//    @PostMapping("/admin/signup/lecturer")
+//    public ResponseEntity<Map<String, String>> registerLecturer(@RequestBody User user) {
+//        return authFacade.register(user, "LECTURER");
+//    }
 
     @PostMapping("/user/logout")
     public ResponseEntity<Map<String, String>> logout(@RequestBody Token token) {
