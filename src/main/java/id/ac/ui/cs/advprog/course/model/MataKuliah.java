@@ -1,83 +1,64 @@
 package id.ac.ui.cs.advprog.course.model;
 
-import java.util.ArrayList;
-import java.util.List;
+import id.ac.ui.cs.advprog.authjwt.model.User;
+import jakarta.persistence.*;
+import lombok.*;
 
-// untuk sementara masih belum ada mikroservice
+import java.util.HashSet;
+import java.util.Set;
+
+/** CATATAN
+ * Entity Mata Kuliah – disimpan pada tabel "mata_kuliah".
+ * •  kode  : primary‑key (varchar 10, unik)
+ * •  nama  : nama mata kuliah
+ * •  deskripsi : teks panjang (optional)
+ * •  sks   : jumlah SKS (>= 1)
+ * •  dosenPengampu : many‑to‑many ke User (role LECTURER)
+ */
+@Entity
+@Table(name = "mata_kuliah")
+@Getter
+@Setter
+@NoArgsConstructor                        // wajib untuk JPA
+@AllArgsConstructor
+@EqualsAndHashCode(of = "kode")
 public class MataKuliah {
 
+    /* ---------- Kolom dasar ---------- */
+
+    @Id
+    @Column(length = 10, nullable = false, unique = true)
     private String kode;
 
+    @Column(nullable = false, length = 255)
     private String nama;
 
+    @Lob
     private String deskripsi;
 
+    @Column(nullable = false)
     private int sks;
 
-    private List<String> dosenPengampu;
+    /* ---------- Relasi dosen ---------- */
 
-    // Constructor kosong (untuk framework nanti)
-    public MataKuliah() {
-        this.dosenPengampu = new ArrayList<>();
-    }
+    @ManyToMany
+    @JoinTable(
+            name = "mata_kuliah_lecturer",
+            joinColumns = @JoinColumn(name = "matkul_kode", referencedColumnName = "kode"),
+            inverseJoinColumns = @JoinColumn(name = "user_id", referencedColumnName = "userId")
+    )
+    private Set<User> dosenPengampu = new HashSet<>();
 
-    // Constructor penuh
+    /* ---------- Konstruktor ringkas ---------- */
     public MataKuliah(String kode, String nama, String deskripsi, int sks) {
         this.kode = kode;
         this.nama = nama;
         this.deskripsi = deskripsi;
         this.sks = sks;
-        this.dosenPengampu = new ArrayList<>();
     }
 
-    // get & set
-
-    public String getKode() {
-        return kode;
-    }
-
-    public void setKode(String kode) {
-        this.kode = kode;
-    }
-
-    public String getNama() {
-        return nama;
-    }
-
-    public void setNama(String nama) {
-        this.nama = nama;
-    }
-
-    public String getDeskripsi() {
-        return deskripsi;
-    }
-
-    public void setDeskripsi(String deskripsi) {
-        this.deskripsi = deskripsi;
-    }
-
-    public int getSks() {
-        return sks;
-    }
-
-    public void setSks(int sks) {
-        this.sks = sks;
-    }
-
-    public List<String> getDosenPengampu() {
-        return dosenPengampu;
-    }
-
-    public void setDosenPengampu(List<String> dosenPengampu) {
-        this.dosenPengampu = dosenPengampu;
-    }
-
-    // Tambahkan helper method untuk menambah dosen satu per satu: (masih di tes)
-    public void addDosenPengampu(String namaDosen) {
-        if (this.dosenPengampu == null) {
-            this.dosenPengampu = new ArrayList<>();
-        }
-        this.dosenPengampu.add(namaDosen);
+    /* ---------- Helper ---------- */
+    public void addDosenPengampu(User dosen) {
+        this.dosenPengampu.add(dosen);
     }
 }
-
