@@ -1,15 +1,12 @@
 package id.ac.ui.cs.advprog.authjwt.service;
 
-import id.ac.ui.cs.advprog.authjwt.dto.LecturerRegistrationDTO;
 import id.ac.ui.cs.advprog.authjwt.dto.RegisterResponseDTO;
 import id.ac.ui.cs.advprog.authjwt.dto.StudentRegistrationDTO;
 import id.ac.ui.cs.advprog.authjwt.dto.UserDTO;
-import id.ac.ui.cs.advprog.authjwt.model.User;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
 import id.ac.ui.cs.advprog.authjwt.service.command.RegistrationCommand;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 

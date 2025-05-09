@@ -2,7 +2,6 @@ package id.ac.ui.cs.advprog.authjwt.service.command;
 
 import id.ac.ui.cs.advprog.authjwt.dto.LecturerRegistrationDTO;
 import id.ac.ui.cs.advprog.authjwt.dto.RegisterResponseDTO;
-import id.ac.ui.cs.advprog.authjwt.dto.StudentRegistrationDTO;
 import id.ac.ui.cs.advprog.authjwt.model.User;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
 import org.springframework.http.HttpStatus;

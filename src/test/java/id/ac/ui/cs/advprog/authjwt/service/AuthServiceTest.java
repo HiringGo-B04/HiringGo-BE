@@ -1,11 +1,7 @@
 package id.ac.ui.cs.advprog.authjwt.service;
 
 import id.ac.ui.cs.advprog.authjwt.dto.*;
-import id.ac.ui.cs.advprog.authjwt.repository.TokenRepository;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
-import id.ac.ui.cs.advprog.authjwt.model.User;
-import id.ac.ui.cs.advprog.authjwt.service.command.AdminRegistrationCommand;
-import id.ac.ui.cs.advprog.authjwt.service.command.RegistrationCommand;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -23,18 +19,15 @@ public class AuthServiceTest {
 
     private AuthService authService;
     private UserRepository userRepository;
-    private TokenRepository tokenRepository;
     private PasswordEncoder passwordEncoder;
 
     @BeforeEach
     public void setUp() {
         userRepository = mock(UserRepository.class);
-        tokenRepository = mock(TokenRepository.class);
         passwordEncoder = mock(PasswordEncoder.class);
 
         authService = new AuthService();
         authService.userRepository = userRepository;
-        authService.tokenRepository = tokenRepository;
         authService.encoder = passwordEncoder;
     }
 
