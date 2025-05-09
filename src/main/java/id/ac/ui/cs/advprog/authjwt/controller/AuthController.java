@@ -1,4 +1,6 @@
 package id.ac.ui.cs.advprog.authjwt.controller;
+import id.ac.ui.cs.advprog.authjwt.dto.login.LoginRequestDTO;
+import id.ac.ui.cs.advprog.authjwt.dto.login.LoginResponseDTO;
 import id.ac.ui.cs.advprog.authjwt.dto.registration.AdminRegistrationDTO;
 import id.ac.ui.cs.advprog.authjwt.dto.registration.LecturerRegistrationDTO;
 import id.ac.ui.cs.advprog.authjwt.dto.registration.RegisterResponseDTO;
@@ -19,10 +21,10 @@ public class AuthController {
     @Autowired
     private AuthenticationFacade authFacade;
 
-//    @PostMapping("/public/signin")
-//    public ResponseEntity<Map<String, String>> login(@RequestBody User user) {
-//        return authFacade.login(user);
-//    }
+    @PostMapping("/public/signin")
+    public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO user) {
+        return authFacade.login(user);
+    }
 
     @PostMapping("/admin/signup")
     public ResponseEntity<RegisterResponseDTO> registerAdmin(@Valid @RequestBody AdminRegistrationDTO user) {
