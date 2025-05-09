@@ -12,7 +12,7 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Unit‑tests Bean Validation untuk {@link MataKuliahPatch}.
+ * Unit‑test Bean Validation untuk {@link MataKuliahPatch}.
  */
 class MataKuliahPatchTest {
 
@@ -30,8 +30,7 @@ class MataKuliahPatchTest {
     void patchWithPositiveSks_shouldPass() {
         MataKuliahPatch patch = new MataKuliahPatch(4, null);
 
-        Set<ConstraintViolation<MataKuliahPatch>> violations = validator.validate(patch);
-        assertThat(violations).isEmpty();
+        assertThat(validator.validate(patch)).isEmpty();
     }
 
     /* ---------- NEGATIVE SKS ---------- */
@@ -40,7 +39,8 @@ class MataKuliahPatchTest {
         MataKuliahPatch patch = new MataKuliahPatch(-2, "desc");
 
         Set<ConstraintViolation<MataKuliahPatch>> violations = validator.validate(patch);
-        assertThat(violations).extracting(v -> v.getPropertyPath().toString())
+        assertThat(violations)
+                .extracting(v -> v.getPropertyPath().toString())
                 .contains("sks");
     }
 
@@ -49,7 +49,6 @@ class MataKuliahPatchTest {
     void patchWithAllNullFields_isAllowed() {
         MataKuliahPatch patch = new MataKuliahPatch(null, null);
 
-        Set<ConstraintViolation<MataKuliahPatch>> violations = validator.validate(patch);
-        assertThat(violations).isEmpty();
+        assertThat(validator.validate(patch)).isEmpty();
     }
 }

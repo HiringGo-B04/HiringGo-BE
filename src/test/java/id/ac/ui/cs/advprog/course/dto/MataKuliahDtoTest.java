@@ -13,8 +13,7 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Unit‑test sederhana untuk memastikan anotasi Bean Validation
- * pada {@link MataKuliahDto} berfungsi.
+ * Unit‑test Bean Validation untuk {@link MataKuliahDto}.
  */
 class MataKuliahDtoTest {
 
@@ -38,8 +37,7 @@ class MataKuliahDtoTest {
                 List.of("Dosen A", "Dosen B")
         );
 
-        Set<ConstraintViolation<MataKuliahDto>> violations = validator.validate(dto);
-        assertThat(violations).isEmpty();
+        assertThat(validator.validate(dto)).isEmpty();
     }
 
     /* ---------- NEGATIVE SKS ---------- */
@@ -54,15 +52,16 @@ class MataKuliahDtoTest {
         );
 
         Set<ConstraintViolation<MataKuliahDto>> violations = validator.validate(dto);
-        assertThat(violations).extracting(ConstraintViolation::getPropertyPath)
-                .anyMatch(p -> p.toString().equals("sks"));
+        assertThat(violations)
+                .extracting(v -> v.getPropertyPath().toString())
+                .contains("sks");
     }
 
     /* ---------- KODE / NAMA BLANK ---------- */
     @Test
     void blankKodeOrNama_shouldFailValidation() {
         MataKuliahDto dto = new MataKuliahDto(
-                "   ",      // kode blank
+                "   ",
                 "",
                 2,
                 null,
@@ -70,11 +69,9 @@ class MataKuliahDtoTest {
         );
 
         Set<ConstraintViolation<MataKuliahDto>> violations = validator.validate(dto);
-        assertThat(violations).hasSizeGreaterThanOrEqualTo(2)
-                .extracting(ConstraintViolation::getPropertyPath)
-                .anySatisfy(path -> {
-                    assertThat(path.toString()).isIn("kode", "nama");
-                });
+        assertThat(violations)
+                .extracting(v -> v.getPropertyPath().toString())
+                .contains("kode", "nama");
     }
 
     /* ---------- DOSEN LIST NULL ---------- */
@@ -85,11 +82,12 @@ class MataKuliahDtoTest {
                 "Jaringan",
                 3,
                 null,
-                null               // ← tidak boleh null
+                null        // tidak boleh null
         );
 
         Set<ConstraintViolation<MataKuliahDto>> violations = validator.validate(dto);
-        assertThat(violations).extracting(ConstraintViolation::getPropertyPath)
-                .anyMatch(p -> p.toString().equals("dosenPengampu"));
+        assertThat(violations)
+                .extracting(v -> v.getPropertyPath().toString())
+                .contains("dosenPengampu");
     }
 }
