@@ -4,9 +4,10 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 import id.ac.ui.cs.advprog.authjwt.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.*;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, Long> {
+public interface UserRepository extends JpaRepository<User, UUID> {
     User findByUsername(String email);
     boolean existsByUsername(String email);
     boolean existsByNim(String nim);
