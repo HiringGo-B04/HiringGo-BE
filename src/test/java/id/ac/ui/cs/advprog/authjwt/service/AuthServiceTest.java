@@ -3,6 +3,8 @@ package id.ac.ui.cs.advprog.authjwt.service;
 import id.ac.ui.cs.advprog.authjwt.config.JwtUtil;
 import id.ac.ui.cs.advprog.authjwt.dto.login.LoginRequestDTO;
 import id.ac.ui.cs.advprog.authjwt.dto.login.LoginResponseDTO;
+import id.ac.ui.cs.advprog.authjwt.dto.logout.LogoutRequestDTO;
+import id.ac.ui.cs.advprog.authjwt.dto.logout.LogoutResponseDTO;
 import id.ac.ui.cs.advprog.authjwt.dto.registration.AdminRegistrationDTO;
 import id.ac.ui.cs.advprog.authjwt.dto.registration.LecturerRegistrationDTO;
 import id.ac.ui.cs.advprog.authjwt.dto.registration.RegisterResponseDTO;
@@ -44,6 +46,44 @@ public class AuthServiceTest {
         authService.tokenRepository = tokenRepository;
         authService.jwtUtils = jwtUtils;
         authService.encoder = passwordEncoder;
+    }
+
+    @Test
+    void testLogout_Success() {
+        // Given
+        LogoutRequestDTO logoutRequest = new LogoutRequestDTO("validToken");
+
+        // No exception should be thrown during delete
+        doNothing().when(tokenRepository).deleteByToken("validToken");
+
+        // When
+        ResponseEntity<LogoutResponseDTO> response = authService.logout(logoutRequest);
+
+        // Then
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("accept", response.getBody().status());
+        assertEquals("Succes to logout", response.getBody().message());
+        verify(tokenRepository, times(1)).deleteByToken("validToken");
+    }
+
+    @Test
+    void testLogout_ExceptionThrown_ShouldReturnErrorResponse() {
+        // Given
+        LogoutRequestDTO logoutRequest = new LogoutRequestDTO("invalidToken");
+
+        // Simulate exception when deleting token
+        doThrow(new RuntimeException("Token not found")).when(tokenRepository).deleteByToken("invalidToken");
+
+        // When
+        ResponseEntity<LogoutResponseDTO> response = authService.logout(logoutRequest);
+
+        // Then
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("error", response.getBody().status());
+        assertEquals("Token not found", response.getBody().message());
+        verify(tokenRepository, times(1)).deleteByToken("invalidToken");
     }
 
 
