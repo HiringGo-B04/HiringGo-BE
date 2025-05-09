@@ -33,13 +33,13 @@ public class AccountService{
             userRepository.deleteByUsername(user.getUsername());
 
             return new ResponseEntity<>(
-                    new DeleteResponseDTO("error", "Succes delete user"),
+                    new DeleteResponseDTO("accept", "Succes delete user"),
                     HttpStatus.valueOf(200));
         }
         catch (Exception e) {
             return new ResponseEntity<>(
                     new DeleteResponseDTO("error", e.getMessage()),
-                    HttpStatus.valueOf(403));
+                    HttpStatus.valueOf(400));
         }
     }
 }
