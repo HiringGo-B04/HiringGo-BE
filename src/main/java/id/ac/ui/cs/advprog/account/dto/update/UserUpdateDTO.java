@@ -12,6 +12,7 @@ import jakarta.validation.constraints.NotBlank;
 @JsonSubTypes({
         @JsonSubTypes.Type(value = UserIntoAdminDTO.class, name = "ADMIN"),
         @JsonSubTypes.Type(value = UserIntoAdminDTO.class, name = "LECTURER"),
+        @JsonSubTypes.Type(value = UserIntoAdminDTO.class, name = "STUDENT"),
 })
 public abstract class UserUpdateDTO {
     @NotBlank
