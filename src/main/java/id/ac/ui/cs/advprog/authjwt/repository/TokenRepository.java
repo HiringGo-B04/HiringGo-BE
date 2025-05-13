@@ -1,6 +1,9 @@
 package id.ac.ui.cs.advprog.authjwt.repository;
 
 import org.springframework.context.annotation.Profile;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import id.ac.ui.cs.advprog.authjwt.model.Token;
 import org.springframework.data.jpa.repository.JpaRepository;
