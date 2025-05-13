@@ -20,21 +20,25 @@ public class LamaranController {
 
     @PostMapping
     public ResponseEntity<Lamaran> createLamaran(@RequestBody Lamaran lamaran) {
-        return null;
+        Lamaran created = lamaranService.createLamaran(lamaran);
+        return ResponseEntity.ok(created);
     }
 
     @GetMapping("/lowongan/{id}")
     public ResponseEntity<List<Lamaran>> getLamaranByLowonganId(@PathVariable UUID id) {
-        return null;
+        List<Lamaran> lamarans = lamaranService.getLamaranByLowonganId(id);
+        return ResponseEntity.ok(lamarans);
     }
 
     @PostMapping("/{id}/accept")
     public ResponseEntity<Void> acceptLamaran(@PathVariable UUID id) {
-        return null;
+        lamaranService.acceptLamaran(id);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/{id}/reject")
     public ResponseEntity<Void> rejectLamaran(@PathVariable UUID id) {
-        return null;
+        lamaranService.rejectLamaran(id);
+        return ResponseEntity.ok().build();
     }
 }
