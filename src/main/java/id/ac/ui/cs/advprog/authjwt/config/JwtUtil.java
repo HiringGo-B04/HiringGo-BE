@@ -45,6 +45,12 @@ public class JwtUtil {
     public boolean validateJwtToken(String token) {
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+
+            if(tokenRepository.findByToken(token) == null) {
+                System.out.println("Token not found");
+                return false;
+            }
+
             return true;
         } catch (Exception e) {
             System.out.println("JWT validation error: " + e.getMessage());
