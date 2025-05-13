@@ -7,7 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class SecurityConfigTest {
     @Test
     void testPasswordEncoderMethodDirectly() {
-        SecurityConfig config = new SecurityConfig(); // Manual instantiation
+        SecurityConfig config = new SecurityConfig(new JwtUtil()); // Manual instantiation
         PasswordEncoder encoder = config.passwordEncoder(); // Direct method call
 
         String rawPassword = "password123";
