@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -54,6 +55,7 @@ public class AccountControllerTest {
     private static final String DELETE_ENDPOINT = "/api/account/admin/user";
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void updateUserToLecturer_shouldReturn200() throws Exception {
         UserIntoLecturerDTO request = new UserIntoLecturerDTO();
         request.username = "lecturer_user";
@@ -75,6 +77,7 @@ public class AccountControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void updateUserToStudent_shouldReturn200() throws Exception {
         UserIntoStudentDTO request = new UserIntoStudentDTO();
         request.username = "student_user";
@@ -96,6 +99,7 @@ public class AccountControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void updateUser_shouldReturn200() throws Exception {
         UserUpdateDTO request = new UserIntoAdminDTO();
         request.username = "johndoe";
@@ -115,6 +119,7 @@ public class AccountControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void updateUser_userNotFound_shouldReturn400() throws Exception {
         UserUpdateDTO request = new UserIntoAdminDTO();
         request.username = "unknownuser";
@@ -135,6 +140,7 @@ public class AccountControllerTest {
 
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void deleteUser_shouldReturn200() throws Exception {
         DeleteRequestDTO request = new DeleteRequestDTO("user@example.com");
         DeleteResponseDTO response = new DeleteResponseDTO("success", "Success delete user");
@@ -151,6 +157,7 @@ public class AccountControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void deleteUser_notFound_shouldReturn400() throws Exception {
         DeleteRequestDTO request = new DeleteRequestDTO("nonexistent@example.com");
         DeleteResponseDTO response = new DeleteResponseDTO("error", "User not found");
