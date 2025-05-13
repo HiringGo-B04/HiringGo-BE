@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 
 public class UserIntoLecturerDTO extends UserUpdateDTO {
     @NotBlank
-    String fullName;
+    public String fullName;
 
     @NotBlank
     public String nip;
