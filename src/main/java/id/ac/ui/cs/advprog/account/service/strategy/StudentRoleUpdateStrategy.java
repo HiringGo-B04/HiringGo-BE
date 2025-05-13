@@ -11,7 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-@Component("LECTURER")
+@Component("STUDENT")
 public class StudentRoleUpdateStrategy implements RoleUpdateStrategy {
 
     private final UserRepository userRepository;
