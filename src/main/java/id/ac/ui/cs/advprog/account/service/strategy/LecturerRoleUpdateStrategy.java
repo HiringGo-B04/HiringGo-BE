@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.account.service.strategy;
 
 import id.ac.ui.cs.advprog.account.dto.update.ResponseUpdateDTO;
+import id.ac.ui.cs.advprog.account.dto.update.UserIntoLecturerDTO;
 import id.ac.ui.cs.advprog.account.dto.update.UserUpdateDTO;
 import id.ac.ui.cs.advprog.authjwt.model.User;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
@@ -10,26 +11,28 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component("STUDENT")
-public class AdminRoleUpdateStrategy implements RoleUpdateStrategy {
+public class LecturerRoleUpdateStrategy implements RoleUpdateStrategy {
 
     private final UserRepository userRepository;
 
-    public AdminRoleUpdateStrategy(UserRepository userRepository) {
+    public LecturerRoleUpdateStrategy(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
     @Override
     @Transactional
     public ResponseEntity<ResponseUpdateDTO> updateRole(UserUpdateDTO updateData, User user) {
-        user.setNip(null);
-        user.setFullName(null);
+        UserIntoLecturerDTO userIntoLecturerDTO = (UserIntoLecturerDTO) updateData;
+
+        user.setNip(userIntoLecturerDTO.nip);
+        user.setFullName(userIntoLecturerDTO.fullName);
         user.setNim(null);
-        user.setRole("ADMIN");
+        user.setRole("LECTURER");
 
         try{
             userRepository.save(user);
             return new ResponseEntity<>(
-                    new ResponseUpdateDTO("accept", "User updated to ADMIN"),
+                    new ResponseUpdateDTO("accept", "User updated to LECTURER"),
                     HttpStatus.OK
             );
         }
