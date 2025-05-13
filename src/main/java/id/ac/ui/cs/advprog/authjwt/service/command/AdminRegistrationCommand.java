@@ -29,7 +29,6 @@ public class AdminRegistrationCommand extends RegistrationCommand {
                     HttpStatus.valueOf(400));
         }
 
-
         try{
             User newUser = new User(
                     UUID.randomUUID(),

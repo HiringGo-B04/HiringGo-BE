@@ -77,6 +77,11 @@ public class AuthService implements AuthenticationFacade {
     @Override
     public ResponseEntity<LogoutResponseDTO> logout(LogoutRequestDTO token){
         try{
+
+            if(tokenRepository.findByToken(token.token()) == null) {
+                throw new Exception("Token not found");
+            }
+
             tokenRepository.deleteByToken(token.token());
             return new ResponseEntity<>(
                     new LogoutResponseDTO("accept", "Succes to logout"),
