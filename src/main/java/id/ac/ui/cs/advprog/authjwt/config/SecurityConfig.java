@@ -20,7 +20,6 @@ public class SecurityConfig {
         this.jwtFilter = new JwtAuthFilter(jwtUtil);
     }
 
-
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http

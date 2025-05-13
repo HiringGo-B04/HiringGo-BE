@@ -42,6 +42,16 @@ public class JwtUtil {
                 .compact();
     }
 
+    public boolean validateJwtToken(String token) {
+        try {
+            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+            return true;
+        } catch (Exception e) {
+            System.out.println("JWT validation error: " + e.getMessage());
+            return false;
+        }
+    }
+
     public String getRoleFromToken(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(key).build()
@@ -56,21 +66,5 @@ public class JwtUtil {
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();
-    }
-
-    public boolean validateJwtToken(String token) {
-        try {
-            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
-
-            if(tokenRepository.findByToken(token) == null) {
-                System.out.println("Token not found");
-                return false;
-            }
-
-            return true;
-        } catch (Exception e) {
-            System.out.println("JWT validation error: " + e.getMessage());
-            return false;
-        }
     }
 }
