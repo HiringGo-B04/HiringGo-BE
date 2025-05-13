@@ -55,6 +55,13 @@ public class JwtUtilTest {
     }
 
     @Test
+    public void testNotFoundToken() {
+        String invalidToken = "notFoundToken";
+        when(tokenRespository.findByToken(invalidToken)).thenReturn(null);
+        assertFalse(jwtUtil.validateJwtToken(invalidToken));
+    }
+
+    @Test
     public void testExpiredToken() throws InterruptedException {
         ReflectionTestUtils.setField(jwtUtil, "jwtExpirationMs", 1); // 1ms for instant expiration
         jwtUtil.init();
