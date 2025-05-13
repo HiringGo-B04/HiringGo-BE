@@ -1,7 +1,5 @@
 package id.ac.ui.cs.advprog.authjwt.model;
 
-import org.springframework.context.annotation.Profile;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;

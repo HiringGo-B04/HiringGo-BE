@@ -1,6 +1,5 @@
 package id.ac.ui.cs.advprog.authjwt.config;
 
-import id.ac.ui.cs.advprog.authjwt.config.JwtAuthFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;

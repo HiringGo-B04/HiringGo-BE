@@ -6,11 +6,7 @@ import id.ac.ui.cs.advprog.authjwt.dto.logout.LogoutRequestDTO;
 import id.ac.ui.cs.advprog.authjwt.dto.logout.LogoutResponseDTO;
 import id.ac.ui.cs.advprog.authjwt.dto.registration.RegisterResponseDTO;
 import id.ac.ui.cs.advprog.authjwt.dto.registration.UserDTO;
-import id.ac.ui.cs.advprog.authjwt.model.Token;
-import id.ac.ui.cs.advprog.authjwt.model.User;
 import org.springframework.http.ResponseEntity;
-
-import java.util.Map;
 
 public interface AuthenticationFacade {
     ResponseEntity<LoginResponseDTO> login(LoginRequestDTO user);

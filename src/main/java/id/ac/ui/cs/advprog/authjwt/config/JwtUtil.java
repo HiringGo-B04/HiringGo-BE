@@ -1,6 +1,5 @@
 package id.ac.ui.cs.advprog.authjwt.config;
 
-import id.ac.ui.cs.advprog.authjwt.model.Token;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
