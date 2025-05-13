@@ -53,19 +53,7 @@ public class AccountService{
                 throw new IllegalArgumentException("User not found");
             }
 
-            RoleUpdateStrategy strategy;
-            if(userUpdateDTO.role.equals("ADMIN")){
-                strategy = new AdminRoleUpdateStrategy(userRepository);
-            }
-            else if(userUpdateDTO.role.equals("LECTURER")){
-                strategy = new LecturerRoleUpdateStrategy(userRepository);
-            }
-            else if(userUpdateDTO.role.equals("STUDENT")){
-                strategy = new StudentRoleUpdateStrategy(userRepository);
-            }
-            else{
-                throw new IllegalArgumentException("Role not found");
-            }
+            RoleUpdateStrategy strategy = getRoleUpdateStrategy(userUpdateDTO);
 
             return strategy.updateRole(userUpdateDTO, user);
         }
@@ -75,5 +63,22 @@ public class AccountService{
 
                     HttpStatus.valueOf(400));
         }
+    }
+
+    private RoleUpdateStrategy getRoleUpdateStrategy(UserUpdateDTO userUpdateDTO) {
+        RoleUpdateStrategy strategy;
+        if(userUpdateDTO.role.equals("ADMIN")){
+            strategy = new AdminRoleUpdateStrategy(userRepository);
+        }
+        else if(userUpdateDTO.role.equals("LECTURER")){
+            strategy = new LecturerRoleUpdateStrategy(userRepository);
+        }
+        else if(userUpdateDTO.role.equals("STUDENT")){
+            strategy = new StudentRoleUpdateStrategy(userRepository);
+        }
+        else{
+            throw new IllegalArgumentException("Role not found");
+        }
+        return strategy;
     }
 }
