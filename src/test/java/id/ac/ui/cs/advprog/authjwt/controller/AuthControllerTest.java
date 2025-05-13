@@ -1,7 +1,6 @@
 package id.ac.ui.cs.advprog.authjwt.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import id.ac.ui.cs.advprog.authjwt.config.JwtUtil;
 import id.ac.ui.cs.advprog.authjwt.config.SecurityConfig;
 import id.ac.ui.cs.advprog.authjwt.dto.login.LoginRequestDTO;
 import id.ac.ui.cs.advprog.authjwt.dto.login.LoginResponseDTO;

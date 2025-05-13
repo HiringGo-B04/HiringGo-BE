@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.account.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import id.ac.ui.cs.advprog.authjwt.testconfig.TestSecurityBeansConfig;
 import id.ac.ui.cs.advprog.account.dto.delete.DeleteRequestDTO;
 import id.ac.ui.cs.advprog.account.dto.delete.DeleteResponseDTO;
 import id.ac.ui.cs.advprog.account.service.AccountService;
@@ -14,18 +15,20 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(AccountController.class)
-@Import(SecurityConfig.class)
+@Import({SecurityConfig.class, TestSecurityBeansConfig.class})
+@TestPropertySource(properties = {
+        "jwt.secret=fakeTestSecretKeyThatIsLongEnoughForHmacSha",
+        "jwt.expiration=3600000"
+})
 public class AccountControllerTest {
 
     @Autowired
