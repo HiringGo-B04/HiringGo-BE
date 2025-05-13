@@ -1,14 +1,14 @@
-package id.ac.ui.cs.advprog.authjwt.dto.login;
+package id.ac.ui.cs.advprog.account.dto.update;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-public record LoginRequestDTO (
+public record ResponseUpdateDTO(
         @NotBlank
         @NotNull
-        String username,
+        String status,
 
         @NotBlank
         @NotNull
-        String password
-) {}
+        String message
+) { }

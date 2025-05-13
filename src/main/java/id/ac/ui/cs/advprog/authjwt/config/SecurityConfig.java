@@ -8,16 +8,34 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
+    private JwtAuthFilter jwtFilter;
+
+    public SecurityConfig(JwtUtil jwtUtil) {
+        this.jwtFilter = new JwtAuthFilter(jwtUtil);
+    }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
+                        /*
+                         * Jika ingin melakukan testing tanpa adanya RBAC comment
+                         * */
+                        .requestMatchers("/api/auth/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/auth/user/**").hasAnyRole("ADMIN", "STUDENT", "LECTURER")
+
+                        .requestMatchers("/api/account/admin/**").hasRole("ADMIN")
+                        /*
+                        * Hingga sini yang permitAll bawah ngga usah itu kayak namanya nge permit semuanya
+                        * */
                         .requestMatchers("/**").permitAll()
                         .anyRequest().authenticated()
                 )

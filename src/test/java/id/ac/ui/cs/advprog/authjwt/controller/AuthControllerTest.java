@@ -1,7 +1,6 @@
 package id.ac.ui.cs.advprog.authjwt.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import id.ac.ui.cs.advprog.authjwt.config.JwtUtil;
 import id.ac.ui.cs.advprog.authjwt.config.SecurityConfig;
 import id.ac.ui.cs.advprog.authjwt.dto.login.LoginRequestDTO;
 import id.ac.ui.cs.advprog.authjwt.dto.login.LoginResponseDTO;
@@ -24,6 +23,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -34,7 +34,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static id.ac.ui.cs.advprog.authjwt.controller.AuthController.*;
 
 @WebMvcTest(AuthController.class)
-@Import(SecurityConfig.class)
+@Import({SecurityConfig.class, id.ac.ui.cs.advprog.authjwt.testconfig.TestSecurityBeansConfig.class})
+@TestPropertySource(properties = {
+        "jwt.secret=fakeTestSecretKeyThatIsLongEnoughForHmacSha",
+        "jwt.expiration=3600000"
+})
 public class AuthControllerTest {
     private final String path = "/api/auth";
     private final String ADMIN_REGISTRATION = path + REGISTER_ADMIN ;
@@ -62,7 +66,7 @@ public class AuthControllerTest {
     }
 
     @Test
-    @WithMockUser // Simulate an authenticated user
+    @WithMockUser(roles = "STUDENT") // Simulate an authenticated user
     void logout_shouldReturn200() throws Exception {
         var request = new LogoutRequestDTO("validToken");
         var response = new LogoutResponseDTO("accept", "Succes to logout");
@@ -81,7 +85,7 @@ public class AuthControllerTest {
     }
 
     @Test
-    @WithMockUser // Simulate an authenticated user
+    @WithMockUser(roles = "LECTURER") // Simulate an authenticated user
     void logout_invalidToken_shouldReturn400() throws Exception {
         var request = new LogoutRequestDTO("invalidToken");
         var response = new LogoutResponseDTO("error", "Token not found");
@@ -133,7 +137,7 @@ public class AuthControllerTest {
     }
 
     @Test
-    @WithMockUser // Simulate an authenticated user
+    @WithMockUser(roles = "ADMIN") // Simulate an authenticated user
     void registerAdmin_shouldReturn200() throws Exception {
         var request = new AdminRegistrationDTO("admin@mail.com", "securepass123");
         var response = new RegisterResponseDTO("accept", "Success register");
@@ -152,7 +156,7 @@ public class AuthControllerTest {
     }
 
     @Test
-    @WithMockUser // Simulate an authenticated user
+    @WithMockUser(roles = "ADMIN")// Simulate an authenticated user
     void registerAdmin_invalid_shouldReturn401() throws Exception {
         var request = new AdminRegistrationDTO("invalid", "123");
         var response = new RegisterResponseDTO("error", "Username must be a valid email address");
@@ -171,6 +175,7 @@ public class AuthControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void registerAdmin_invalid_shouldReturn400() throws Exception {
         var request = new AdminRegistrationDTO("admin@mail.com", "123");
 
@@ -189,7 +194,7 @@ public class AuthControllerTest {
 
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "ADMIN")
     void registerLecturer_shouldReturn200() throws Exception {
         var request = new LecturerRegistrationDTO("lecturer@mail.com", "securepass123", "12345678", "John Doe");
         var response = new RegisterResponseDTO("accept", "Success register");
@@ -206,7 +211,7 @@ public class AuthControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "ADMIN")
     void registerLecturer_invalidEmail_shouldReturn401() throws Exception {
         var request = new LecturerRegistrationDTO("invalid-email", "securepass123", "12345678", "John Doe");
         var response = new RegisterResponseDTO("error", "Username must be a valid email address");
@@ -223,7 +228,7 @@ public class AuthControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "ADMIN")
     void registerLecturer_weakPassword_shouldReturn400() throws Exception {
         var request = new LecturerRegistrationDTO("lecturer@mail.com", "123", "12345678", "John Doe");
         var response = new RegisterResponseDTO("error", "Password is too weak");

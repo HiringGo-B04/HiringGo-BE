@@ -2,6 +2,7 @@ package id.ac.ui.cs.advprog.account.service;
 
 import id.ac.ui.cs.advprog.account.dto.delete.DeleteRequestDTO;
 import id.ac.ui.cs.advprog.account.dto.delete.DeleteResponseDTO;
+import id.ac.ui.cs.advprog.account.dto.update.*;
 import id.ac.ui.cs.advprog.account.service.AccountService;
 import id.ac.ui.cs.advprog.authjwt.model.User;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
@@ -23,6 +24,157 @@ public class AccountServiceTest {
     void setUp() {
         userRepository = mock(UserRepository.class);
         accountService = new AccountService(userRepository);
+    }
+
+    @Test
+    void testUpdateUserRoleToAdmin_Success() {
+        // Given
+        String username = "adminuser";
+        UserIntoAdminDTO dto = new UserIntoAdminDTO();
+        dto.username = username;
+        dto.role = "ADMIN";
+
+        User user = new User();
+        user.setUsername(username);
+        user.setRole("STUDENT");
+
+        when(userRepository.findByUsername(username)).thenReturn(user);
+        when(userRepository.save(user)).thenReturn(user);
+
+        // When
+        ResponseEntity<ResponseUpdateDTO> response = accountService.update(dto);
+
+        // Then
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("accept", response.getBody().status());
+        assertEquals("User updated to ADMIN", response.getBody().message());
+
+        verify(userRepository, times(1)).findByUsername(username);
+        verify(userRepository, times(1)).save(user);
+    }
+
+    @Test
+    void testUpdateUserRoleToLecturer_Success() {
+        // Given
+        String username = "adminuser";
+        UserIntoLecturerDTO dto = new UserIntoLecturerDTO();
+        dto.username = username;
+        dto.role = "LECTURER";
+        dto.nip = "123412341234";
+        dto.fullName = "adminuser";
+
+        User user = new User();
+        user.setUsername(username);
+        user.setRole("LECTURER");
+
+        when(userRepository.findByUsername(username)).thenReturn(user);
+        when(userRepository.save(user)).thenReturn(user);
+
+        // When
+        ResponseEntity<ResponseUpdateDTO> response = accountService.update(dto);
+
+        // Then
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("accept", response.getBody().status());
+        assertEquals("User updated to LECTURER", response.getBody().message());
+    }
+
+    @Test
+    void testUpdateUserRoleToStudent_Success() {
+        // Given
+        String username = "adminuser";
+        UserIntoStudentDTO dto = new UserIntoStudentDTO();
+        dto.username = username;
+        dto.role = "STUDENT";
+        dto.nim = "123412341234";
+        dto.fullName = "adminuser";
+
+        User user = new User();
+        user.setUsername(username);
+        user.setRole("STUDENT");
+
+        when(userRepository.findByUsername(username)).thenReturn(user);
+        when(userRepository.save(user)).thenReturn(user);
+
+        // When
+        ResponseEntity<ResponseUpdateDTO> response = accountService.update(dto);
+
+        // Then
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("accept", response.getBody().status());
+        assertEquals("User updated to STUDENT", response.getBody().message());
+    }
+
+    @Test
+    void testUpdateUser_UserNotFound() {
+        // Given
+        UserUpdateDTO dto = new UserIntoAdminDTO();
+        dto.username = "ghost";
+        dto.role = "ADMIN";
+
+        when(userRepository.findByUsername("ghost")).thenReturn(null);
+
+        // When
+        ResponseEntity<ResponseUpdateDTO> response = accountService.update(dto);
+
+        // Then
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("error", response.getBody().status());
+        assertEquals("User not found", response.getBody().message());
+
+        verify(userRepository, times(1)).findByUsername("ghost");
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void testUpdateUser_UnsupportedRole_ShouldReturnError() {
+        // Given
+        UserUpdateDTO dto = new UserIntoAdminDTO();
+        dto.username = "admin";
+        dto.role = "MODERATOR"; // unsupported
+
+        User user = new User();
+        user.setUsername("admin");
+        user.setRole("STUDENT");
+
+        when(userRepository.findByUsername("admin")).thenReturn(user);
+
+        // When
+        ResponseEntity<ResponseUpdateDTO> response = accountService.update(dto);
+
+        // Then
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("error", response.getBody().status());
+        assertEquals("Role not found", response.getBody().message());
+
+        verify(userRepository, times(1)).findByUsername("admin");
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void testUpdateUser_ExceptionThrown_ShouldReturnErrorResponse() {
+        // Given
+        UserUpdateDTO dto = new UserIntoAdminDTO();
+        dto.username = "erroruser";
+        dto.role = "ADMIN";
+
+        when(userRepository.findByUsername("erroruser"))
+                .thenThrow(new RuntimeException("Unexpected error"));
+
+        // When
+        ResponseEntity<ResponseUpdateDTO> response = accountService.update(dto);
+
+        // Then
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("error", response.getBody().status());
+        assertEquals("Unexpected error", response.getBody().message());
+
+        verify(userRepository, times(1)).findByUsername("erroruser");
     }
 
     @Test

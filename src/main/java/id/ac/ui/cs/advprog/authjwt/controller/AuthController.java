@@ -8,14 +8,11 @@ import id.ac.ui.cs.advprog.authjwt.dto.registration.LecturerRegistrationDTO;
 import id.ac.ui.cs.advprog.authjwt.dto.registration.RegisterResponseDTO;
 import id.ac.ui.cs.advprog.authjwt.dto.registration.StudentRegistrationDTO;
 import id.ac.ui.cs.advprog.authjwt.facade.AuthenticationFacade;
-import id.ac.ui.cs.advprog.authjwt.model.Token;
-import id.ac.ui.cs.advprog.authjwt.model.User;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
