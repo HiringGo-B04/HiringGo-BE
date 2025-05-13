@@ -2,10 +2,7 @@ package id.ac.ui.cs.advprog.account.service;
 
 import id.ac.ui.cs.advprog.account.dto.delete.DeleteRequestDTO;
 import id.ac.ui.cs.advprog.account.dto.delete.DeleteResponseDTO;
-import id.ac.ui.cs.advprog.account.dto.update.ResponseUpdateDTO;
-import id.ac.ui.cs.advprog.account.dto.update.UserIntoAdminDTO;
-import id.ac.ui.cs.advprog.account.dto.update.UserIntoLecturerDTO;
-import id.ac.ui.cs.advprog.account.dto.update.UserUpdateDTO;
+import id.ac.ui.cs.advprog.account.dto.update.*;
 import id.ac.ui.cs.advprog.account.service.AccountService;
 import id.ac.ui.cs.advprog.authjwt.model.User;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
@@ -82,6 +79,33 @@ public class AccountServiceTest {
         assertNotNull(response.getBody());
         assertEquals("accept", response.getBody().status());
         assertEquals("User updated to LECTURER", response.getBody().message());
+    }
+
+    @Test
+    void testUpdateUserRoleToStudent_Success() {
+        // Given
+        String username = "adminuser";
+        UserIntoStudentDTO dto = new UserIntoStudentDTO();
+        dto.username = username;
+        dto.role = "STUDENT";
+        dto.nim = "123412341234";
+        dto.fullName = "adminuser";
+
+        User user = new User();
+        user.setUsername(username);
+        user.setRole("STUDENT");
+
+        when(userRepository.findByUsername(username)).thenReturn(user);
+        when(userRepository.save(user)).thenReturn(user);
+
+        // When
+        ResponseEntity<ResponseUpdateDTO> response = accountService.update(dto);
+
+        // Then
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("accept", response.getBody().status());
+        assertEquals("User updated to STUDENT", response.getBody().message());
     }
 
     @Test
