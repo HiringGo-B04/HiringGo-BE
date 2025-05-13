@@ -5,6 +5,7 @@ import id.ac.ui.cs.advprog.account.dto.delete.DeleteResponseDTO;
 import id.ac.ui.cs.advprog.account.dto.update.ResponseUpdateDTO;
 import id.ac.ui.cs.advprog.account.dto.update.UserUpdateDTO;
 import id.ac.ui.cs.advprog.account.service.strategy.AdminRoleUpdateStrategy;
+import id.ac.ui.cs.advprog.account.service.strategy.LecturerRoleUpdateStrategy;
 import id.ac.ui.cs.advprog.account.service.strategy.RoleUpdateStrategy;
 import id.ac.ui.cs.advprog.authjwt.model.User;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
@@ -54,6 +55,9 @@ public class AccountService{
             RoleUpdateStrategy strategy;
             if(userUpdateDTO.role.equals("ADMIN")){
                 strategy = new AdminRoleUpdateStrategy(userRepository);
+            }
+            else if(userUpdateDTO.role.equals("LECTURER")){
+                strategy = new LecturerRoleUpdateStrategy(userRepository);
             }
             else{
                 throw new IllegalArgumentException("Role not found");
