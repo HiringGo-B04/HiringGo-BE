@@ -7,6 +7,6 @@ public class UserIntoLecturerDTO extends UserUpdateDTO {
     String fullName;
 
     @NotBlank
-    String nip;
+    public String nip;
 }
 
