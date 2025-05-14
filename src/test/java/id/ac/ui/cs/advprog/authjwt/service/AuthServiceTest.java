@@ -52,9 +52,9 @@ public class AuthServiceTest {
     void testLogout_Success() {
         // Given
         LogoutRequestDTO logoutRequest = new LogoutRequestDTO("validToken");
-
+        Token token = new Token("validToken");
         // No exception should be thrown during delete
-        doNothing().when(tokenRepository).deleteByToken("validToken");
+        when(tokenRepository.findByToken("validToken")).thenReturn(token);
 
         // When
         ResponseEntity<LogoutResponseDTO> response = authService.logout(logoutRequest);
@@ -68,13 +68,11 @@ public class AuthServiceTest {
     }
 
     @Test
-    void testLogout_ExceptionThrown_ShouldReturnErrorResponse() {
+    void testLogout_TokenNotFound() {
         // Given
         LogoutRequestDTO logoutRequest = new LogoutRequestDTO("invalidToken");
 
-        // Simulate exception when deleting token
-        doThrow(new RuntimeException("Token not found")).when(tokenRepository).deleteByToken("invalidToken");
-
+        when(tokenRepository.findByToken("invalidToken")).thenReturn(null);
         // When
         ResponseEntity<LogoutResponseDTO> response = authService.logout(logoutRequest);
 
@@ -83,7 +81,6 @@ public class AuthServiceTest {
         assertNotNull(response.getBody());
         assertEquals("error", response.getBody().status());
         assertEquals("Token not found", response.getBody().message());
-        verify(tokenRepository, times(1)).deleteByToken("invalidToken");
     }
 
 
