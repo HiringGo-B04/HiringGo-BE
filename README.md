@@ -86,3 +86,18 @@ Semua dependensi MapStruct, Bean‑Validation, Spring‑Data di‑manage oleh **
 Silakan `@Autowire MataKuliahService` atau panggil endpoint di atas; tidak ada konfigurasi tambahan yang diperlukan dalam monolitik HiringGo‑BE.
 
 ---
+
+## Software Architecture - Modul 9 - Tutorial: Bagian B
+
+### Hasil diskusi:
+Penggunaan arsitektur monolith pada aplikasi yang kami kembangkan mempertimbangkan beberapa aspek yang telah kami diskusikan dan sepakati bersama.
+- Pertama, sistem ini memiliki banyak entitas data yang saling terkait, seperti data dosen, mahasiswa, mata kuliah, serta lamaran yang masuk. Dalam arsitektur monolith, seluruh komponen sistem berada dalam satu basis kode yang utuh, sehingga memudahkan pengelolaan dan integrasi antar entitas yang saling berhubungan tanpa perlu membangun komunikasi antarlayanan seperti pada mikroservis. Hal ini dapat mengurangi kompleksitas dalam pengembangan, debugging, dan deployment.
+- Kedua, dengan waktu pengembangan yang terbatas, arsitektur monolith lebih efisien karena tidak memerlukan overhead tambahan seperti pengelolaan service discovery, load balancing, dan komunikasi antar layanan yang biasa ditemui pada arsitektur mikroservis. Selain itu, sistem ini ditujukan untuk kebutuhan pengguna yang relatif kecil dan beban trafik yang tidak tinggi, sehingga skala yang dibutuhkan masih dapat ditangani dengan baik oleh sistem monolith tanpa menyebabkan bottleneck yang signifikan.
+- Ketiga, dari sisi tim pengembang, terutama jika ukuran tim masih kecil, arsitektur monolith lebih mudah untuk dikembangkan secara terpusat tanpa perlu pembagian tim berdasarkan layanan yang terpisah. Dengan demikian, arsitektur monolith menawarkan efisiensi dalam pengembangan, pengujian, dan pemeliharaan, serta memberikan solusi yang cukup stabil dan cepat untuk konteks kebutuhan sistem yang masih dalam tahap awal atau berskala kecil.
+
+general-container-diagram
+![general-container-diagram](/images/general-container-diagram.png)
+general-context-diagram
+![general-context-diagram](/images/general-context-diagram.png)
+general-deployment-diagram
+![general-deployment-diagram](/images/general-deployment-diagram.png)
