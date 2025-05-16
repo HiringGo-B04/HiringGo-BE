@@ -89,7 +89,10 @@ Silakan `@Autowire MataKuliahService` atau panggil endpoint di atas; tidak ada k
 
 ## Software Architecture - Modul 9 - Tutorial: Bagian B
 
-### Hasil diskusi:
+
+### Deliverable G.1
+Hasil diskusi:
+
 Penggunaan arsitektur monolith pada aplikasi yang kami kembangkan mempertimbangkan beberapa aspek yang telah kami diskusikan dan sepakati bersama.
 - Pertama, sistem ini memiliki banyak entitas data yang saling terkait, seperti data dosen, mahasiswa, mata kuliah, serta lamaran yang masuk. Dalam arsitektur monolith, seluruh komponen sistem berada dalam satu basis kode yang utuh, sehingga memudahkan pengelolaan dan integrasi antar entitas yang saling berhubungan tanpa perlu membangun komunikasi antarlayanan seperti pada mikroservis. Hal ini dapat mengurangi kompleksitas dalam pengembangan, debugging, dan deployment.
 - Kedua, dengan waktu pengembangan yang terbatas, arsitektur monolith lebih efisien karena tidak memerlukan overhead tambahan seperti pengelolaan service discovery, load balancing, dan komunikasi antar layanan yang biasa ditemui pada arsitektur mikroservis. Selain itu, sistem ini ditujukan untuk kebutuhan pengguna yang relatif kecil dan beban trafik yang tidak tinggi, sehingga skala yang dibutuhkan masih dapat ditangani dengan baik oleh sistem monolith tanpa menyebabkan bottleneck yang signifikan.
@@ -101,3 +104,9 @@ general-context-diagram
 ![general-context-diagram](/images/general-context-diagram.png)
 general-deployment-diagram
 ![general-deployment-diagram](/images/general-deployment-diagram.png)
+
+### Deliverable G.2
+Hasil diskusi:
+
+Analisis risiko terhadap sistem HiringGo saat ini mengidentifikasi beberapa kerentanan. Sistem monolitik dengan database tunggal menciptakan single point of failure yang cukup berisiko. Apabila terjadi periode pendaftaran asisten dosen yang padat, sistem monolitik juga rentan mengalami bottleneck performa karena tidak dapat menskalakan komponen individual sesuai kebutuhan. Keamanan juga menjadi perhatian, karena sistem monolitik berarti akses database tidak terisolasi berdasarkan fungsi, sehingga potensial kerentanan di satu area dapat mengekspos data di seluruh sistem. Selain itu, pengembangan dan pemeliharaan menjadi semakin kompleks seiring pertumbuhan sistem, dengan perubahan kecil berpotensi membutuhkan deployment ulang seluruh aplikasi.
+Modifikasi arsitektur ke microservices dengan pendekatan database-per-service memberikan solusi komprehensif untuk risiko-risiko tersebut. Pemisahan sistem menjadi layanan terpisah (Auth, Account, Course, Lowongan and Lamaran, Log) meningkatkan ketahanan sistem. Kegagalan pada satu layanan tidak akan memengaruhi keseluruhan aplikasi. Pola arsitektur ini juga memungkinkan skalabilitas yang jauh lebih baik, di mana komponen individual (seperti Vacancy Service saat periode pendaftaran) dapat diskalakan secara independen untuk menangani lonjakan lalu lintas tanpa memboroskan sumber daya pada komponen lain. Dari perspektif keamanan, isolasi data per layanan secara signifikan mengurangi permukaan serangan dan membatasi dampak potensial jika terjadi pelanggaran keamanan. Penggunaan API Gateway memberikan lapisan keamanan tambahan melalui manajemen akses terpusat dan validasi permintaan pengguna.
