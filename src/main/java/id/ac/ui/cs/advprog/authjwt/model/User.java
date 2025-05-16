@@ -4,7 +4,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Setter;
 import lombok.Getter;
-import org.springframework.context.annotation.Profile;
 
 import java.util.UUID;
 

@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.course.controller;
 
+import id.ac.ui.cs.advprog.authjwt.config.SecurityConfig;
 import id.ac.ui.cs.advprog.course.dto.MataKuliahDto;
 import id.ac.ui.cs.advprog.course.dto.MataKuliahPatch;
 import id.ac.ui.cs.advprog.course.service.MataKuliahService;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
@@ -28,7 +30,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Web‑layer tests untuk {@link MataKuliahController} versi DTO.
  */
 @WebMvcTest(MataKuliahController.class)
-@Import(MataKuliahControllerTest.MockConfig.class)
+//@Import(MataKuliahControllerTest.MockConfig.class)
+@Import({SecurityConfig.class, id.ac.ui.cs.advprog.authjwt.testconfig.TestSecurityBeansConfig.class})
+@TestPropertySource(properties = {
+        "jwt.secret=fakeTestSecretKeyThatIsLongEnoughForHmacSha",
+        "jwt.expiration=3600000"
+})
 class MataKuliahControllerTest {
 
     @Autowired
