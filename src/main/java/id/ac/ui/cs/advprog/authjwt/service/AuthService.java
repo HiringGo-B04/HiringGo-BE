@@ -1,6 +1,11 @@
 package id.ac.ui.cs.advprog.authjwt.service;
 
 import id.ac.ui.cs.advprog.authjwt.config.JwtUtil;
+import id.ac.ui.cs.advprog.authjwt.dto.login.LoginRequestDTO;
+import id.ac.ui.cs.advprog.authjwt.dto.login.LoginResponseDTO;
+import id.ac.ui.cs.advprog.authjwt.dto.logout.LogoutRequestDTO;
+import id.ac.ui.cs.advprog.authjwt.dto.logout.LogoutResponseDTO;
+import id.ac.ui.cs.advprog.authjwt.dto.registration.*;
 import id.ac.ui.cs.advprog.authjwt.facade.AuthenticationFacade;
 import id.ac.ui.cs.advprog.authjwt.model.Token;
 import id.ac.ui.cs.advprog.authjwt.model.User;
@@ -11,16 +16,11 @@ import id.ac.ui.cs.advprog.authjwt.service.command.LecturerRegistrationCommand;
 import id.ac.ui.cs.advprog.authjwt.service.command.RegistrationCommand;
 import id.ac.ui.cs.advprog.authjwt.service.command.StudentRegistrationCommand;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestBody;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Service
 public class AuthService implements AuthenticationFacade {
@@ -38,63 +38,61 @@ public class AuthService implements AuthenticationFacade {
     private PasswordEncoder passwordEncoder;
 
     @Override
-    public ResponseEntity<Map<String, String>> login(User user){
-        User exist_user = userRepository.findByUsername(user.getUsername());
-        Map<String, String> response = new HashMap<>();
+    @Transactional
+    public ResponseEntity<LoginResponseDTO> login(LoginRequestDTO user){
+        User exist_user = userRepository.findByUsername(user.username());
 
         if(exist_user == null) {
-            response.put("status", "error");
-            response.put("messages", "User not found");
-            return new ResponseEntity<>(response, HttpStatus.valueOf(404));
+            return new ResponseEntity<>(
+                    new LoginResponseDTO("error", "User didn't exist"),
+                    HttpStatus.valueOf(400));
         }
 
-        if (!encoder.matches(user.getPassword(), exist_user.getPassword())) {
-            response.put("status", "error");
-            response.put("messages", "Invalid password");
-            return new ResponseEntity<>(response, HttpStatus.valueOf(404));
+        if (!encoder.matches(user.password(), exist_user.getPassword())) {
+            return new ResponseEntity<>(
+                    new LoginResponseDTO("error", "Invalid Password"),
+                    HttpStatus.valueOf(400));
         }
 
         try{
-            String jwt_token = jwtUtils.generateToken(user.getUsername(), exist_user.getRole());
+            String jwt_token = jwtUtils.generateToken(user.username(), exist_user.getRole());
             Token user_token = new Token(jwt_token);
             tokenRepository.save(user_token);
 
-            response.put("status", "accept");
-            response.put("messages", "Success login");
-            response.put("token", jwt_token);
-            return new ResponseEntity<>(response, HttpStatus.valueOf(200));
+            return new ResponseEntity<>(
+                    new LoginResponseDTO("accept", "Success login", jwt_token),
+                    HttpStatus.valueOf(200));
         }
         catch (Exception e) {
-            response.put("status", "error");
-            response.put("messages", e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.valueOf(401));
+            return new ResponseEntity<>(
+                    new LoginResponseDTO("error on prod", e.getMessage()),
+                    HttpStatus.valueOf(400));
         }
     }
 
     @Transactional
     @Override
-    public ResponseEntity<Map<String, String>> logout(Token token){
-        Map<String, String> response = new HashMap<>();
+    public ResponseEntity<LogoutResponseDTO> logout(LogoutRequestDTO token){
         try{
-            if(tokenRepository.findByToken(token.getToken()) == null) {
-                throw new IllegalArgumentException("Invalid Token");
+
+            if(tokenRepository.findByToken(token.token()) == null) {
+                throw new Exception("Token not found");
             }
 
-            tokenRepository.deleteByToken(token.getToken());
-
-            response.put("status", "accept");
-            response.put("messages", "Success to logout");
-            return new ResponseEntity<>(response, HttpStatus.valueOf(200));
+            tokenRepository.deleteByToken(token.token());
+            return new ResponseEntity<>(
+                    new LogoutResponseDTO("accept", "Succes to logout"),
+                    HttpStatus.valueOf(200));
         }
         catch (Exception e) {
-            response.put("status", "error");
-            response.put("messages", e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.valueOf(401));
+            return new ResponseEntity<>(
+                    new LogoutResponseDTO("error", e.getMessage()),
+                    HttpStatus.valueOf(400));
         }
     }
 
     @Override
-    public ResponseEntity<Map<String, String>> register(@RequestBody User user, String role) {
+    public ResponseEntity<RegisterResponseDTO> register(UserDTO user, String role) {
         try{
             if(role == null || role.isEmpty()) {
                 throw new IllegalArgumentException("Role is empty");
@@ -102,13 +100,13 @@ public class AuthService implements AuthenticationFacade {
 
             RegistrationCommand resgistrand;
             if(role.equalsIgnoreCase("admin")) {
-                resgistrand = new AdminRegistrationCommand(userRepository, encoder, user);
+                resgistrand = new AdminRegistrationCommand(userRepository, encoder, (AdminRegistrationDTO) user);
             }
             else if(role.equalsIgnoreCase("lecturer")) {
-                resgistrand = new LecturerRegistrationCommand(userRepository, encoder, user);
+                resgistrand = new LecturerRegistrationCommand(userRepository, encoder, (LecturerRegistrationDTO) user);
             }
             else if(role.equalsIgnoreCase("student")) {
-                resgistrand = new StudentRegistrationCommand(userRepository, encoder, user);
+                resgistrand = new StudentRegistrationCommand(userRepository, encoder, (StudentRegistrationDTO) user);
             }
             else {
                 throw new IllegalArgumentException("Role is invalid");
@@ -117,10 +115,9 @@ public class AuthService implements AuthenticationFacade {
             return resgistrand.addUser();
         }
         catch (Exception e) {
-            Map<String, String> response = new HashMap<>();
-            response.put("status", "error");
-            response.put("messages", e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.valueOf(401));
+            return new ResponseEntity<>(
+                    new RegisterResponseDTO("error",e.getMessage()),
+                    HttpStatus.valueOf(400));
         }
 
     }
