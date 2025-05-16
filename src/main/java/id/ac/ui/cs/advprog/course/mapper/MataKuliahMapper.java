@@ -1,51 +1,65 @@
 package id.ac.ui.cs.advprog.course.mapper;
 
 import id.ac.ui.cs.advprog.authjwt.model.User;
+import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
 import id.ac.ui.cs.advprog.course.dto.MataKuliahDto;
 import id.ac.ui.cs.advprog.course.dto.MataKuliahPatch;
 import id.ac.ui.cs.advprog.course.model.MataKuliah;
 import org.mapstruct.*;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.UUID;
 
-/** CATATAN
- * MapStruct mapper — konversi Entity ⇄ DTO untuk modul Mata Kuliah.
- *
- * ⚠️ Saat ini koleksi <code>dosenPengampu</code> pada DTO berisi <code>List&lt;String&gt;</code>
- * (mis. nama/UUID dosen). Karena kita belum memiliki service lookup <code>User</code> ←→ string,
- * konversi DTO → Entity hanya me‑return <code>emptySet()</code>. Logic pengisian relasi dosen
- * sebaiknya dilakukan di Service layer ketika sudah tersedia user‑repository.
+/**
+ * MapStruct mapper — konversi Entity ⇄ DTO untuk modul Mata Kuliah.
+ * • Entity → DTO : Set<User>  → List<UUID>   (ambil userId)
+ * • DTO    → Entity : List<UUID> → Set<User>  (lookup ke UserRepository)
  */
 @Mapper(
         componentModel = "spring",
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
         unmappedTargetPolicy           = ReportingPolicy.IGNORE
 )
-public interface MataKuliahMapper {
+public abstract class MataKuliahMapper {
 
-    /* ---------- Manual converters ---------- */
+    /* ---------- Dependency lookup ---------- */
+    @Autowired
+    protected UserRepository userRepository;
 
-    /** (JANGAN LUPA) Entity → DTO : ubah Set&lt;User&gt; menjadi List&lt;String&gt; (fullname). */
-    default List<String> map(Set<User> users) {
+    /* ---------- Mapping utama ---------- */
+
+    @Mapping(source = "dosenPengampu", target = "dosenPengampu")
+    public abstract MataKuliahDto toDto(MataKuliah entity);
+
+    @Mapping(source = "dosenPengampu", target = "dosenPengampu")
+    public abstract MataKuliah toEntity(MataKuliahDto dto);
+
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    public abstract void patch(MataKuliahPatch patch, @MappingTarget MataKuliah entity);
+
+    /* ---------- Custom converters ---------- */
+
+    /** Entity → DTO : Set<User> → List<UUID>. */
+    protected List<UUID> map(Set<User> users) {
         if (users == null || users.isEmpty()) {
             return List.of();
         }
         return users.stream()
-                .map(User::getFullName)               // (JANGAN LUPA) pakai fullname; bisa diganti getUserId().toString()
-                .toList();
+                .map(User::getUserId)         // asumsi field 'userId' bertipe UUID
+                .collect(Collectors.toList());
     }
 
-    /** (JANGAN LUPA)DTO → Entity : belum ada lookup User, kembalikan set kosong. */
-    default Set<User> map(List<String> names) {
-        // Belum ada lookup User → biarkan MapStruct meng‑abaikan kolom ini
-        return null;          // <‑‑ perbaikan: kembalikan null
+    /** DTO → Entity : List<UUID> → Set<User>. */
+    protected Set<User> map(List<UUID> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return Collections.emptySet();
+        }
+        // UserRepository#findAllById mengembalikan Iterable<User>
+        Iterable<User> fetched = userRepository.findAllById(ids);
+        Set<User> result = new HashSet<>();
+        fetched.forEach(result::add);
+        return result;
     }
-
-    /* ---------- Mapping utama ---------- */
-
-    MataKuliahDto toDto(MataKuliah entity);
-    MataKuliah    toEntity(MataKuliahDto dto);
-
-    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    void patch(MataKuliahPatch patch, @MappingTarget MataKuliah entity);
 }

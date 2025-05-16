@@ -10,7 +10,6 @@ import java.util.UUID;
 
 /** CATATAN !!!!
  * Data‑transfer object untuk operasi REST Mata Kuliah.
- *
  * • kode  : kode unik, maksimal 10 karakter (divalidasi @NotBlank)
  * • nama  : nama mata kuliah (tidak boleh kosong)
  * • sks   : jumlah SKS (>= 0)
