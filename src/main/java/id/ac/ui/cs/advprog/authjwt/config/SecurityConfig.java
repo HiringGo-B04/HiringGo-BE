@@ -2,6 +2,7 @@ package id.ac.ui.cs.advprog.authjwt.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
@@ -33,6 +34,19 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/user/**").hasAnyRole("ADMIN", "STUDENT", "LECTURER")
 
                         .requestMatchers("/api/account/admin/**").hasRole("ADMIN")
+
+                        /* ---------- COURSE / MATA KULIAH ---------- */
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/course/student/**",
+                                "/api/course/lecturer/**",
+                                "/api/course/user/**"
+                        ).hasAnyRole("ADMIN", "STUDENT", "LECTURER")
+
+                        .requestMatchers("/api/course/admin/**").hasRole("ADMIN")
+
+                        .requestMatchers("/api/course/public/**").permitAll()
+
                         /*
                         * Hingga sini yang permitAll bawah ngga usah itu kayak namanya nge permit semuanya
                         * */
