@@ -108,11 +108,17 @@ general-deployment-diagram
 ### Deliverable G.2
 Hasil diskusi:
 
-Analisis risiko terhadap sistem HiringGo saat ini mengidentifikasi beberapa kerentanan. Sistem monolitik dengan database tunggal menciptakan single point of failure yang cukup berisiko. Apabila terjadi periode pendaftaran asisten dosen yang padat, sistem monolitik juga rentan mengalami bottleneck performa karena tidak dapat menskalakan komponen individual sesuai kebutuhan. Keamanan juga menjadi perhatian, karena sistem monolitik berarti akses database tidak terisolasi berdasarkan fungsi, sehingga potensial kerentanan di satu area dapat mengekspos data di seluruh sistem. Selain itu, pengembangan dan pemeliharaan menjadi semakin kompleks seiring pertumbuhan sistem, dengan perubahan kecil berpotensi membutuhkan deployment ulang seluruh aplikasi. Sehingga kami mengusul microservices dengan pendekatan database-per-service.
+Kami mengusulkan microservices dengan pendekatan database-per-service.
+
+general-future-container-diagram
+![general-future-container-diagram](/images/general-future-container-diagram.png)
+general-future-context-diagram
+![general-future-context-diagram](/images/general-future-context-diagram.png)
 
 ### Deliverable G.3
 Hasil diskusi:
 
+Analisis risiko terhadap sistem HiringGo saat ini mengidentifikasi beberapa kerentanan. Sistem monolitik dengan database tunggal menciptakan single point of failure yang cukup berisiko. Apabila terjadi periode pendaftaran asisten dosen yang padat, sistem monolitik juga rentan mengalami bottleneck performa karena tidak dapat menskalakan komponen individual sesuai kebutuhan. Keamanan juga menjadi perhatian, karena sistem monolitik berarti akses database tidak terisolasi berdasarkan fungsi, sehingga potensial kerentanan di satu area dapat mengekspos data di seluruh sistem. Selain itu, pengembangan dan pemeliharaan menjadi semakin kompleks seiring pertumbuhan sistem, dengan perubahan kecil berpotensi membutuhkan deployment ulang seluruh aplikasi.
 Modifikasi arsitektur ke microservices dengan pendekatan database-per-service memberikan solusi komprehensif untuk risiko-risiko tersebut. Pemisahan sistem menjadi layanan terpisah (Auth, Account, Course, Lowongan and Lamaran, Log) meningkatkan ketahanan sistem. Kegagalan pada satu layanan tidak akan memengaruhi keseluruhan aplikasi. Pola arsitektur ini juga memungkinkan skalabilitas yang jauh lebih baik, di mana komponen individual (seperti Vacancy Service saat periode pendaftaran) dapat diskalakan secara independen untuk menangani lonjakan lalu lintas tanpa memboroskan sumber daya pada komponen lain. Dari perspektif keamanan, isolasi data per layanan secara signifikan mengurangi permukaan serangan dan membatasi dampak potensial jika terjadi pelanggaran keamanan. Penggunaan API Gateway memberikan lapisan keamanan tambahan melalui manajemen akses terpusat dan validasi permintaan pengguna.
 
 ### Deliverable Individual
