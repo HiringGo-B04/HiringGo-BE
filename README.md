@@ -114,3 +114,20 @@ Analisis risiko terhadap sistem HiringGo saat ini mengidentifikasi beberapa kere
 Hasil diskusi:
 
 Modifikasi arsitektur ke microservices dengan pendekatan database-per-service memberikan solusi komprehensif untuk risiko-risiko tersebut. Pemisahan sistem menjadi layanan terpisah (Auth, Account, Course, Lowongan and Lamaran, Log) meningkatkan ketahanan sistem. Kegagalan pada satu layanan tidak akan memengaruhi keseluruhan aplikasi. Pola arsitektur ini juga memungkinkan skalabilitas yang jauh lebih baik, di mana komponen individual (seperti Vacancy Service saat periode pendaftaran) dapat diskalakan secara independen untuk menangani lonjakan lalu lintas tanpa memboroskan sumber daya pada komponen lain. Dari perspektif keamanan, isolasi data per layanan secara signifikan mengurangi permukaan serangan dan membatasi dampak potensial jika terjadi pelanggaran keamanan. Penggunaan API Gateway memberikan lapisan keamanan tambahan melalui manajemen akses terpusat dan validasi permintaan pengguna.
+
+### Deliverable Individual
+Commit dilakukan secara batch seluruh anggota. Diagram terletak pada folder /images/{nama-anggota}
+
+Pengerjaan diagram dibagi berdasarkan pembagian tugas yang lalu, yakni:
+Rakha Abid Bangsawan - 2206081585
+Mendapatkan Tugas Bagian: Fitur Manajemen Lowongan dan Dashboard Dosen
+Alyssa Layla Sasti - 2306152052
+Mendapatkan Tugas Bagian: Manajemen Log dan Periksa Log
+Laurentius Arlana Farel Mahardika - 2306244892
+Mendapatkan Tugas Bagian: Manajemen Mata Kuliah dan Dashboard Admin
+Muhammad Raihan Maulana - 2306216636
+Mendapatkan Tugas Bagian: Mendaftar Lowongan dan Dashboard Honor (Hanya FE)
+Raihan Akbar - 2306152506
+Mendapatkan Tugas Bagian: Manajemen Akun dan Dashboard Mahasiswa
+
+Jika diagram kurang jelas, bisa dilihat di draw.io kami [disini](https://drive.google.com/file/d/15BBQb-VU09JhqOzyiTkONZZ7gJOJ9bdL/view?usp=sharing) 
