@@ -5,15 +5,16 @@ import id.ac.ui.cs.advprog.course.dto.MataKuliahPatch;
 import id.ac.ui.cs.advprog.course.service.MataKuliahService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import java.net.URI;
 import java.util.UUID;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-
-import java.net.URI;
 
 @RestController
 @RequestMapping("/api/course")
@@ -22,7 +23,7 @@ public class MataKuliahController {
 
     private final MataKuliahService service;
 
-    /* ---------- PUBLIC (tanpa auth) ---------- */
+    /* ---------- PUBLIC (tanpa token) ---------- */
 
     @GetMapping("/public/matakuliah")
     public ResponseEntity<Page<MataKuliahDto>> listPublic(Pageable pageable) {
@@ -31,7 +32,26 @@ public class MataKuliahController {
 
     @GetMapping("/public/matakuliah/{kode}")
     public ResponseEntity<MataKuliahDto> getPublic(@PathVariable String kode) {
-        MataKuliahDto dto = service.findByKode(kode);
+        var dto = service.findByKode(kode);
+        return (dto == null) ? ResponseEntity.notFound().build() : ResponseEntity.ok(dto);
+    }
+
+    /* ---------- READ-ONLY untuk user bertoken ---------- */
+
+    @PreAuthorize("hasAnyRole('ADMIN','STUDENT','LECTURER')")
+    @GetMapping({"/student/matakuliah",
+            "/lecturer/matakuliah",
+            "/user/matakuliah"})
+    public ResponseEntity<Page<MataKuliahDto>> listAuth(Pageable pageable) {
+        return ResponseEntity.ok(service.findAll(pageable));
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN','STUDENT','LECTURER')")
+    @GetMapping({"/student/matakuliah/{kode}",
+            "/lecturer/matakuliah/{kode}",
+            "/user/matakuliah/{kode}"})
+    public ResponseEntity<MataKuliahDto> getAuth(@PathVariable String kode) {
+        var dto = service.findByKode(kode);
         return (dto == null) ? ResponseEntity.notFound().build() : ResponseEntity.ok(dto);
     }
 
@@ -40,7 +60,7 @@ public class MataKuliahController {
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/admin/matakuliah")
     public ResponseEntity<MataKuliahDto> create(@Valid @RequestBody MataKuliahDto dto) {
-        MataKuliahDto saved = service.create(dto);
+        var saved = service.create(dto);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{kode}").buildAndExpand(saved.kode()).toUri();
         return ResponseEntity.created(location).body(saved);
