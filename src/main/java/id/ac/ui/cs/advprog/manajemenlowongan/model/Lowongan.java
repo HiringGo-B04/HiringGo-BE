@@ -30,7 +30,7 @@ public class Lowongan {
     private Lowongan(Builder builder) {
         this.id = UUID.randomUUID();
         this.matkul = builder.matkul;
-        this.tahun = builder.tahun;
+        this.tahun = builder.year;
         this.term = builder.term;
         this.totalAsdosNeeded = builder.totalAsdosNeeded;
         this.totalAsdosRegistered = builder.totalAsdosRegistered;

@@ -1,13 +1,15 @@
 package id.ac.ui.cs.advprog.mendaftarlowongan.service;
 
+import id.ac.ui.cs.advprog.authjwt.model.User;
+import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
 import id.ac.ui.cs.advprog.manajemenlowongan.model.Lowongan;
 import id.ac.ui.cs.advprog.manajemenlowongan.repository.LowonganRepository;
+import id.ac.ui.cs.advprog.mendaftarlowongan.dto.LamaranDTO;
 import id.ac.ui.cs.advprog.mendaftarlowongan.enums.StatusLamaran;
 import id.ac.ui.cs.advprog.mendaftarlowongan.model.Lamaran;
 import id.ac.ui.cs.advprog.mendaftarlowongan.repository.LamaranRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 
 import java.util.*;
 
@@ -19,22 +21,26 @@ public class LamaranServiceImplTest {
     private LamaranRepository lamaranRepository;
     private LamaranServiceImpl lamaranService;
     private LowonganRepository lowonganRepository;
+    private UserRepository userRepository;
 
+    private LamaranDTO dummyLamaranDTO;
     private Lamaran dummyLamaran;
 
     @BeforeEach
     void setUp() {
         lamaranRepository = mock(LamaranRepository.class);
         lowonganRepository = mock(LowonganRepository.class);
-        lamaranService = new LamaranServiceImpl(lamaranRepository, lowonganRepository);
+        userRepository = mock(UserRepository.class);
+        lamaranService = new LamaranServiceImpl(lamaranRepository, lowonganRepository, userRepository);
 
-        dummyLamaran = new Lamaran.Builder()
-                .sks(20)
-                .ipk(3.5f)
-                .status(StatusLamaran.MENUNGGU)
-                .mahasiswa(UUID.randomUUID())
-                .lowongan(UUID.randomUUID())
-                .build();
+        dummyLamaranDTO = new LamaranDTO(
+                20,
+                3.5f,
+                UUID.randomUUID(),
+                UUID.randomUUID()
+        );
+
+        dummyLamaran = lamaranService.toEntity(dummyLamaranDTO);
     }
 
     @Test
@@ -42,39 +48,58 @@ public class LamaranServiceImplTest {
         when(lowonganRepository.getLowonganById(dummyLamaran.getIdLowongan()))
                 .thenReturn(mock(Lowongan.class));
 
-        when(lamaranRepository.createLamaran(any(Lamaran.class))).thenReturn(dummyLamaran);
+        User mahasiswaUser = new User();
+        mahasiswaUser.setUserId(dummyLamaran.getIdMahasiswa());
+        mahasiswaUser.setRole("STUDENT");
 
-        Lamaran created = lamaranService.createLamaran(dummyLamaran);
+        when(userRepository.findById(dummyLamaran.getIdMahasiswa()))
+                .thenReturn(Optional.of(mahasiswaUser));
+
+        when(lamaranRepository.save(any(Lamaran.class))).thenReturn(dummyLamaran);
+
+        Lamaran created = lamaranService.createLamaran(dummyLamaranDTO);
 
         assertEquals(dummyLamaran, created);
-        verify(lamaranRepository, times(1)).createLamaran(dummyLamaran);
+        verify(lamaranRepository, times(1)).save(any(Lamaran.class));
     }
 
     @Test
     void testCreateLamaranInvalidIpkThrowsException() {
-        dummyLamaran.setIpk(5.0f);  // Invalid
+        dummyLamaranDTO.setIpk(5.0f); // Invalid IPK
 
-        assertThrows(IllegalArgumentException.class, () -> {
-            lamaranService.createLamaran(dummyLamaran);
+        when(lowonganRepository.getLowonganById(dummyLamaranDTO.getIdLowongan()))
+                .thenReturn(mock(Lowongan.class));
+
+        User mahasiswaUser = new User();
+        mahasiswaUser.setUserId(dummyLamaranDTO.getIdMahasiswa());
+        mahasiswaUser.setRole("STUDENT");
+
+        when(userRepository.findById(dummyLamaranDTO.getIdMahasiswa()))
+                .thenReturn(Optional.of(mahasiswaUser));
+
+
+        assertThrows(RuntimeException.class, () -> {
+            lamaranService.createLamaran(dummyLamaranDTO);
         });
 
-        verify(lamaranRepository, never()).createLamaran(any());
+        verify(lamaranRepository, never()).save(any());
     }
+
 
     @Test
     void testGetLamaran() {
         List<Lamaran> list = List.of(dummyLamaran);
-        when(lamaranRepository.getLamaran()).thenReturn(list);
+        when(lamaranRepository.findAll()).thenReturn(list);
 
         List<Lamaran> result = lamaranService.getLamaran();
 
         assertEquals(1, result.size());
-        assertEquals(dummyLamaran, result.get(0));
+        assertEquals(dummyLamaran, result.getFirst());
     }
 
     @Test
     void testGetLamaranByIdFound() {
-        when(lamaranRepository.getLamaranById(dummyLamaran.getId())).thenReturn(dummyLamaran);
+        when(lamaranRepository.findById(dummyLamaran.getId())).thenReturn(Optional.ofNullable(dummyLamaran));
 
         Lamaran found = lamaranService.getLamaranById(dummyLamaran.getId());
 
@@ -84,7 +109,7 @@ public class LamaranServiceImplTest {
 
     @Test
     void testGetLamaranByIdNotFound() {
-        when(lamaranRepository.getLamaranById(any())).thenReturn(null);
+        when(lamaranRepository.findById(any())).thenReturn(Optional.empty());
 
         Lamaran result = lamaranService.getLamaranById(UUID.randomUUID());
 
@@ -93,26 +118,26 @@ public class LamaranServiceImplTest {
 
     @Test
     void testUpdateLamaran() {
-        when(lamaranRepository.getLamaranById(dummyLamaran.getId())).thenReturn(dummyLamaran);
-        when(lamaranRepository.createLamaran(any(Lamaran.class))).thenAnswer(i -> i.getArgument(0));
+        when(lamaranRepository.findById(dummyLamaran.getId())).thenReturn(Optional.ofNullable(dummyLamaran));
+        when(lamaranRepository.save(any(Lamaran.class))).thenAnswer(i -> i.getArgument(0));
 
         dummyLamaran.setIpk(3.8f);
         Lamaran updated = lamaranService.updateLamaran(dummyLamaran.getId(), dummyLamaran);
 
         assertEquals(3.8f, updated.getIpk());
-        verify(lamaranRepository).createLamaran(updated);
+        verify(lamaranRepository).save(updated);
     }
 
     @Test
     void testDeleteLamaran() {
         UUID id = dummyLamaran.getId();
         lamaranService.deleteLamaran(id);
-        verify(lamaranRepository, times(1)).deleteLamaran(id);
+        verify(lamaranRepository, times(1)).deleteById(id);
     }
 
     @Test
     void testIsLamaranExistsTrue() {
-        when(lamaranRepository.getLamaran()).thenReturn(List.of(dummyLamaran));
+        when(lamaranRepository.findAll()).thenReturn(List.of(dummyLamaran));
 
         boolean exists = lamaranService.isLamaranExists(dummyLamaran);
 
@@ -121,7 +146,7 @@ public class LamaranServiceImplTest {
 
     @Test
     void testIsLamaranExistsFalse() {
-        when(lamaranRepository.getLamaran()).thenReturn(List.of());
+        when(lamaranRepository.findAll()).thenReturn(List.of());
 
         boolean exists = lamaranService.isLamaranExists(dummyLamaran);
 
@@ -130,8 +155,8 @@ public class LamaranServiceImplTest {
 
     @Test
     void testGetLamaranByLowonganId() {
-        UUID idLowongan = dummyLamaran.getIdLowongan();
-        when(lamaranRepository.getLamaran()).thenReturn(List.of(dummyLamaran));
+        UUID idLowongan = dummyLamaranDTO.getIdLowongan();
+        when(lamaranRepository.findAll()).thenReturn(List.of(dummyLamaran));
 
         List<Lamaran> result = lamaranService.getLamaranByLowonganId(idLowongan);
 
@@ -141,19 +166,30 @@ public class LamaranServiceImplTest {
 
     @Test
     void testAcceptLamaran() {
-        when(lamaranRepository.getLamaranById(dummyLamaran.getId())).thenReturn(dummyLamaran);
+        when(lamaranRepository.findById(dummyLamaran.getId())).thenReturn(Optional.ofNullable(dummyLamaran));
         lamaranService.acceptLamaran(dummyLamaran.getId());
 
         assertEquals(StatusLamaran.DITERIMA, dummyLamaran.getStatus());
-        verify(lamaranRepository).createLamaran(dummyLamaran);
+        verify(lamaranRepository).save(dummyLamaran);
     }
 
     @Test
     void testRejectLamaran() {
-        when(lamaranRepository.getLamaranById(dummyLamaran.getId())).thenReturn(dummyLamaran);
+        when(lamaranRepository.findById(dummyLamaran.getId())).thenReturn(Optional.ofNullable(dummyLamaran));
         lamaranService.rejectLamaran(dummyLamaran.getId());
 
         assertEquals(StatusLamaran.DITOLAK, dummyLamaran.getStatus());
-        verify(lamaranRepository).createLamaran(dummyLamaran);
+        verify(lamaranRepository).save(dummyLamaran);
+    }
+
+    @Test
+    void testToEntity() {
+        Lamaran lamaran = lamaranService.toEntity(dummyLamaranDTO);
+
+        assertNotNull(lamaran);
+        assertEquals(dummyLamaranDTO.getIpk(), lamaran.getIpk());
+        assertEquals(dummyLamaranDTO.getSks(), lamaran.getSks());
+        assertEquals(dummyLamaranDTO.getIdMahasiswa(), lamaran.getIdMahasiswa());
+        assertEquals(dummyLamaranDTO.getIdLowongan(), lamaran.getIdLowongan());
     }
 }
