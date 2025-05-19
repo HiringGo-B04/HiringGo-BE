@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/lamaran")
+@RequestMapping("api/lamaran")
 public class LamaranController {
 
     private final LamaranService lamaranService;
@@ -18,25 +18,25 @@ public class LamaranController {
         this.lamaranService = lamaranService;
     }
 
-    @PostMapping
+    @PostMapping("/student")
     public ResponseEntity<Lamaran> createLamaran(@RequestBody Lamaran lamaran) {
         Lamaran created = lamaranService.createLamaran(lamaran);
         return ResponseEntity.ok(created);
     }
 
-    @GetMapping("/lowongan/{id}")
+    @GetMapping("/user/lowongan/{id}")
     public ResponseEntity<List<Lamaran>> getLamaranByLowonganId(@PathVariable UUID id) {
         List<Lamaran> lamarans = lamaranService.getLamaranByLowonganId(id);
         return ResponseEntity.ok(lamarans);
     }
 
-    @PostMapping("/{id}/accept")
+    @PostMapping("/lecturer/{id}/accept")
     public ResponseEntity<Void> acceptLamaran(@PathVariable UUID id) {
         lamaranService.acceptLamaran(id);
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/{id}/reject")
+    @PostMapping("/lecturer/{id}/reject")
     public ResponseEntity<Void> rejectLamaran(@PathVariable UUID id) {
         lamaranService.rejectLamaran(id);
         return ResponseEntity.ok().build();

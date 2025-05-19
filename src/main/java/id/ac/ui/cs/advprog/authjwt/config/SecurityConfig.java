@@ -33,6 +33,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/user/**").hasAnyRole("ADMIN", "STUDENT", "LECTURER")
 
                         .requestMatchers("/api/account/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/lamaran/student/**").hasRole("STUDENT")
+                        .requestMatchers("/api/lamaran/user/**").hasAnyRole("ADMIN", "STUDENT", "LECTURER")
+                        .requestMatchers("/api/lamaran/lecturer/**").hasRole("LECTURER")
                         /*
                         * Hingga sini yang permitAll bawah ngga usah itu kayak namanya nge permit semuanya
                         * */
