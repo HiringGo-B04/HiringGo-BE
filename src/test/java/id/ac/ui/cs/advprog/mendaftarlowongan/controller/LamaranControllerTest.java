@@ -2,6 +2,7 @@ package id.ac.ui.cs.advprog.mendaftarlowongan.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import id.ac.ui.cs.advprog.authjwt.config.SecurityConfig;
+import id.ac.ui.cs.advprog.mendaftarlowongan.dto.LamaranDTO;
 import id.ac.ui.cs.advprog.mendaftarlowongan.enums.StatusLamaran;
 import id.ac.ui.cs.advprog.mendaftarlowongan.model.Lamaran;
 import id.ac.ui.cs.advprog.mendaftarlowongan.service.LamaranService;
@@ -15,6 +16,8 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Collections;
@@ -27,8 +30,11 @@ import static org.mockito.Mockito.mock;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@AutoConfigureMockMvc(addFilters = false) // 🔑 Matikan filter keamanan saat testing
-@Import({LamaranControllerTest.MockServiceConfig.class, SecurityConfig.class})
+@TestPropertySource(properties = {
+        "jwt.secret=fakeTestSecretKeyThatIsLongEnoughForHmacSha",
+        "jwt.expiration=3600000"
+})
+@Import({SecurityConfig.class, id.ac.ui.cs.advprog.authjwt.testconfig.TestSecurityBeansConfig.class})
 @WebMvcTest(LamaranController.class)
 class LamaranControllerTest {
 
@@ -57,11 +63,12 @@ class LamaranControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "STUDENT")
     void testCreateLamaran() throws Exception {
-        Mockito.when(lamaranService.createLamaran(any(Lamaran.class)))
+        Mockito.when(lamaranService.createLamaran(any(LamaranDTO.class)))
                 .thenReturn(dummyLamaran);
 
-        mockMvc.perform(post("/lamaran")
+        mockMvc.perform(post("/api/lamaran/student")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dummyLamaran)))
                 .andExpect(status().isOk())
@@ -71,26 +78,29 @@ class LamaranControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "STUDENT")
     void testGetLamaranByLowonganId() throws Exception {
         List<Lamaran> lamarans = Collections.singletonList(dummyLamaran);
         Mockito.when(lamaranService.getLamaranByLowonganId(dummyId)).thenReturn(lamarans);
 
-        mockMvc.perform(get("/lamaran/lowongan/" + dummyId))
+        mockMvc.perform(get("/api/lamaran/user/lowongan/" + dummyId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(dummyLamaran.getId().toString()));
     }
 
     @Test
+    @WithMockUser(roles = "LECTURER")
     void testAcceptLamaran() throws Exception {
-        mockMvc.perform(post("/lamaran/" + dummyId + "/accept"))
+        mockMvc.perform(post("/api/lamaran/lecturer/" + dummyId + "/accept"))
                 .andExpect(status().isOk());
 
         Mockito.verify(lamaranService).acceptLamaran(eq(dummyId));
     }
 
     @Test
+    @WithMockUser(roles = "LECTURER")
     void testRejectLamaran() throws Exception {
-        mockMvc.perform(post("/lamaran/" + dummyId + "/reject"))
+        mockMvc.perform(post("/api/lamaran/lecturer/" + dummyId + "/reject"))
                 .andExpect(status().isOk());
 
         Mockito.verify(lamaranService).rejectLamaran(eq(dummyId));
