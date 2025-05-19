@@ -25,7 +25,7 @@ public class LowonganServiceImplTest {
 
         dummyLowongan = new Lowongan.Builder()
                 .matkul("Adpro")
-                .year(2025)
+                .tahun(2025)
                 .term("Genap")
                 .totalAsdosNeeded(10)
                 .totalAsdosRegistered(0)

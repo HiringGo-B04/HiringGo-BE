@@ -45,7 +45,7 @@ class LowonganControllerTest {
         UUID id = UUID.randomUUID();
         Lowongan lowongan = new Lowongan.Builder()
                 .matkul("Pemrograman Berorientasi Objek")
-                .year(2025)
+                .tahun(2025)
                 .term("Genap")
                 .totalAsdosNeeded(5)
                 .build();
@@ -73,7 +73,7 @@ class LowonganControllerTest {
         UUID id = UUID.randomUUID();
         Lowongan lowongan = new Lowongan.Builder()
                 .matkul("Metode Numerik")
-                .year(2025)
+                .tahun(2025)
                 .term("Ganjil")
                 .totalAsdosNeeded(3)
                 .totalAsdosRegistered(2)
