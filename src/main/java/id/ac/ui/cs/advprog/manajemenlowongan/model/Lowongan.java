@@ -43,7 +43,7 @@ public class Lowongan {
 
     public static class Builder {
         private String matkul;
-        private int year;
+        private int tahun;
         private String term;
         private int totalAsdosNeeded;
         private int totalAsdosRegistered = 0;
@@ -54,8 +54,8 @@ public class Lowongan {
             return this;
         }
 
-        public Builder year(int year) {
-            this.year = year;
+        public Builder tahun(int tahun) {
+            this.tahun = tahun;
             return this;
         }
 
