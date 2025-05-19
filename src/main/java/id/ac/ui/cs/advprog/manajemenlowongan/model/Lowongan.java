@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "lowongan")
 public class Lowongan {
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     private String matkul;
@@ -30,7 +31,7 @@ public class Lowongan {
     private Lowongan(Builder builder) {
         this.id = UUID.randomUUID();
         this.matkul = builder.matkul;
-        this.tahun = builder.tahun;
+        this.tahun = builder.year;
         this.term = builder.term;
         this.totalAsdosNeeded = builder.totalAsdosNeeded;
         this.totalAsdosRegistered = builder.totalAsdosRegistered;
@@ -43,7 +44,7 @@ public class Lowongan {
 
     public static class Builder {
         private String matkul;
-        private int tahun;
+        private int year;
         private String term;
         private int totalAsdosNeeded;
         private int totalAsdosRegistered = 0;
@@ -54,8 +55,8 @@ public class Lowongan {
             return this;
         }
 
-        public Builder tahun(int tahun) {
-            this.tahun = tahun;
+        public Builder year(int year) {
+            this.year = year;
             return this;
         }
 
