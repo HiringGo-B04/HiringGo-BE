@@ -42,6 +42,23 @@ public class JwtAuthFilterTest {
     }
 
     @Test
+    public void testOptionsRequestBypassesFilter() throws ServletException, IOException {
+        request.setMethod("OPTIONS");  // Simulate an OPTIONS request
+
+        jwtAuthFilter.doFilterInternal(request, response, filterChain);
+
+        // It should immediately respond with SC_OK
+        assertEquals(HttpServletResponse.SC_OK, response.getStatus());
+
+        // It should still pass the request down the filter chain
+        verify(filterChain).doFilter(request, response);
+
+        // No authentication should be set
+        assertNull(SecurityContextHolder.getContext().getAuthentication());
+    }
+
+
+    @Test
     public void testInvalidToken() throws ServletException, IOException {
         request.addHeader("Authorization", "Bearer invalidtoken");
 
