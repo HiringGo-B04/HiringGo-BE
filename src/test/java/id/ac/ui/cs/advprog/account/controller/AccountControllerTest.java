@@ -1,7 +1,9 @@
 package id.ac.ui.cs.advprog.account.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import id.ac.ui.cs.advprog.account.dto.get.GetAllUserDTO;
 import id.ac.ui.cs.advprog.account.dto.update.*;
+import id.ac.ui.cs.advprog.authjwt.model.User;
 import id.ac.ui.cs.advprog.authjwt.testconfig.TestSecurityBeansConfig;
 import id.ac.ui.cs.advprog.account.dto.delete.DeleteRequestDTO;
 import id.ac.ui.cs.advprog.account.dto.delete.DeleteResponseDTO;
@@ -21,6 +23,9 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
+import java.util.List;
+import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -53,6 +58,34 @@ public class AccountControllerTest {
     }
 
     private static final String DELETE_ENDPOINT = "/api/account/admin/user";
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void getAllUsers_shouldReturn200AndUserList() throws Exception {
+        User user1 = new User();
+        user1.setUserId(UUID.randomUUID());
+        user1.setUsername("admin1");
+        user1.setRole("ADMIN");
+
+        User user2 = new User();
+        user2.setUserId(UUID.randomUUID());
+        user2.setUsername("student1");
+        user2.setRole("STUDENT");
+
+        GetAllUserDTO responseDto = new GetAllUserDTO("accept", "test", List.of(user1, user2));
+
+        when(accountService.getAllUser())
+                .thenReturn(new ResponseEntity<>(responseDto, HttpStatus.OK));
+
+        mockMvc.perform(MockMvcRequestBuilders.get(DELETE_ENDPOINT))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("accept"))
+                .andExpect(jsonPath("$.message").value("test"))
+                .andExpect(jsonPath("$.users.length()").value(2))
+                .andExpect(jsonPath("$.users[0].username").value("admin1"))
+                .andExpect(jsonPath("$.users[1].username").value("student1"));
+    }
+
 
     @Test
     @WithMockUser(roles = "ADMIN")
