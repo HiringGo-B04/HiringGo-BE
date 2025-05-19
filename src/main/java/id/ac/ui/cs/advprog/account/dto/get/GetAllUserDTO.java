@@ -11,5 +11,13 @@ public record GetAllUserDTO(
         @NotBlank
         String message,
 
+        int numberOfLectures,
+
+        int numberOfStudents,
+
+        int numberOfVacancies,
+
+        int numberOfCourses,
+
         List<User> users
 ) { }
