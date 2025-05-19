@@ -1,14 +1,12 @@
 package id.ac.ui.cs.advprog.mendaftarlowongan.service;
 
-import id.ac.ui.cs.advprog.authjwt.model.User;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
-import id.ac.ui.cs.advprog.manajemenlowongan.model.Lowongan;
 import id.ac.ui.cs.advprog.manajemenlowongan.repository.LowonganRepository;
+import id.ac.ui.cs.advprog.mendaftarlowongan.dto.LamaranDTO;
 import id.ac.ui.cs.advprog.mendaftarlowongan.enums.StatusLamaran;
 import id.ac.ui.cs.advprog.mendaftarlowongan.model.Lamaran;
 import id.ac.ui.cs.advprog.mendaftarlowongan.repository.LamaranRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -46,7 +44,9 @@ public class LamaranServiceImpl implements LamaranService {
     }
 
     @Override
-    public Lamaran createLamaran(Lamaran lamaran) {
+    public Lamaran createLamaran(LamaranDTO lamaranDTO) {
+        Lamaran lamaran = toEntity(lamaranDTO);
+
         try {
             validateLamaran(lamaran);
         } catch (Exception e) {
@@ -86,23 +86,14 @@ public class LamaranServiceImpl implements LamaranService {
 
         boolean ipkValid = lamaran.getIpk() >= 0 && lamaran.getIpk() <= 4;
         boolean sksValid = lamaran.getSks() >= 0 && lamaran.getSks() <= 24;
-
-        // Lowongan lowongan = lowonganClient.getLowonganById(lamaran.getIdLowongan());
-        //  boolean lowonganExists = lowongan != null;
-        boolean lowonganExists = true;
-
-        // Optional<User> userOpt = userClient.findById(lamaran.getIdMahasiswa());
-        // boolean isValidStudent = userOpt.isPresent() && "STUDENT".equalsIgnoreCase(userOpt.get().getRole());
-        boolean isValidStudent = true;
+        boolean lamaranNeverExists = !isLamaranExists(lamaran);
 
         if (!ipkValid) {
             throw new Exception("IPK tidak valid");
         } else if (!sksValid) {
             throw new Exception("SKS tidak valid");
-        } else if (!lowonganExists) {
-            throw new Exception("Lowongan tidak ada");
-        } else if (!isValidStudent) {
-            throw new Exception("User tidak ditemukan atau bukan mahasiswa");
+        } else if (!lamaranNeverExists) {
+            throw new Exception("Sudah pernah melamar");
         }
     }
 
@@ -129,5 +120,17 @@ public class LamaranServiceImpl implements LamaranService {
             lamaran.setStatus(StatusLamaran.DITOLAK);
             lamaranRepository.save(lamaran);
         }
+    }
+
+    @Override
+    public Lamaran toEntity(LamaranDTO lamaranDTO) {
+        Lamaran lamaran = new Lamaran.Builder()
+                .sks(lamaranDTO.getSks())
+                .ipk(lamaranDTO.getIpk())
+                .status(StatusLamaran.MENUNGGU)
+                .mahasiswa(lamaranDTO.getIdMahasiswa())
+                .lowongan(lamaranDTO.getIdLowongan())
+                .build();
+        return lamaran;
     }
 }
