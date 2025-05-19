@@ -2,6 +2,7 @@ package id.ac.ui.cs.advprog.account.service;
 
 import id.ac.ui.cs.advprog.account.dto.delete.DeleteRequestDTO;
 import id.ac.ui.cs.advprog.account.dto.delete.DeleteResponseDTO;
+import id.ac.ui.cs.advprog.account.dto.get.GetAllUserDTO;
 import id.ac.ui.cs.advprog.account.dto.update.ResponseUpdateDTO;
 import id.ac.ui.cs.advprog.account.dto.update.UserUpdateDTO;
 import id.ac.ui.cs.advprog.account.service.strategy.AdminRoleUpdateStrategy;
@@ -15,6 +16,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Stream;
+import java.util.Collection;
 
 @Service
 public class AccountService{
@@ -61,6 +67,34 @@ public class AccountService{
             return new ResponseEntity<>(
                     new ResponseUpdateDTO("error", e.getMessage()),
 
+                    HttpStatus.valueOf(400));
+        }
+    }
+
+    public ResponseEntity<GetAllUserDTO> getAllUser(){
+        try{
+            List<User> student = userRepository.findAllByRole("STUDENT");
+            List<User> lecturer = userRepository.findAllByRole("LECTURER");
+            List<User> admin = userRepository.findAllByRole("ADMIN");
+
+
+            List<User> users = new ArrayList<>();
+            users.addAll(student);
+            users.addAll(lecturer);
+            users.addAll(admin);
+
+            for (User user : users) {
+                user.setPassword(null);
+            }
+
+            return new ResponseEntity<>(
+                    new GetAllUserDTO("accept", "test", users),
+                    HttpStatus.valueOf(200));
+
+        }
+        catch (Exception e) {
+            return new ResponseEntity<>(
+                    new GetAllUserDTO("error", e.getMessage(), null),
                     HttpStatus.valueOf(400));
         }
     }
