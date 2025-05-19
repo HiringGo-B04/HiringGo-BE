@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.mendaftarlowongan.controller;
 
+import id.ac.ui.cs.advprog.mendaftarlowongan.dto.LamaranDTO;
 import id.ac.ui.cs.advprog.mendaftarlowongan.model.Lamaran;
 import id.ac.ui.cs.advprog.mendaftarlowongan.service.LamaranService;
 import org.springframework.http.ResponseEntity;
@@ -19,8 +20,8 @@ public class LamaranController {
     }
 
     @PostMapping("/student")
-    public ResponseEntity<Lamaran> createLamaran(@RequestBody Lamaran lamaran) {
-        Lamaran created = lamaranService.createLamaran(lamaran);
+    public ResponseEntity<Lamaran> createLamaran(@RequestBody LamaranDTO lamaranDTO) {
+        Lamaran created = lamaranService.createLamaran(lamaranDTO);
         return ResponseEntity.ok(created);
     }
 
