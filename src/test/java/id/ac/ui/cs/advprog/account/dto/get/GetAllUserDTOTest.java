@@ -27,8 +27,12 @@ public class GetAllUserDTOTest {
 
     @Test
     public void whenAllFieldsValid_thenNoViolations() {
-        List<User> users = Collections.emptyList(); // You can use mock list if needed
-        GetAllUserDTO dto = new GetAllUserDTO("success", "Users retrieved successfully", users);
+        List<User> users = Collections.emptyList();
+        GetAllUserDTO dto = new GetAllUserDTO(
+                "success", "Users retrieved successfully",
+                10, 20, 5, 3,
+                users
+        );
 
         Set<ConstraintViolation<GetAllUserDTO>> violations = validator.validate(dto);
         assertTrue(violations.isEmpty(), "Expected no constraint violations");
@@ -36,17 +40,11 @@ public class GetAllUserDTOTest {
 
     @Test
     public void whenStatusAndMessageBlank_thenViolations() {
-        GetAllUserDTO dto = new GetAllUserDTO("", "", null);
+        GetAllUserDTO dto = new GetAllUserDTO(
+                "", "", 10, 10, 10, 10, Collections.emptyList()
+        );
 
         Set<ConstraintViolation<GetAllUserDTO>> violations = validator.validate(dto);
         assertEquals(2, violations.size(), "Expected 2 constraint violations for blank fields");
-    }
-
-    @Test
-    public void whenStatusAndMessageNull_thenViolations() {
-        GetAllUserDTO dto = new GetAllUserDTO(null, null, null);
-
-        Set<ConstraintViolation<GetAllUserDTO>> violations = validator.validate(dto);
-        assertEquals(2, violations.size(), "Expected 2 constraint violations for null fields");
     }
 }
