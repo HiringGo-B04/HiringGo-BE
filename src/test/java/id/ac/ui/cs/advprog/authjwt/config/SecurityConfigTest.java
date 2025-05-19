@@ -42,7 +42,7 @@ public class SecurityConfigTest {
 
         assertThat(config).isNotNull();
         assertThat(config.getAllowedOrigins()).containsExactly("http://localhost:3000");
-        assertThat(config.getAllowedMethods()).containsExactlyInAnyOrder("GET", "POST", "PUT", "DELETE", "OPTIONS");
+        assertThat(config.getAllowedMethods()).containsExactlyInAnyOrder("GET", "POST", "PUT", "DELETE", "PATCH", "UPDATE", "OPTIONS");
         assertThat(config.getAllowedHeaders()).containsExactly("*");
         assertThat(config.getAllowCredentials()).isTrue();
     }
