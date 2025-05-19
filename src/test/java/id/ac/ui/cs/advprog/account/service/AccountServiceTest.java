@@ -2,6 +2,7 @@ package id.ac.ui.cs.advprog.account.service;
 
 import id.ac.ui.cs.advprog.account.dto.delete.DeleteRequestDTO;
 import id.ac.ui.cs.advprog.account.dto.delete.DeleteResponseDTO;
+import id.ac.ui.cs.advprog.account.dto.get.GetAllUserDTO;
 import id.ac.ui.cs.advprog.account.dto.update.*;
 import id.ac.ui.cs.advprog.account.service.AccountService;
 import id.ac.ui.cs.advprog.authjwt.model.User;
@@ -11,6 +12,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
+import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -24,6 +28,54 @@ public class AccountServiceTest {
     void setUp() {
         userRepository = mock(UserRepository.class);
         accountService = new AccountService(userRepository);
+    }
+
+    @Test
+    public void testGetAllUser_returnsCombinedUserListWithNullPasswords() {
+        // Arrange
+        User studentUser = new User();
+        studentUser.setUserId(UUID.randomUUID());
+        studentUser.setUsername("student1");
+        studentUser.setPassword("secret");
+        studentUser.setRole("STUDENT");
+
+        User lecturerUser = new User();
+        lecturerUser.setUserId(UUID.randomUUID());
+        lecturerUser.setUsername("lecturer1");
+        lecturerUser.setPassword("secret");
+        lecturerUser.setRole("LECTURER");
+
+        User adminUser = new User();
+        adminUser.setUserId(UUID.randomUUID());
+        adminUser.setUsername("admin1");
+        adminUser.setPassword("secret");
+        adminUser.setRole("ADMIN");
+
+        when(userRepository.findAllByRole("STUDENT")).thenReturn(List.of(studentUser));
+        when(userRepository.findAllByRole("LECTURER")).thenReturn(List.of(lecturerUser));
+        when(userRepository.findAllByRole("ADMIN")).thenReturn(List.of(adminUser));
+
+        // Act
+        ResponseEntity<GetAllUserDTO> response = accountService.getAllUser();
+
+        // Assert
+        assertEquals(200, response.getStatusCodeValue());
+        GetAllUserDTO body = response.getBody();
+        assertNotNull(body);
+        assertEquals("accept", body.status());
+        assertEquals("test", body.message());
+
+        List<User> returnedUsers = body.users();
+        assertEquals(3, returnedUsers.size());
+
+        for (User user : returnedUsers) {
+            assertNull(user.getPassword(), "Password should be null");
+            assertNotNull(user.getUsername());
+        }
+
+        verify(userRepository, times(1)).findAllByRole("STUDENT");
+        verify(userRepository, times(1)).findAllByRole("LECTURER");
+        verify(userRepository, times(1)).findAllByRole("ADMIN");
     }
 
     @Test
