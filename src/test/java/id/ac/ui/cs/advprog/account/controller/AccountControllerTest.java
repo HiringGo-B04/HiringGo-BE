@@ -72,7 +72,7 @@ public class AccountControllerTest {
         user2.setUsername("student1");
         user2.setRole("STUDENT");
 
-        GetAllUserDTO responseDto = new GetAllUserDTO("accept", "test", List.of(user1, user2));
+        GetAllUserDTO responseDto = new GetAllUserDTO("accept", "test", 1, 1, 1, 1, List.of(user1, user2));
 
         when(accountService.getAllUser())
                 .thenReturn(new ResponseEntity<>(responseDto, HttpStatus.OK));
