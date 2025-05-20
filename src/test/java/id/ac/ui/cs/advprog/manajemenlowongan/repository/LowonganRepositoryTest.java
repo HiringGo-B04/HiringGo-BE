@@ -3,68 +3,70 @@ package id.ac.ui.cs.advprog.manajemenlowongan.repository;
 import id.ac.ui.cs.advprog.manajemenlowongan.model.Lowongan;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
+@DataJpaTest
 public class LowonganRepositoryTest {
-    private LowonganRepository repository;
+
+    @Mock
+    private LowonganRepository lowonganRepository;
+
+    private UUID lowonganId;
+    private Lowongan lowongan1;
+    private Lowongan lowongan2;
 
     @BeforeEach
     void setUp() {
-        repository = new LowonganRepository();
-        repository.getLowongan().clear();
+        lowonganId = UUID.randomUUID();
+
+        lowongan1 = new Lowongan.Builder()
+                .matkul("Pemrograman Lanjut")
+                .year(2024)
+                .term("Genap")
+                .totalAsdosNeeded(5)
+                .build();
+
+        lowongan2 = new Lowongan.Builder()
+                .matkul("Struktur Data")
+                .year(2024)
+                .term("Ganjil")
+                .totalAsdosNeeded(3)
+                .build();
     }
 
     @Test
-    void testGetLowongan() {
-        Lowongan lowongan = new Lowongan.Builder().build();
-        repository.addLowongan(lowongan);
+    void testFindById() {
+        when(lowonganRepository.findById(lowonganId)).thenReturn(Optional.of(lowongan1));
 
-        List<Lowongan> lowonganList = repository.getLowongan();
-        assertEquals(1, lowonganList.size());
-        assertTrue(lowonganList.contains(lowongan));
+        Optional<Lowongan> result = lowonganRepository.findById(lowonganId);
+        assertTrue(result.isPresent());
+        assertEquals("Pemrograman Lanjut", result.get().getMatkul());
     }
 
     @Test
-    void testGetLowonganById() {
-        Lowongan lowongan = new Lowongan.Builder().build();
-        repository.addLowongan(lowongan);
+    void testFindAll() {
+        when(lowonganRepository.findAll()).thenReturn(Arrays.asList(lowongan1, lowongan2));
 
-        Lowongan fetchedLowongan = repository.getLowonganById(lowongan.getId());
-        assertNotNull(fetchedLowongan);
-        assertEquals(lowongan.getId(), fetchedLowongan.getId());
+        List<Lowongan> result = lowonganRepository.findAll();
+        assertEquals(2, result.size());
+        assertEquals("Struktur Data", result.get(1).getMatkul());
     }
 
     @Test
-    void testAddLowongan() {
-        Lowongan lowongan = new Lowongan.Builder().build();
-        Lowongan addedLowongan = repository.addLowongan(lowongan);
+    void testSaveLowongan() {
+        when(lowonganRepository.save(any(Lowongan.class))).thenReturn(lowongan1);
 
-        assertNotNull(addedLowongan);
-        assertEquals(lowongan, addedLowongan);
-    }
-
-    @Test
-    void testUpdateLowongan() {
-        Lowongan lowongan = new Lowongan.Builder().build();
-        repository.addLowongan(lowongan);
-
-        Lowongan updatedLowongan = new Lowongan.Builder().totalAsdosNeeded(5).totalAsdosRegistered(300).totalAsdosAccepted(5).build();
-
-        Lowongan result = repository.updateLowongan(lowongan.getId(), updatedLowongan);
-        assertNotNull(result);
-        assertEquals(5, result.getTotalAsdosNeeded());
-        assertEquals(300, result.getTotalAsdosRegistered());
-        assertEquals(5, result.getTotalAsdosAccepted());
-    }
-
-    @Test
-    void testDeleteLowongan() {
-        Lowongan lowongan = new Lowongan.Builder().build();
-        repository.addLowongan(lowongan);
-        repository.deleteLowongan(lowongan.getId());
-        assertNull(repository.getLowonganById(lowongan.getId()));
+        Lowongan saved = lowonganRepository.save(lowongan1);
+        assertNotNull(saved);
+        assertEquals("Pemrograman Lanjut", saved.getMatkul());
     }
 }
