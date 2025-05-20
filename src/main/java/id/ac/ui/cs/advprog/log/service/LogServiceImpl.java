@@ -106,7 +106,6 @@ public class LogServiceImpl implements LogService {
             throw new ResourceNotFoundException("Dosen tidak ditemukan");
         }
 
-        // Validasi bahwa mahasiswa sudah diterima di lowongan ini
         if (!isMahasiswaAcceptedForLowongan(idMahasiswa, logDTO.getIdLowongan())) {
             throw new BadRequestException("Mahasiswa belum diterima pada lowongan ini");
         }
