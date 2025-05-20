@@ -8,8 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class StudentRoleUpdateStrategyTest {
@@ -51,6 +50,32 @@ class StudentRoleUpdateStrategyTest {
 
         verify(userRepository, times(1)).save(user);
     }
+
+    @Test
+    void testUpdateRole_NimAlreadyExists() {
+        // Given
+        UserIntoStudentDTO dto = new UserIntoStudentDTO();
+        dto.nim = "2106754321";
+        dto.fullName = "Alice Smith";
+        dto.username = "alicesmith";
+        dto.role = "STUDENT";
+
+        User user = new User();
+        user.setUsername("alicesmith");
+
+        // Mock that the NIM already exists
+        when(userRepository.existsByNip(dto.nim)).thenReturn(true);
+
+        // Then
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, () -> {
+            // When
+            strategy.updateRole(dto, user);
+        });
+
+        assertEquals("NIM with this student already exists", thrown.getMessage());
+        verify(userRepository, never()).save(any());
+    }
+
 
     @Test
     void testUpdateRole_RepositoryThrowsException() {

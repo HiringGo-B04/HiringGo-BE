@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.account.controller;
 import id.ac.ui.cs.advprog.account.dto.delete.DeleteRequestDTO;
 import id.ac.ui.cs.advprog.account.dto.delete.DeleteResponseDTO;
+import id.ac.ui.cs.advprog.account.dto.get.GetAllUserDTO;
 import id.ac.ui.cs.advprog.account.dto.update.ResponseUpdateDTO;
 import id.ac.ui.cs.advprog.account.dto.update.UserUpdateDTO;
 import id.ac.ui.cs.advprog.account.service.AccountService;
@@ -28,5 +29,10 @@ public class AccountController {
     @PatchMapping(USER)
     public ResponseEntity<ResponseUpdateDTO> update(@Valid @RequestBody UserUpdateDTO data) {
         return accountService.update(data);
+    }
+
+    @GetMapping(USER)
+    public ResponseEntity<GetAllUserDTO> get() {
+        return accountService.getAllUser();
     }
 }
