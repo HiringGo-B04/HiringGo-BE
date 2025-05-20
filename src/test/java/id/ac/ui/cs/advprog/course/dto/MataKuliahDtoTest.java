@@ -9,12 +9,10 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Unit‑test Bean Validation untuk {@link MataKuliahDto}.
- */
 class MataKuliahDtoTest {
 
     private static Validator validator;
@@ -34,19 +32,19 @@ class MataKuliahDtoTest {
                 "Algoritma",
                 3,
                 "Pemrograman dasar algoritma",
-                List.of("Dosen A", "Dosen B")
+                List.of(UUID.randomUUID())
         );
 
         assertThat(validator.validate(dto)).isEmpty();
     }
 
-    /* ---------- NEGATIVE SKS ---------- */
+    /* ---------- SKS < 1 ---------- */
     @Test
-    void negativeSks_shouldFailValidation() {
+    void zeroOrNegativeSks_shouldFailValidation() {
         MataKuliahDto dto = new MataKuliahDto(
                 "MK002",
-                "Basis Data",
-                -1,
+                "Basis Data",
+                0,
                 "Desc",
                 List.of()
         );
@@ -65,7 +63,7 @@ class MataKuliahDtoTest {
                 "",
                 2,
                 null,
-                List.of("Dosen X")
+                List.of(UUID.randomUUID())
         );
 
         Set<ConstraintViolation<MataKuliahDto>> violations = validator.validate(dto);
@@ -82,7 +80,7 @@ class MataKuliahDtoTest {
                 "Jaringan",
                 3,
                 null,
-                null        // tidak boleh null
+                null
         );
 
         Set<ConstraintViolation<MataKuliahDto>> violations = validator.validate(dto);

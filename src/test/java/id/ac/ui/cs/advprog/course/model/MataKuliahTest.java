@@ -11,7 +11,9 @@ class MataKuliahTest {
 
     /* ---------- Helper ---------- */
     private User dummyLecturer(String name) {
-        User u = new User(UUID.randomUUID(), name + "@mail.com", "secret");
+        User u = new User();                         // sesuaikan ctor User Anda
+        u.setUserId(UUID.randomUUID());
+        u.setUsername(name + "@mail.com");
         u.setFullName(name);
         return u;
     }
@@ -21,7 +23,7 @@ class MataKuliahTest {
     void ctor_default_shouldInitialiseEmptySet() {
         MataKuliah mk = new MataKuliah();
 
-        assertNotNull(mk.getDosenPengampu(), "dosenPengampu harus di‑inisialisasi");
+        assertNotNull(mk.getDosenPengampu(), "dosenPengampu harus di-inisialisasi");
         assertTrue(mk.getDosenPengampu().isEmpty(), "dosenPengampu harus kosong");
         assertNull(mk.getKode());
         assertNull(mk.getNama());
@@ -29,23 +31,22 @@ class MataKuliahTest {
         assertEquals(0, mk.getSks());
     }
 
-    /* ---------- All‑args constructor ---------- */
+    /* ---------- 4-args constructor ---------- */
     @Test
-    void ctor_allArgs_shouldSetAllFields() {
-        Set<User> lecturers = new HashSet<>();
+    void ctor_fourArgs_shouldSetFieldsAndEmptyLecturerSet() {
         MataKuliah mk = new MataKuliah(
                 "IF1234",
                 "Algoritma",
                 "Mempelajari algoritma dasar",
-                3,
-                lecturers
+                3
         );
 
         assertEquals("IF1234", mk.getKode());
         assertEquals("Algoritma", mk.getNama());
         assertEquals("Mempelajari algoritma dasar", mk.getDeskripsi());
         assertEquals(3, mk.getSks());
-        assertSame(lecturers, mk.getDosenPengampu());
+        assertNotNull(mk.getDosenPengampu());
+        assertTrue(mk.getDosenPengampu().isEmpty());
     }
 
     /* ---------- Setter & Getter ---------- */

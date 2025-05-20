@@ -4,8 +4,6 @@ import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
 import id.ac.ui.cs.advprog.course.dto.MataKuliahDto;
 import id.ac.ui.cs.advprog.course.dto.MataKuliahPatch;
 import id.ac.ui.cs.advprog.course.mapper.MataKuliahMapper;
-import id.ac.ui.cs.advprog.course.mapper.MataKuliahMapper;
-import org.mapstruct.factory.Mappers;
 import id.ac.ui.cs.advprog.course.repository.InMemoryMataKuliahRepository;
 import id.ac.ui.cs.advprog.course.repository.MataKuliahRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,8 +12,10 @@ import org.mapstruct.factory.Mappers;
 import org.mockito.Mockito;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -25,9 +25,12 @@ class MataKuliahServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        MataKuliahRepository repo  = new InMemoryMataKuliahRepository();
+        MataKuliahRepository repo   = new InMemoryMataKuliahRepository();
         MataKuliahMapper     mapper = Mappers.getMapper(MataKuliahMapper.class);
-        UserRepository       userRepo = Mockito.mock(UserRepository.class);
+
+        UserRepository userRepo = Mockito.mock(UserRepository.class);
+        // injeksikan mock repo ke mapper
+        ReflectionTestUtils.setField(mapper, "userRepository", userRepo);
 
         service = new MataKuliahServiceImpl(repo, mapper, userRepo);
     }
@@ -59,8 +62,8 @@ class MataKuliahServiceImplTest {
     /* ---------- PAGING FINDALL ---------- */
     @Test
     void findAll_shouldReturnPage() {
-        service.create(new MataKuliahDto("A", "MK‑A", 2, null, List.of()));
-        service.create(new MataKuliahDto("B", "MK‑B", 3, null, List.of()));
+        service.create(new MataKuliahDto("A", "MK-A", 2, null, List.of()));
+        service.create(new MataKuliahDto("B", "MK-B", 3, null, List.of()));
 
         Page<MataKuliahDto> page = service.findAll(PageRequest.of(0, 1));
 
@@ -85,7 +88,7 @@ class MataKuliahServiceImplTest {
     void partialUpdate_shouldChangeOnlyNonNull() {
         service.create(new MataKuliahDto("IF1", "Algo", 2, "Old", List.of()));
 
-        MataKuliahPatch patch = new MataKuliahPatch(5, null);
+        MataKuliahPatch patch = new MataKuliahPatch(5, null, null);
         MataKuliahDto after   = service.partialUpdate("IF1", patch);
 
         assertEquals(5, after.sks());
