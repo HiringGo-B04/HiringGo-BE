@@ -70,4 +70,29 @@ public class LowonganRepositoryTest {
         assertNotNull(saved);
         assertEquals("Pemrograman Lanjut", saved.getMatkul());
     }
+
+    @Test
+    void testDeleteLowongan() {
+        doNothing().when(lowonganRepository).delete(lowongan1);
+        lowonganRepository.delete(lowongan1);
+        verify(lowonganRepository, times(1)).delete(lowongan1);
+    }
+
+    @Test
+    void testUpdateLowongan() {
+        Lowongan updated = new Lowongan.Builder()
+                .matkul("Pemrograman Lanjut")
+                .year(2024)
+                .term("Genap")
+                .totalAsdosNeeded(10) // Diubah dari 5 ke 10
+                .totalAsdosRegistered(3)
+                .totalAsdosAccepted(2)
+                .build();
+
+        when(lowonganRepository.save(updated)).thenReturn(updated);
+
+        Lowongan result = lowonganRepository.save(updated);
+        assertEquals(10, result.getTotalAsdosNeeded());
+        assertEquals(3, result.getTotalAsdosRegistered());
+    }
 }
