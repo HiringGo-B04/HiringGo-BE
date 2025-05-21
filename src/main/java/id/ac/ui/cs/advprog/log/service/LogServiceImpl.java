@@ -276,7 +276,7 @@ public class LogServiceImpl implements LogService {
 
     private boolean isMahasiswaAcceptedForLowongan(UUID idMahasiswa, UUID idLowongan) {
         // Cek apakah mahasiswa sudah diterima di lowongan ini
-        List<Lamaran> lamaranList = lamaranRepository.getLamaran();
+        List<Lamaran> lamaranList = lamaranRepository.findAll();
         return lamaranList.stream()
                 .anyMatch(lamaran ->
                         lamaran.getIdMahasiswa().equals(idMahasiswa) &&

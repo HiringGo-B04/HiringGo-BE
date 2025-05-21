@@ -41,7 +41,7 @@ public class MataKuliah {
     @JoinTable(
             name = "mata_kuliah_lecturer",
             joinColumns        = @JoinColumn(name = "matkul_kode", referencedColumnName = "kode"),
-            inverseJoinColumns = @JoinColumn(name = "user_id",    referencedColumnName = "user_id")
+            inverseJoinColumns = @JoinColumn(name = "user_id",    referencedColumnName = "userId")
     )
     private Set<User> dosenPengampu = new HashSet<>();
 

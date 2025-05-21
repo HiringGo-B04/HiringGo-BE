@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 
 
 @Repository
-@Profile({"!test","jpa-test"})
+@Profile({"!test", "jpa-test", "postgres-test"}) // Tambahkan profile postgres-test
 public interface JpaMataKuliahRepository
         extends JpaRepository<MataKuliah, String>,
         MataKuliahRepository {
@@ -18,4 +18,3 @@ public interface JpaMataKuliahRepository
         deleteById(kode);
     }
 }
-
