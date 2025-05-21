@@ -50,8 +50,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/lamaran/lecturer/**").hasRole("LECTURER")
 
                         // for debugging purpose
-                        .requestMatchers("/api/lowongan/user/").hasAnyRole("ADMIN", "STUDENT", "LECTURER")
-                        .requestMatchers("/api/lowongan/all/user/").hasAnyRole("ADMIN", "STUDENT", "LECTURER")
+                        .requestMatchers("/api/lowongan/user/**").hasAnyRole("ADMIN", "STUDENT", "LECTURER")
+                        .requestMatchers("/api/lowongan/all/user/**").hasAnyRole("ADMIN", "STUDENT", "LECTURER")
                         /*
                          * Hingga sini yang permitAll bawah ngga usah itu kayak namanya nge permit semuanya
                          */
