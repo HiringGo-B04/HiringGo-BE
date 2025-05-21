@@ -12,6 +12,7 @@ import lombok.Setter;
 @Table(name = "lowongan")
 public class Lowongan {
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     private String matkul;

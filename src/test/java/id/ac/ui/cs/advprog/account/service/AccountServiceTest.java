@@ -2,15 +2,24 @@ package id.ac.ui.cs.advprog.account.service;
 
 import id.ac.ui.cs.advprog.account.dto.delete.DeleteRequestDTO;
 import id.ac.ui.cs.advprog.account.dto.delete.DeleteResponseDTO;
+import id.ac.ui.cs.advprog.account.dto.get.GetAllUserDTO;
 import id.ac.ui.cs.advprog.account.dto.update.*;
 import id.ac.ui.cs.advprog.account.service.AccountService;
 import id.ac.ui.cs.advprog.authjwt.model.User;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
 
+import id.ac.ui.cs.advprog.course.model.MataKuliah;
+import id.ac.ui.cs.advprog.course.repository.MataKuliahRepository;
+import id.ac.ui.cs.advprog.manajemenlowongan.model.Lowongan;
+import id.ac.ui.cs.advprog.manajemenlowongan.repository.LowonganRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
+import java.util.List;
+import java.util.Collections;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -19,11 +28,74 @@ public class AccountServiceTest {
 
     private AccountService accountService;
     private UserRepository userRepository;
+    private LowonganRepository lowonganRepository;
+    private MataKuliahRepository mataKuliahRepository;
 
     @BeforeEach
     void setUp() {
         userRepository = mock(UserRepository.class);
-        accountService = new AccountService(userRepository);
+        lowonganRepository = mock(LowonganRepository.class);
+        mataKuliahRepository = mock(MataKuliahRepository.class);
+        accountService = new AccountService(userRepository, lowonganRepository, mataKuliahRepository);
+    }
+
+    @Test
+    void testGetAllUser_Success() {
+        // Given
+        User student1 = new User(); student1.setRole("STUDENT"); student1.setPassword("pass1");
+        User lecturer1 = new User(); lecturer1.setRole("LECTURER"); lecturer1.setPassword("pass2");
+        User admin1 = new User(); admin1.setRole("ADMIN"); admin1.setPassword("pass3");
+
+        when(userRepository.findAllByRole("STUDENT")).thenReturn(List.of(student1));
+        when(userRepository.findAllByRole("LECTURER")).thenReturn(List.of(lecturer1));
+        when(userRepository.findAllByRole("ADMIN")).thenReturn(List.of(admin1));
+        MataKuliah mata1 = new MataKuliah();
+        MataKuliah mata2 = new MataKuliah();
+        when(mataKuliahRepository.findAll()).thenReturn(List.of(mata1, mata2));
+
+        Lowongan low1 = new Lowongan();
+        Lowongan low2 = new Lowongan();
+        Lowongan low3 = new Lowongan();
+        when(lowonganRepository.getLowongan()).thenReturn(List.of(low1, low2, low3));
+
+        // When
+        ResponseEntity<GetAllUserDTO> response = accountService.getAllUser();
+
+        // Then
+        GetAllUserDTO dto = response.getBody();
+        assertEquals(200, response.getStatusCodeValue());
+        assertNotNull(dto);
+        assertEquals("accept", dto.status());
+        assertEquals("test", dto.message());
+        assertEquals(1, dto.numberOfStudents());
+        assertEquals(1, dto.numberOfLectures());
+        assertEquals(2, dto.numberOfCourses());
+        assertEquals(3, dto.numberOfVacancies());
+        assertEquals(3, dto.users().size());
+
+        // All passwords should be null
+        dto.users().forEach(user -> assertNull(user.getPassword()));
+    }
+
+    @Test
+    void testGetAllUser_ExceptionHandling() {
+        // Given
+        when(userRepository.findAllByRole("STUDENT")).thenThrow(new RuntimeException("DB error"));
+
+        // When
+        ResponseEntity<GetAllUserDTO> response = accountService.getAllUser();
+
+        // Then
+        GetAllUserDTO dto = response.getBody();
+        assertEquals(400, response.getStatusCodeValue());
+        assertNotNull(dto);
+        assertEquals("error", dto.status());
+        assertEquals("DB error", dto.message());
+        assertEquals(0, dto.numberOfStudents());
+        assertEquals(0, dto.numberOfLectures());
+        assertEquals(0, dto.numberOfCourses());
+        assertEquals(0, dto.numberOfVacancies());
+        assertNull(dto.users());
     }
 
     @Test

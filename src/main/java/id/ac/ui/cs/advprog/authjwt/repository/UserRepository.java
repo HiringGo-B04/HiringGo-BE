@@ -14,4 +14,5 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     boolean existsByNim(String nim);
     boolean existsByNip(String nip);
     void deleteByUsername(String email);
+    List<User> findAllByRole(String role);
 }

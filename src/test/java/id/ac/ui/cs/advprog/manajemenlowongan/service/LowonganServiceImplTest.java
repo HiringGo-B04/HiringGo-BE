@@ -35,12 +35,12 @@ public class LowonganServiceImplTest {
 
     @Test
     void testAddLowonganSuccess() {
-        when(lowonganRepository.addLowongan(any(Lowongan.class))).thenReturn(dummyLowongan);
+        when(lowonganRepository.save(any(Lowongan.class))).thenReturn(dummyLowongan);
 
         Lowongan created = lowonganService.addLowongan(dummyLowongan);
 
         assertEquals(dummyLowongan, created);
-        verify(lowonganRepository, times(1)).addLowongan(dummyLowongan);
+        verify(lowonganRepository, times(1)).save(dummyLowongan);
     }
 
 //    @Test
@@ -65,7 +65,7 @@ public class LowonganServiceImplTest {
     @Test
     void testGetAllLowongan() {
         List<Lowongan> list = List.of(dummyLowongan);
-        when(lowonganRepository.getLowongan()).thenReturn(list);
+        when(lowonganRepository.findAll()).thenReturn(list);
 
         List<Lowongan> result = lowonganService.getLowongan();
 
@@ -75,7 +75,7 @@ public class LowonganServiceImplTest {
 
     @Test
     void testGetLowonganByIdFound() {
-        when(lowonganRepository.getLowonganById(dummyLowongan.getId())).thenReturn(dummyLowongan);
+        when(lowonganRepository.findById(dummyLowongan.getId())).thenReturn(Optional.ofNullable(dummyLowongan));
 
         Lowongan found = lowonganService.getLowonganById(dummyLowongan.getId());
 
@@ -85,7 +85,7 @@ public class LowonganServiceImplTest {
 
     @Test
     void testGetLowonganByIdNotFound() {
-        when(lowonganRepository.getLowonganById(any())).thenReturn(null);
+        when(lowonganRepository.findById(any())).thenReturn(null);
 
         Lowongan result = lowonganService.getLowonganById(UUID.randomUUID());
 
@@ -94,21 +94,21 @@ public class LowonganServiceImplTest {
 
     @Test
     void testUpdateLowongan() {
-        when(lowonganRepository.getLowonganById(dummyLowongan.getId())).thenReturn(dummyLowongan);
-        when(lowonganRepository.updateLowongan(eq(dummyLowongan.getId()), any(Lowongan.class))).thenAnswer(i -> i.getArgument(1));
+        when(lowonganRepository.findById(dummyLowongan.getId())).thenReturn(Optional.ofNullable(dummyLowongan));
+        when(lowonganRepository.save(any(Lowongan.class))).thenAnswer(i -> i.getArgument(1));
 
         dummyLowongan.setTotalAsdosNeeded(15);
         Lowongan updated = lowonganService.updateLowongan(dummyLowongan.getId(), dummyLowongan);
 
         assertEquals(15, updated.getTotalAsdosNeeded());
-        verify(lowonganRepository).updateLowongan(dummyLowongan.getId(), dummyLowongan);
+        verify(lowonganRepository).save(dummyLowongan);
     }
 
     @Test
     void testDeleteLowongan() {
         UUID id = dummyLowongan.getId();
         lowonganService.deleteLowongan(id);
-        verify(lowonganRepository, times(1)).deleteLowongan(id);
+        verify(lowonganRepository, times(1)).deleteById(id);
     }
 
 //    @Test
@@ -122,7 +122,7 @@ public class LowonganServiceImplTest {
 
     @Test
     void testIsLowonganExistsFalse() {
-        when(lowonganRepository.getLowongan()).thenReturn(List.of());
+        when(lowonganRepository.findAll()).thenReturn(List.of());
 
         boolean exists = lowonganService.isLowonganExists(dummyLowongan);
 
