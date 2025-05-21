@@ -31,7 +31,6 @@ public class Lamaran {
     private UUID idLowongan;
 
     private Lamaran(Builder builder) {
-        this.id = UUID.randomUUID();
         this.sks = builder.sks;
         this.ipk = builder.ipk;
         this.status = builder.status;
