@@ -19,14 +19,14 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/hiringgo")
+@RequestMapping("/api/log")
 public class LogController {
 
     @Autowired
     private LogService logService;
 
     // Manajemen Log
-    @GetMapping("/student/logs/lowongan/{lowonganId}")
+    @GetMapping("/student/lowongan/{lowonganId}")
     public ResponseEntity<?> getStudentLogs(@PathVariable UUID lowonganId) {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -41,7 +41,7 @@ public class LogController {
         }
     }
 
-    @GetMapping("/student/logs/{logId}")
+    @GetMapping("/student/{logId}")
     public ResponseEntity<?> getStudentLog(@PathVariable UUID logId) {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -61,7 +61,7 @@ public class LogController {
         }
     }
 
-    @PostMapping("/student/logs")
+    @PostMapping("/student")
     public ResponseEntity<?> createStudentLog(@RequestBody LogDTO logDTO, @RequestParam UUID dosenId) {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -78,7 +78,7 @@ public class LogController {
         }
     }
 
-    @PutMapping("/student/logs/{logId}")
+    @PutMapping("/student/{logId}")
     public ResponseEntity<?> updateStudentLog(@PathVariable UUID logId, @RequestBody LogDTO logDTO) {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -95,7 +95,7 @@ public class LogController {
         }
     }
 
-    @DeleteMapping("/student/logs/{logId}")
+    @DeleteMapping("/student/{logId}")
     public ResponseEntity<?> deleteStudentLog(@PathVariable UUID logId) {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -139,7 +139,7 @@ public class LogController {
     }
 
     // Periksa Log
-    @GetMapping("/lecturer/logs")
+    @GetMapping("/lecturer")
     public ResponseEntity<?> getLecturerLogs() {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -154,7 +154,7 @@ public class LogController {
         }
     }
 
-    @GetMapping("/lecturer/logs/lowongan/{lowonganId}")
+    @GetMapping("/lecturer/lowongan/{lowonganId}")
     public ResponseEntity<?> getLecturerLogsByLowongan(@PathVariable UUID lowonganId) {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -172,7 +172,7 @@ public class LogController {
     }
 
 
-    @PatchMapping("/lecturer/logs/{logId}/status")
+    @PatchMapping("/lecturer/{logId}/status")
     public ResponseEntity<?> updateLogStatus(
             @PathVariable UUID logId,
             @RequestParam String status) {

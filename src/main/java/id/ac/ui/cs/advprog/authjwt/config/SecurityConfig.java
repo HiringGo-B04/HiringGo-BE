@@ -48,6 +48,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/lamaran/student/**").hasRole("STUDENT")
                         .requestMatchers("/api/lamaran/user/**").hasAnyRole("ADMIN", "STUDENT", "LECTURER")
                         .requestMatchers("/api/lamaran/lecturer/**").hasRole("LECTURER")
+                        .requestMatchers("/api/log/student/**").hasRole("STUDENT")
+                        .requestMatchers("/api/log/lecturer/**").hasRole("LECTURER")
+
 
                         // for debugging purpose
                         .requestMatchers("/api/lowongan/user/").hasAnyRole("ADMIN", "STUDENT", "LECTURER")
