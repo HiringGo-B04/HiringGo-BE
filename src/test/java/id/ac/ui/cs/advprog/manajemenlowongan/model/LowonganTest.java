@@ -13,7 +13,7 @@ class LowonganTest {
 
         Lowongan lowongan = new Lowongan.Builder()
                 .matkul("Adpro")
-                .tahun(2025)
+                .year(2025)
                 .term("Genap")
                 .totalAsdosNeeded(3)
                 .totalAsdosRegistered(25)

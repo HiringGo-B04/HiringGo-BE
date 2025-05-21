@@ -45,45 +45,42 @@ public class LamaranServiceImplTest {
 
     @Test
     void testCreateLamaranSuccess() {
-        when(lowonganRepository.getLowonganById(dummyLamaran.getIdLowongan()))
-                .thenReturn(mock(Lowongan.class));
+        // Mock behavior
+        when(userRepository.findById(dummyLamaranDTO.getIdMahasiswa()))
+                .thenReturn(Optional.of(new User()));
+        when(lowonganRepository.findById(dummyLamaranDTO.getIdLowongan()))
+                .thenReturn(Optional.of(new Lowongan()));
+        when(lamaranRepository.save(any(Lamaran.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
-        User mahasiswaUser = new User();
-        mahasiswaUser.setUserId(dummyLamaran.getIdMahasiswa());
-        mahasiswaUser.setRole("STUDENT");
+        // Act
+        Lamaran result = lamaranService.createLamaran(dummyLamaranDTO);
 
-        when(userRepository.findById(dummyLamaran.getIdMahasiswa()))
-                .thenReturn(Optional.of(mahasiswaUser));
-
-        when(lamaranRepository.save(any(Lamaran.class))).thenReturn(dummyLamaran);
-
-        Lamaran created = lamaranService.createLamaran(dummyLamaranDTO);
-
-        assertEquals(dummyLamaran, created);
-        verify(lamaranRepository, times(1)).save(any(Lamaran.class));
+        // Assert
+        assertNotNull(result);
+        assertEquals(dummyLamaranDTO.getIpk(), result.getIpk());
+        assertEquals(dummyLamaranDTO.getSks(), result.getSks());
+        verify(lamaranRepository).save(any(Lamaran.class));
     }
+
 
     @Test
     void testCreateLamaranInvalidIpkThrowsException() {
-        dummyLamaranDTO.setIpk(5.0f); // Invalid IPK
-
-        when(lowonganRepository.getLowonganById(dummyLamaranDTO.getIdLowongan()))
-                .thenReturn(mock(Lowongan.class));
-
-        User mahasiswaUser = new User();
-        mahasiswaUser.setUserId(dummyLamaranDTO.getIdMahasiswa());
-        mahasiswaUser.setRole("STUDENT");
+        dummyLamaranDTO.setIpk(5.0f); // IPK tidak valid (>4)
 
         when(userRepository.findById(dummyLamaranDTO.getIdMahasiswa()))
-                .thenReturn(Optional.of(mahasiswaUser));
+                .thenReturn(Optional.of(new User()));
+        when(lowonganRepository.findById(dummyLamaranDTO.getIdLowongan()))
+                .thenReturn(Optional.of(new Lowongan()));
 
-
-        assertThrows(RuntimeException.class, () -> {
+        // Act & Assert
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> {
             lamaranService.createLamaran(dummyLamaranDTO);
         });
 
-        verify(lamaranRepository, never()).save(any());
+        assertTrue(ex.getMessage().contains("IPK tidak valid"));
     }
+
 
 
     @Test

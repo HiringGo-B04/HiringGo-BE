@@ -89,7 +89,7 @@ public class AccountService{
             int numberOfStudents = student.size();
             int numberOfLecturers = lecturer.size();
             int numberOfCourses = mataKuliahRepository.findAll().size();
-            int numberOfVacancies = lowonganRepository.getLowongan().size();
+            int numberOfVacancies = lowonganRepository.findAll().size();
 
             for (User user : users) {
                 user.setPassword(null);

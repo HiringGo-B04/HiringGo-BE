@@ -235,8 +235,8 @@ public class LogServiceImpl implements LogService {
 
     @Override
     public boolean validateLowongan(UUID idLowongan) {
-        Lowongan lowongan = lowonganRepository.getLowonganById(idLowongan);
-        return lowongan != null;
+        Optional<Lowongan> lowongan = lowonganRepository.findById(idLowongan);
+        return lowongan.isPresent();
     }
 
     @Override
