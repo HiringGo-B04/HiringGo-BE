@@ -4,68 +4,101 @@ import id.ac.ui.cs.advprog.mendaftarlowongan.enums.StatusLamaran;
 import id.ac.ui.cs.advprog.mendaftarlowongan.model.Lamaran;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.*;
 
-class LamaranRepositoryTest {
-    private LamaranRepository repository;
+@ExtendWith(MockitoExtension.class)
+public class LamaranRepositoryTest {
+
+    @Mock
+    private LamaranRepository lamaranRepository;
+
+    private UUID lowonganId;
+    private Lamaran lamaran1;
+    private Lamaran lamaran2;
 
     @BeforeEach
     void setUp() {
-        repository = new LamaranRepository();
-        repository.getLamaran().clear();
+        // Setup test data
+        lowonganId = UUID.randomUUID();
+        UUID mahasiswaId1 = UUID.randomUUID();
+        UUID mahasiswaId2 = UUID.randomUUID();
+
+        lamaran1 = new Lamaran.Builder()
+                .sks(23)
+                .ipk(3.5f)
+                .status(StatusLamaran.MENUNGGU)
+                .mahasiswa(mahasiswaId1)
+                .lowongan(lowonganId)
+                .build();
+
+        lamaran2 = new Lamaran.Builder()
+                .sks(22)
+                .ipk(3.2f)
+                .status(StatusLamaran.DITERIMA)
+                .mahasiswa(mahasiswaId2)
+                .lowongan(lowonganId)
+                .build();
     }
 
     @Test
-    void testGetLamaran() {
-        Lamaran lamaran = new Lamaran.Builder().build();
-        repository.createLamaran(lamaran);
+    void testSave() {
+        // Arrange
+        when(lamaranRepository.save(lamaran1)).thenReturn(lamaran1);
 
-        List<Lamaran> lamarans = repository.getLamaran();
-        assertEquals(1, lamarans.size());
-        assertTrue(lamarans.contains(lamaran));
+        // Act
+        Lamaran savedLamaran = lamaranRepository.save(lamaran1);
+
+        // Assert
+        assertThat(savedLamaran).isEqualTo(lamaran1);
+        verify(lamaranRepository, times(1)).save(lamaran1);
     }
 
     @Test
-    void testGetLamaranById() {
-        Lamaran lamaran = new Lamaran.Builder().build();
-        repository.createLamaran(lamaran);
+    void testFindById() {
+        // Arrange
+        UUID id = lamaran1.getId();
+        when(lamaranRepository.findById(id)).thenReturn(Optional.of(lamaran1));
 
-        Lamaran fetchedLamaran = repository.getLamaranById(lamaran.getId());
-        assertNotNull(fetchedLamaran);
-        assertEquals(lamaran.getId(), fetchedLamaran.getId());
+        // Act
+        Optional<Lamaran> foundLamaran = lamaranRepository.findById(id);
+
+        // Assert
+        assertThat(foundLamaran).isPresent();
+        assertThat(foundLamaran.get()).isEqualTo(lamaran1);
+        verify(lamaranRepository, times(1)).findById(id);
     }
 
     @Test
-    void testAddLamaran() {
-        Lamaran lamaran = new Lamaran.Builder().build();
-        Lamaran addedLamaran = repository.createLamaran(lamaran);
+    void testFindByIdLowongan() {
+        // Arrange
+        List<Lamaran> expectedLamarans = Arrays.asList(lamaran1, lamaran2);
+        when(lamaranRepository.findByIdLowongan(lowonganId)).thenReturn(expectedLamarans);
 
-        assertNotNull(addedLamaran);
-        assertEquals(lamaran, addedLamaran);
+        // Act
+        List<Lamaran> actualLamarans = lamaranRepository.findByIdLowongan(lowonganId);
+
+        // Assert
+        assertThat(actualLamarans).hasSize(2);
+        assertThat(actualLamarans).containsExactlyInAnyOrderElementsOf(expectedLamarans);
+        verify(lamaranRepository, times(1)).findByIdLowongan(lowonganId);
     }
 
     @Test
-    void testUpdateLamaran() {
-        Lamaran lamaran = new Lamaran.Builder().build();
-        repository.createLamaran(lamaran);
+    void testDelete() {
+        // Act
+        lamaranRepository.delete(lamaran1);
 
-        Lamaran updatedLamaran = new Lamaran.Builder().sks(150).ipk(3.8f).status(StatusLamaran.DITERIMA).build();
-
-        Lamaran result = repository.updateLamaran(lamaran.getId(), updatedLamaran);
-        assertNotNull(result);
-        assertEquals(150, result.getSks());
-        assertEquals(3.8f, result.getIpk());
-        assertEquals(StatusLamaran.DITERIMA, result.getStatus());
-    }
-
-    @Test
-    void testDeleteLamaran() {
-        Lamaran lamaran = new Lamaran.Builder().build();
-        repository.createLamaran(lamaran);
-        repository.deleteLamaran(lamaran.getId());
-        assertNull(repository.getLamaranById(lamaran.getId()));
+        // Assert
+        verify(lamaranRepository, times(1)).delete(lamaran1);
     }
 }

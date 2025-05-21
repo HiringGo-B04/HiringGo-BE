@@ -3,13 +3,13 @@ import lombok.Getter;
 
 @Getter
 public enum StatusLamaran {
-    MENUNGGU("MENUNGGU"),
-    DITERIMA("DITERIMA"),
-    DITOLAK("DITOLAK");
+    MENUNGGU(0),
+    DITERIMA(1),
+    DITOLAK(2);
 
-    private final String value;
+    private final int value;
 
-    private StatusLamaran(String value) {
+    private StatusLamaran(int value) {
         this.value = value;
     }
 

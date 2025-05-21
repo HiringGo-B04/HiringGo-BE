@@ -56,7 +56,7 @@ public class AccountServiceTest {
         Lowongan low1 = new Lowongan();
         Lowongan low2 = new Lowongan();
         Lowongan low3 = new Lowongan();
-        when(lowonganRepository.getLowongan()).thenReturn(List.of(low1, low2, low3));
+        when(lowonganRepository.findAll()).thenReturn(List.of(low1, low2, low3));
 
         // When
         ResponseEntity<GetAllUserDTO> response = accountService.getAllUser();
