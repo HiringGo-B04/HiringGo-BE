@@ -8,6 +8,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.stereotype.Component;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -31,8 +33,9 @@ public class JwtUtilTest {
     }
 
     @Test
-    public void testGenerateTokenWithRole() {
-        String token = jwtUtil.generateToken("testuser", "STUDENT");
+    public void testGenerateTokenWithRoleAndUserId() {
+        UUID uuid = UUID.randomUUID();
+        String token = jwtUtil.generateToken("testuser", "STUDENT", uuid);
         Token currentToken = new Token(token);
 
         assertNotNull(token);
@@ -43,9 +46,11 @@ public class JwtUtilTest {
 
         String username = jwtUtil.getUsernameFromToken(token);
         String role = jwtUtil.getRoleFromToken(token);
+        String userId = jwtUtil.getUserIdFromToken(token);
 
         assertEquals("testuser", username);
         assertEquals("STUDENT", role);
+        assertEquals(UUID.fromString(userId), uuid);
     }
 
     @Test
@@ -65,7 +70,7 @@ public class JwtUtilTest {
     public void testExpiredToken() throws InterruptedException {
         ReflectionTestUtils.setField(jwtUtil, "jwtExpirationMs", 1); // 1ms for instant expiration
         jwtUtil.init();
-        String token = jwtUtil.generateToken("testuser", "STUDENT");
+        String token = jwtUtil.generateToken("testuser", "STUDENT", UUID.randomUUID());
 
         // wait to ensure it's expired
         Thread.sleep(5);

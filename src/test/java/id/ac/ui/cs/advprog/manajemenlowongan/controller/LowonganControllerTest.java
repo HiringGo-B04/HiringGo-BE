@@ -1,17 +1,24 @@
 package id.ac.ui.cs.advprog.manajemenlowongan.controller;
 
+import id.ac.ui.cs.advprog.authjwt.config.SecurityConfig;
 import id.ac.ui.cs.advprog.manajemenlowongan.model.Lowongan;
 import id.ac.ui.cs.advprog.manajemenlowongan.service.LowonganService;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.security.test.context.support.WithMockUser;
+
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -21,88 +28,73 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@TestPropertySource(properties = {
+        "jwt.secret=fakeTestSecretKeyThatIsLongEnoughForHmacSha",
+        "jwt.expiration=3600000"
+})
+@Import({SecurityConfig.class, id.ac.ui.cs.advprog.authjwt.testconfig.TestSecurityBeansConfig.class})
+@WebMvcTest(LowonganController.class)
 class LowonganControllerTest {
 
+    @Autowired
     private MockMvc mockMvc;
 
-    @Mock
+    @Autowired
     private LowonganService lowonganService;
 
-    @InjectMocks
-    private LowonganController lowonganController;
-
+    @Autowired
     private ObjectMapper objectMapper = new ObjectMapper();
+
+    private Lowongan dummyLowongan;
+    private UUID dummyId;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
-        mockMvc = MockMvcBuilders.standaloneSetup(lowonganController).build();
+        dummyId = UUID.randomUUID();
+        dummyLowongan = new Lowongan();
+        dummyLowongan.setId(dummyId);
+        dummyLowongan.setMatkul("Advanced Programming");
+        dummyLowongan.setTahun(2025);
+        dummyLowongan.setTerm("Genap");
+        dummyLowongan.setTotalAsdosNeeded(5);
+        dummyLowongan.setTotalAsdosRegistered(35);
+        dummyLowongan.setTotalAsdosAccepted(3);
     }
 
     @Test
+    @WithMockUser(roles = "USER")
     void testAddLowongan() throws Exception {
-        // Arrange
-        UUID id = UUID.randomUUID();
-        Lowongan lowongan = new Lowongan.Builder()
-                .matkul("Pemrograman Berorientasi Objek")
-                .year(2025)
-                .term("Genap")
-                .totalAsdosNeeded(5)
-                .build();
-        lowongan.setId(id);
+        when(lowonganService.addLowongan(any(Lowongan.class))).thenReturn(dummyLowongan);
 
-        when(lowonganService.addLowongan(any(Lowongan.class))).thenReturn(lowongan);
-
-        // Act & Assert
-        mockMvc.perform(post("/lowongan")
+        mockMvc.perform(post("/api/lowongan/all/user")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(lowongan)))
+                        .content(objectMapper.writeValueAsString(dummyLowongan)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(id.toString()))
-                .andExpect(jsonPath("$.matkul").value("Pemrograman Berorientasi Objek"))
-                .andExpect(jsonPath("$.year").value(2025))
-                .andExpect(jsonPath("$.term").value("Genap"))
-                .andExpect(jsonPath("$.totalAsdosNeeded").value(5))
-                .andExpect(jsonPath("$.totalAsdosRegistered").value(0))
-                .andExpect(jsonPath("$.totalAsdosAccepted").value(0));
+                .andExpect(jsonPath("$.id").value(dummyLowongan.getId().toString()))
+                .andExpect(jsonPath("$.matkul").value(dummyLowongan.getMatkul()))
+                .andExpect(jsonPath("$.year").value(dummyLowongan.getTahun()))
+                .andExpect(jsonPath("$.term").value(dummyLowongan.getTerm()))
+                .andExpect(jsonPath("$.totalAsdosNeeded").value(dummyLowongan.getTotalAsdosNeeded()))
+                .andExpect(jsonPath("$.totalAsdosRegistered").value(dummyLowongan.getTotalAsdosRegistered()))
+                .andExpect(jsonPath("$.totalAsdosAccepted").value(dummyLowongan.getTotalAsdosAccepted()));
     }
 
     @Test
+    @WithMockUser(roles = "USER")
     void testGetLowonganById() throws Exception {
-        // Arrange
-        UUID id = UUID.randomUUID();
-        Lowongan lowongan = new Lowongan.Builder()
-                .matkul("Metode Numerik")
-                .year(2025)
-                .term("Ganjil")
-                .totalAsdosNeeded(3)
-                .totalAsdosRegistered(2)
-                .totalAsdosAccepted(1)
-                .build();
-        lowongan.setId(id);
+        List<Lowongan> lowonganList = Collections.singletonList(dummyLowongan);
+        when(lowonganService.getLowonganById(dummyId)).thenReturn((Lowongan) lowonganList);
 
-        when(lowonganService.getLowonganById(id)).thenReturn(lowongan);
-
-        // Act & Assert
-        mockMvc.perform(get("/lowongan/lowongan/" + id))
+        mockMvc.perform(get("/api/lowongan/user" + dummyId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(id.toString()))
-                .andExpect(jsonPath("$.matkul").value("Metode Numerik"))
-                .andExpect(jsonPath("$.year").value(2025))
-                .andExpect(jsonPath("$.term").value("Ganjil"))
-                .andExpect(jsonPath("$.totalAsdosNeeded").value(3))
-                .andExpect(jsonPath("$.totalAsdosRegistered").value(2))
-                .andExpect(jsonPath("$.totalAsdosAccepted").value(1));
+                .andExpect(jsonPath("$[0].id").value(dummyLowongan.getId().toString()));
     }
 
     @Test
     void testGetLowonganById_NotFound() throws Exception {
-        // Arrange
-        UUID id = UUID.randomUUID();
-        when(lowonganService.getLowonganById(id)).thenThrow(new RuntimeException("Lowongan tidak ditemukan"));
+        when(lowonganService.getLowonganById(dummyId)).thenThrow(new RuntimeException("Lowongan tidak ditemukan"));
 
-        // Act & Assert
-        mockMvc.perform(get("/lowongan/lowongan/" + id))
+        mockMvc.perform(get("/api/lowongan/user" + dummyId))
                 .andExpect(status().isInternalServerError());
     }
 }
