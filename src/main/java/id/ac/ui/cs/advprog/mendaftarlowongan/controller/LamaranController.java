@@ -19,25 +19,25 @@ public class LamaranController {
         this.lamaranService = lamaranService;
     }
 
-    @PostMapping("/student")
+    @PostMapping("/student/add")
     public ResponseEntity<Lamaran> createLamaran(@RequestBody LamaranDTO lamaranDTO) {
         Lamaran created = lamaranService.createLamaran(lamaranDTO);
         return ResponseEntity.ok(created);
     }
 
-    @GetMapping("/user/lowongan/{id}")
+    @GetMapping("/user/get-by-lowongan/{id}")
     public ResponseEntity<List<Lamaran>> getLamaranByLowonganId(@PathVariable UUID id) {
         List<Lamaran> lamarans = lamaranService.getLamaranByLowonganId(id);
         return ResponseEntity.ok(lamarans);
     }
 
-    @PostMapping("/lecturer/{id}/accept")
+    @PostMapping("/lecturer/accept/{id}")
     public ResponseEntity<Void> acceptLamaran(@PathVariable UUID id) {
         lamaranService.acceptLamaran(id);
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/lecturer/{id}/reject")
+    @PostMapping("/lecturer/reject/{id}")
     public ResponseEntity<Void> rejectLamaran(@PathVariable UUID id) {
         lamaranService.rejectLamaran(id);
         return ResponseEntity.ok().build();
