@@ -21,6 +21,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -92,10 +94,12 @@ public class AuthServiceTest {
         mockUser.setUsername("user@example.com");
         mockUser.setPassword("encodedPassword");
         mockUser.setRole("STUDENT");
+        mockUser.setUserId(UUID.randomUUID());
 
         when(userRepository.findByUsername("user@example.com")).thenReturn(mockUser);
         when(passwordEncoder.matches("password123", "encodedPassword")).thenReturn(true);
-        when(jwtUtils.generateToken(mockUser.getUsername(), "STUDENT")).thenReturn("mocked-jwt-token");
+        when(jwtUtils.generateToken(mockUser.getUsername(), "STUDENT", mockUser.getUserId()))
+                .thenReturn("mocked-jwt-token");
 
         // When
         ResponseEntity<LoginResponseDTO> response = authService.login(loginRequest);
@@ -151,10 +155,11 @@ public class AuthServiceTest {
         user.setUsername("user@example.com");
         user.setPassword("encodedPass");
         user.setRole("STUDENT");
+        user.setUserId(UUID.randomUUID());
 
         when(userRepository.findByUsername("user@example.com")).thenReturn(user);
         when(passwordEncoder.matches("password", "encodedPass")).thenReturn(true);
-        when(jwtUtils.generateToken("user@example.com", "STUDENT")).thenThrow(new RuntimeException("JWT failure"));
+        when(jwtUtils.generateToken("user@example.com", "STUDENT", user.getUserId())).thenThrow(new RuntimeException("JWT failure"));
 
         // Act
         ResponseEntity<LoginResponseDTO> response = authService.login(request);
