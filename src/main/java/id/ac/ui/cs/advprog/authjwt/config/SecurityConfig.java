@@ -9,6 +9,11 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -20,7 +25,7 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private JwtAuthFilter jwtFilter;
+    private final JwtAuthFilter jwtFilter;
 
     public SecurityConfig(JwtUtil jwtUtil) {
         this.jwtFilter = new JwtAuthFilter(jwtUtil);
@@ -35,7 +40,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         /*
                          * Jika ingin melakukan testing tanpa adanya RBAC comment
-                         * */
+                         */
                         .requestMatchers("/api/auth/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/auth/user/**").hasAnyRole("ADMIN", "STUDENT", "LECTURER")
 
@@ -48,8 +53,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/lowongan/user/").hasAnyRole("ADMIN", "STUDENT", "LECTURER")
                         .requestMatchers("/api/lowongan/all/user/").hasAnyRole("ADMIN", "STUDENT", "LECTURER")
                         /*
-                        * Hingga sini yang permitAll bawah ngga usah itu kayak namanya nge permit semuanya
-                        * */
+                         * Hingga sini yang permitAll bawah ngga usah itu kayak namanya nge permit semuanya
+                         */
                         .requestMatchers("/**").permitAll()
                         .anyRequest().authenticated()
                 )
@@ -69,7 +74,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of("http://localhost:3000"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "UPDATE", "PUT", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
 
