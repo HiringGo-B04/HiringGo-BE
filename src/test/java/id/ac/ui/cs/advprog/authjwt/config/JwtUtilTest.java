@@ -33,8 +33,9 @@ public class JwtUtilTest {
     }
 
     @Test
-    public void testGenerateTokenWithRole() {
-        String token = jwtUtil.generateToken("testuser", "STUDENT", UUID.randomUUID());
+    public void testGenerateTokenWithRoleAndUserId() {
+        UUID uuid = UUID.randomUUID();
+        String token = jwtUtil.generateToken("testuser", "STUDENT", uuid);
         Token currentToken = new Token(token);
 
         assertNotNull(token);
@@ -45,9 +46,11 @@ public class JwtUtilTest {
 
         String username = jwtUtil.getUsernameFromToken(token);
         String role = jwtUtil.getRoleFromToken(token);
+        String userId = jwtUtil.getUserIdFromToken(token);
 
         assertEquals("testuser", username);
         assertEquals("STUDENT", role);
+        assertEquals(UUID.fromString(userId), uuid);
     }
 
     @Test
