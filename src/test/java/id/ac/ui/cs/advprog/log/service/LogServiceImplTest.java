@@ -158,7 +158,7 @@ public class LogServiceImplTest {
     @Test
     void testFindByMahasiswaAndLowongan() {
         when(userRepository.findById(idMahasiswa)).thenReturn(Optional.of(mahasiswa));
-        when(lowonganRepository.getLowonganById(idLowongan)).thenReturn(lowongan);
+        when(lowonganRepository.findById(idLowongan)).thenReturn(Optional.ofNullable(lowongan));
         when(logRepository.findByIdMahasiswaAndIdLowongan(idMahasiswa, idLowongan))
                 .thenReturn(Collections.singletonList(sampleLog));
 
@@ -166,7 +166,7 @@ public class LogServiceImplTest {
 
         assertEquals(1, result.size());
         verify(userRepository).findById(idMahasiswa);
-        verify(lowonganRepository).getLowonganById(idLowongan);
+        verify(lowonganRepository).findById(idLowongan);
         verify(logRepository).findByIdMahasiswaAndIdLowongan(idMahasiswa, idLowongan);
     }
 
@@ -183,7 +183,7 @@ public class LogServiceImplTest {
 
         when(userRepository.findById(idMahasiswa)).thenReturn(Optional.of(mahasiswa));
         when(userRepository.findById(idDosen)).thenReturn(Optional.of(dosen));
-        when(lowonganRepository.getLowonganById(idLowongan)).thenReturn(lowongan);
+        when(lowonganRepository.findById(idLowongan)).thenReturn(Optional.ofNullable(lowongan));
         when(lamaranRepository.findAll()).thenReturn(Collections.singletonList(lamaran));
         when(logRepository.save(any(Log.class))).thenReturn(sampleLog);
 
@@ -192,7 +192,7 @@ public class LogServiceImplTest {
         assertNotNull(result);
         verify(userRepository).findById(idMahasiswa);
         verify(userRepository).findById(idDosen);
-        verify(lowonganRepository).getLowonganById(idLowongan);
+        verify(lowonganRepository).findById(idLowongan);
         verify(lamaranRepository).findAll();
         verify(logRepository).save(any(Log.class));
     }
