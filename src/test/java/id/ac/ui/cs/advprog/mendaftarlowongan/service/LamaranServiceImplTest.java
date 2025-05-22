@@ -12,6 +12,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -54,7 +56,9 @@ public class LamaranServiceImplTest {
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
-        Lamaran result = lamaranService.createLamaran(dummyLamaranDTO, dummyLamaranDTO.getIdMahasiswa());
+        CompletableFuture<Lamaran> completableResult = lamaranService.createLamaran(dummyLamaranDTO, dummyLamaranDTO.getIdMahasiswa());
+
+        Lamaran result = completableResult.join();
 
         // Assert
         assertNotNull(result);
@@ -75,7 +79,11 @@ public class LamaranServiceImplTest {
 
         // Act & Assert
         RuntimeException ex = assertThrows(RuntimeException.class, () -> {
-            lamaranService.createLamaran(dummyLamaranDTO, dummyLamaranDTO.getIdMahasiswa());
+            try {
+                lamaranService.createLamaran(dummyLamaranDTO, dummyLamaranDTO.getIdMahasiswa()).get();
+            } catch (ExecutionException e) {
+                throw new RuntimeException(e.getCause());
+            }
         });
 
         assertTrue(ex.getMessage().contains("IPK tidak valid"));
@@ -88,7 +96,8 @@ public class LamaranServiceImplTest {
         List<Lamaran> list = List.of(dummyLamaran);
         when(lamaranRepository.findAll()).thenReturn(list);
 
-        List<Lamaran> result = lamaranService.getLamaran();
+        CompletableFuture<List<Lamaran>> completableResult = lamaranService.getLamaran();
+        List<Lamaran> result = completableResult.join();
 
         assertEquals(1, result.size());
         assertEquals(dummyLamaran, result.getFirst());
@@ -98,17 +107,19 @@ public class LamaranServiceImplTest {
     void testGetLamaranByIdFound() {
         when(lamaranRepository.findById(dummyLamaran.getId())).thenReturn(Optional.ofNullable(dummyLamaran));
 
-        Lamaran found = lamaranService.getLamaranById(dummyLamaran.getId());
+        CompletableFuture<Lamaran> found = lamaranService.getLamaranById(dummyLamaran.getId());
+        Lamaran result = found.join();
 
-        assertNotNull(found);
-        assertEquals(dummyLamaran, found);
+        assertNotNull(result);
+        assertEquals(dummyLamaran, result);
     }
 
     @Test
     void testGetLamaranByIdNotFound() {
         when(lamaranRepository.findById(any())).thenReturn(Optional.empty());
 
-        Lamaran result = lamaranService.getLamaranById(UUID.randomUUID());
+        CompletableFuture<Lamaran> completableResult = lamaranService.getLamaranById(UUID.randomUUID());
+        Lamaran result = completableResult.join();
 
         assertNull(result);
     }
@@ -119,16 +130,17 @@ public class LamaranServiceImplTest {
         when(lamaranRepository.save(any(Lamaran.class))).thenAnswer(i -> i.getArgument(0));
 
         dummyLamaran.setIpk(3.8f);
-        Lamaran updated = lamaranService.updateLamaran(dummyLamaran.getId(), dummyLamaran);
+        CompletableFuture<Lamaran> completableUpdated = lamaranService.updateLamaran(dummyLamaran.getId(), dummyLamaran);
+        Lamaran updated = completableUpdated.join();
 
         assertEquals(3.8f, updated.getIpk());
         verify(lamaranRepository).save(updated);
     }
 
     @Test
-    void testDeleteLamaran() {
+    void testDeleteLamaran() throws ExecutionException, InterruptedException {
         UUID id = dummyLamaran.getId();
-        lamaranService.deleteLamaran(id);
+        lamaranService.deleteLamaran(id).get();
         verify(lamaranRepository, times(1)).deleteById(id);
     }
 
@@ -136,7 +148,8 @@ public class LamaranServiceImplTest {
     void testIsLamaranExistsTrue() {
         when(lamaranRepository.findAll()).thenReturn(List.of(dummyLamaran));
 
-        boolean exists = lamaranService.isLamaranExists(dummyLamaran);
+        CompletableFuture<Boolean> complatableExists = lamaranService.isLamaranExists(dummyLamaran);
+        boolean exists = complatableExists.join();
 
         assertTrue(exists);
     }
@@ -145,7 +158,8 @@ public class LamaranServiceImplTest {
     void testIsLamaranExistsFalse() {
         when(lamaranRepository.findAll()).thenReturn(List.of());
 
-        boolean exists = lamaranService.isLamaranExists(dummyLamaran);
+        CompletableFuture<Boolean> completableExists = lamaranService.isLamaranExists(dummyLamaran);
+        Boolean exists = completableExists.join();
 
         assertFalse(exists);
     }
@@ -155,25 +169,26 @@ public class LamaranServiceImplTest {
         UUID idLowongan = dummyLamaranDTO.getIdLowongan();
         when(lamaranRepository.findAll()).thenReturn(List.of(dummyLamaran));
 
-        List<Lamaran> result = lamaranService.getLamaranByLowonganId(idLowongan);
+        CompletableFuture<List<Lamaran>> completableResult = lamaranService.getLamaranByLowonganId(idLowongan);
+        List<Lamaran> result = completableResult.join();
 
         assertEquals(1, result.size());
         assertEquals(idLowongan, result.get(0).getIdLowongan());
     }
 
     @Test
-    void testAcceptLamaran() {
+    void testAcceptLamaran() throws Exception {
         when(lamaranRepository.findById(dummyLamaran.getId())).thenReturn(Optional.ofNullable(dummyLamaran));
-        lamaranService.acceptLamaran(dummyLamaran.getId());
+        lamaranService.acceptLamaran(dummyLamaran.getId()).get();
 
         assertEquals(StatusLamaran.DITERIMA, dummyLamaran.getStatus());
         verify(lamaranRepository).save(dummyLamaran);
     }
 
     @Test
-    void testRejectLamaran() {
+    void testRejectLamaran() throws Exception {
         when(lamaranRepository.findById(dummyLamaran.getId())).thenReturn(Optional.ofNullable(dummyLamaran));
-        lamaranService.rejectLamaran(dummyLamaran.getId());
+        lamaranService.rejectLamaran(dummyLamaran.getId()).get();
 
         assertEquals(StatusLamaran.DITOLAK, dummyLamaran.getStatus());
         verify(lamaranRepository).save(dummyLamaran);
