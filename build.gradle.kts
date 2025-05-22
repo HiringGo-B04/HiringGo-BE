@@ -1,16 +1,20 @@
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 
-configurations.all {
-    exclude(group = "org.antlr", module = "antlr4-runtime")
-}
-
-
 plugins {
     java
     jacoco
     id("org.springframework.boot") version "3.4.4"
     id("io.spring.dependency-management") version "1.1.7"
     id("com.github.johnrengelman.processes") version "0.5.0"
+    id("org.sonarqube") version "4.4.1.3373"
+}
+
+sonar {
+    properties {
+        property("sonar.projectKey", "HiringGo-B04_HiringGo-BE")
+        property("sonar.organization", "hiringgo-b04")
+        property("sonar.host.url", "https://sonarcloud.io")
+    }
 }
 
 group = "id.ac.ui.cs.advprog"
@@ -50,6 +54,8 @@ val seleniumJupiterVersion = "5.0.1"
 val webdrivermanagerVersion = "5.6.3"
 val junitJupiterVersion = "5.9.1"
 
+
+
 dependencies {
     runtimeOnly("org.postgresql:postgresql:42.7.2")
     compileOnly("jakarta.servlet:jakarta.servlet-api:6.0.0")
@@ -80,13 +86,22 @@ dependencies {
     // VALIDATION  ➜ jakarta.validation.Valid  (@NotBlank, @Min, dst.)
     implementation("org.springframework.boot:spring-boot-starter-validation")
 
-    // ANTLR
-    implementation("org.antlr:antlr4-runtime:4.13.0")
-
     // SECURITY    ➜ PreAuthorize, EnableMethodSecurity, dll.
     implementation("org.springframework.boot:spring-boot-starter-security")
 
     testImplementation("org.springframework.security:spring-security-test")
+
+    // ANTL
+    implementation("org.antlr:antlr4-runtime:4.13.0")
+
+    // Exclude ANTLR from Hibernate dependencies specifically
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa") {
+        exclude(group = "org.antlr", module = "antlr4-runtime")
+    }
+
+    // Your other dependencies
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
 
     // MapStruct runtime (dipanggil saat konversi DTO ↔ entity)
     implementation("org.mapstruct:mapstruct:1.5.5.Final")
