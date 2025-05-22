@@ -76,7 +76,7 @@ class LowonganControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(dummyLowongan.getId().toString()))
                 .andExpect(jsonPath("$.matkul").value(dummyLowongan.getMatkul()))
-                .andExpect(jsonPath("$.year").value(dummyLowongan.getTahun()))
+                .andExpect(jsonPath("$.tahun").value(dummyLowongan.getTahun()))
                 .andExpect(jsonPath("$.term").value(dummyLowongan.getTerm()))
                 .andExpect(jsonPath("$.totalAsdosNeeded").value(dummyLowongan.getTotalAsdosNeeded()))
                 .andExpect(jsonPath("$.totalAsdosRegistered").value(dummyLowongan.getTotalAsdosRegistered()))
@@ -86,8 +86,7 @@ class LowonganControllerTest {
     @Test
     @WithMockUser(roles = "USER")
     void testGetLowonganById() throws Exception {
-        List<Lowongan> lowonganList = Collections.singletonList(dummyLowongan);
-        when(lowonganService.getLowonganById(dummyId)).thenReturn((Lowongan) lowonganList);
+        when(lowonganService.getLowonganById(dummyId)).thenReturn(dummyLowongan);
 
         mockMvc.perform(get("/api/lowongan/user/" + dummyId))
                 .andExpect(status().isOk())
