@@ -52,6 +52,32 @@ class LecturerRoleUpdateStrategyTest {
     }
 
     @Test
+    void testUpdateRole_NipAlreadyExists() {
+        // Given
+        UserIntoLecturerDTO dto = new UserIntoLecturerDTO();
+        dto.nip = "12345678";
+        dto.fullName = "Jane Doe";
+        dto.username = "janedoe";
+        dto.role = "LECTURER";
+
+        User user = new User();
+        user.setUsername("janedoe");
+
+        // Mock that the NIP already exists
+        when(userRepository.existsByNip(dto.nip)).thenReturn(true);
+
+        // Then
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, () -> {
+            // When
+            strategy.updateRole(dto, user);
+        });
+
+        assertEquals("NIP with this lecturer already exists", thrown.getMessage());
+        verify(userRepository, never()).save(any());
+    }
+
+
+    @Test
     void testUpdateRole_RepositoryThrowsException() {
         // Given
         UserIntoLecturerDTO dto = new UserIntoLecturerDTO();

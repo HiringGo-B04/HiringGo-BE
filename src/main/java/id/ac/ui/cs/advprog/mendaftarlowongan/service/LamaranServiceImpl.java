@@ -1,15 +1,16 @@
 package id.ac.ui.cs.advprog.mendaftarlowongan.service;
 
-import id.ac.ui.cs.advprog.manajemenlowongan.model.Lowongan;
+import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
 import id.ac.ui.cs.advprog.manajemenlowongan.repository.LowonganRepository;
+import id.ac.ui.cs.advprog.mendaftarlowongan.dto.LamaranDTO;
 import id.ac.ui.cs.advprog.mendaftarlowongan.enums.StatusLamaran;
 import id.ac.ui.cs.advprog.mendaftarlowongan.model.Lamaran;
 import id.ac.ui.cs.advprog.mendaftarlowongan.repository.LamaranRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -22,28 +23,36 @@ public class LamaranServiceImpl implements LamaranService {
     @Autowired
     private LowonganRepository lowonganClient;
 
+    @Autowired
+    private UserRepository userClient;
+
     // Constructor for testing purposes
-    public LamaranServiceImpl(LamaranRepository lamaranRepository, LowonganRepository lowonganRepository) {
+    public LamaranServiceImpl(LamaranRepository lamaranRepository, LowonganRepository lowonganRepository, UserRepository userRepository) {
         this.lamaranRepository = lamaranRepository;
         this.lowonganClient = lowonganRepository;
+        this.userClient = userRepository;
     }
 
     @Override
     public List<Lamaran> getLamaran() {
-        return lamaranRepository.getLamaran();
+        return lamaranRepository.findAll();
     }
 
     @Override
     public Lamaran getLamaranById(UUID id) {
-        return lamaranRepository.getLamaranById(id);
+        return lamaranRepository.findById(id).orElse(null);
     }
 
     @Override
-    public Lamaran createLamaran(Lamaran lamaran) {
-        if (!validateLamaran(lamaran)) {
-            throw new IllegalArgumentException("SKS/IPK tidak valid atau Lowongan tidak ada");
+    public Lamaran createLamaran(LamaranDTO lamaranDTO) {
+        Lamaran lamaran = toEntity(lamaranDTO);
+
+        try {
+            validateLamaran(lamaran);
+        } catch (Exception e) {
+            throw new RuntimeException("Error validating lamaran: " + e.getMessage());
         }
-        return lamaranRepository.createLamaran(lamaran);
+        return lamaranRepository.save(lamaran);
     }
 
     @Override
@@ -54,36 +63,43 @@ public class LamaranServiceImpl implements LamaranService {
         existing.setIpk(lamaran.getIpk());
         existing.setSks(lamaran.getSks());
         existing.setStatus(lamaran.getStatus());
-        return lamaranRepository.createLamaran(existing);
+        existing.setIdMahasiswa(lamaran.getIdMahasiswa());
+        existing.setIdLowongan(lamaran.getIdLowongan());
+
+        return lamaranRepository.save(existing);
     }
 
     @Override
     public void deleteLamaran(UUID id) {
-        lamaranRepository.deleteLamaran(id);
+        lamaranRepository.deleteById(id);
     }
 
     @Override
     public boolean isLamaranExists(Lamaran lamaran) {
-        return lamaranRepository.getLamaran().stream()
+        return lamaranRepository.findAll().stream()
                 .anyMatch(l -> l.getIdMahasiswa().equals(lamaran.getIdMahasiswa())
                         && l.getIdLowongan().equals(lamaran.getIdLowongan()));
     }
 
     @Override
-    public boolean validateLamaran(Lamaran lamaran) {
+    public void validateLamaran(Lamaran lamaran) throws Exception {
 
         boolean ipkValid = lamaran.getIpk() >= 0 && lamaran.getIpk() <= 4;
         boolean sksValid = lamaran.getSks() >= 0 && lamaran.getSks() <= 24;
+        boolean lamaranNeverExists = !isLamaranExists(lamaran);
 
-        Lowongan lowongan = lowonganClient.getLowonganById(lamaran.getIdLowongan());
-        boolean lowonganExists = lowongan != null;
-
-        return ipkValid && sksValid && lowonganExists;
+        if (!ipkValid) {
+            throw new Exception("IPK tidak valid");
+        } else if (!sksValid) {
+            throw new Exception("SKS tidak valid");
+        } else if (!lamaranNeverExists) {
+            throw new Exception("Sudah pernah melamar");
+        }
     }
 
     @Override
     public List<Lamaran> getLamaranByLowonganId(UUID idLowongan) {
-        return lamaranRepository.getLamaran().stream()
+        return lamaranRepository.findAll().stream()
                 .filter(l -> l.getIdLowongan().equals(idLowongan))
                 .collect(Collectors.toList());
     }
@@ -93,7 +109,7 @@ public class LamaranServiceImpl implements LamaranService {
         Lamaran lamaran = getLamaranById(id);
         if (lamaran != null) {
             lamaran.setStatus(StatusLamaran.DITERIMA);
-            lamaranRepository.createLamaran(lamaran);
+            lamaranRepository.save(lamaran);
         }
     }
 
@@ -102,7 +118,19 @@ public class LamaranServiceImpl implements LamaranService {
         Lamaran lamaran = getLamaranById(id);
         if (lamaran != null) {
             lamaran.setStatus(StatusLamaran.DITOLAK);
-            lamaranRepository.createLamaran(lamaran);
+            lamaranRepository.save(lamaran);
         }
+    }
+
+    @Override
+    public Lamaran toEntity(LamaranDTO lamaranDTO) {
+        Lamaran lamaran = new Lamaran.Builder()
+                .sks(lamaranDTO.getSks())
+                .ipk(lamaranDTO.getIpk())
+                .status(StatusLamaran.MENUNGGU)
+                .mahasiswa(lamaranDTO.getIdMahasiswa())
+                .lowongan(lamaranDTO.getIdLowongan())
+                .build();
+        return lamaran;
     }
 }
