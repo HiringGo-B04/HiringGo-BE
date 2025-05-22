@@ -1,5 +1,5 @@
 # ----------- Build Stage -----------
-FROM eclipse-temurin:21-jdk AS builder
+FROM amazoncorretto:21 AS builder
 
 WORKDIR /app
 COPY . .
@@ -8,7 +8,7 @@ COPY . .
 RUN ./gradlew clean build -x test -x check
 
 # ----------- Runtime Stage -----------
-FROM eclipse-temurin:21-jdk
+FROM amazoncorretto:21
 
 WORKDIR /app
 
