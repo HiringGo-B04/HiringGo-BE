@@ -21,13 +21,24 @@ public class LowonganController {
         this.lowonganService = lowonganService;
     }
 
-    @PostMapping("/all/user")
+    @PostMapping("/user/add")
     public ResponseEntity<Lowongan> addLowongan(@RequestBody Lowongan lowongan) {
         Lowongan createdLowongan = lowonganService.addLowongan(lowongan);
         return ResponseEntity.ok(createdLowongan);
     }
 
-    @GetMapping("/user/{id}")
+    @GetMapping("/user/get")
+    public ResponseEntity<List<Lowongan>> getLowongan() {
+        try {
+            List<Lowongan> lowongans = lowonganService.getLowongan();
+            return ResponseEntity.ok(lowongans);
+        } catch (RuntimeException e) {
+            // Menangkap exception dan melemparnya kembali untuk ditangani oleh @ExceptionHandler
+            throw new LowonganNotFoundException("Lowongan masih kosong");
+        }
+    }
+
+    @GetMapping("/user/get/{id}")
     public ResponseEntity<Lowongan> getLowonganById(@PathVariable UUID id) {
         try {
             Lowongan lowongan = lowonganService.getLowonganById(id);
