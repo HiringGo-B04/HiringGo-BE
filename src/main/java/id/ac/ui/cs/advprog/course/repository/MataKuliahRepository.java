@@ -7,13 +7,20 @@ import java.util.Optional;
 
 public interface MataKuliahRepository {
 
-    MataKuliah save(MataKuliah mk);
+    /* ---------- CREATE / UPDATE ---------- */
 
-    MataKuliah update(MataKuliah mk);
+    MataKuliah addMataKuliah(MataKuliah mk);
 
-    List<MataKuliah>        findAll();
+    default MataKuliah update(MataKuliah mk) {
+        return addMataKuliah(mk);
+    }
 
-    Optional<MataKuliah>    findByKode(String kode);
+    /* ---------- READ ---------- */
+
+    List<MataKuliah> findAll();
+    Optional<MataKuliah> findByKode(String kode);
+
+    /* ---------- DELETE ---------- */
 
     void deleteByKode(String kode);
 }

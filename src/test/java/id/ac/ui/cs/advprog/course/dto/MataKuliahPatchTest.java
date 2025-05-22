@@ -7,13 +7,12 @@ import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Unit‑tests Bean Validation untuk {@link MataKuliahPatch}.
- */
 class MataKuliahPatchTest {
 
     private static Validator validator;
@@ -28,28 +27,29 @@ class MataKuliahPatchTest {
     /* ---------- VALID PATCH ---------- */
     @Test
     void patchWithPositiveSks_shouldPass() {
-        MataKuliahPatch patch = new MataKuliahPatch(4, null);
+        MataKuliahPatch patch =
+                new MataKuliahPatch(4, null, List.of(UUID.randomUUID()));
 
-        Set<ConstraintViolation<MataKuliahPatch>> violations = validator.validate(patch);
-        assertThat(violations).isEmpty();
+        assertThat(validator.validate(patch)).isEmpty();
     }
 
-    /* ---------- NEGATIVE SKS ---------- */
+    /* ---------- SKS < 1 ---------- */
     @Test
-    void patchWithNegativeSks_shouldFail() {
-        MataKuliahPatch patch = new MataKuliahPatch(-2, "desc");
+    void patchWithZeroOrNegativeSks_shouldFail() {
+        MataKuliahPatch patch =
+                new MataKuliahPatch(0, "desc", null);   // 0 melanggar @Min(1)
 
         Set<ConstraintViolation<MataKuliahPatch>> violations = validator.validate(patch);
-        assertThat(violations).extracting(v -> v.getPropertyPath().toString())
+        assertThat(violations)
+                .extracting(v -> v.getPropertyPath().toString())
                 .contains("sks");
     }
 
     /* ---------- ALL NULL (no changes) ---------- */
     @Test
     void patchWithAllNullFields_isAllowed() {
-        MataKuliahPatch patch = new MataKuliahPatch(null, null);
+        MataKuliahPatch patch = new MataKuliahPatch(null, null, null);
 
-        Set<ConstraintViolation<MataKuliahPatch>> violations = validator.validate(patch);
-        assertThat(violations).isEmpty();
+        assertThat(validator.validate(patch)).isEmpty();
     }
 }

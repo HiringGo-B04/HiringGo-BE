@@ -1,32 +1,60 @@
 package id.ac.ui.cs.advprog.course.mapper;
 
+import id.ac.ui.cs.advprog.authjwt.model.User;
+import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
 import id.ac.ui.cs.advprog.course.dto.MataKuliahDto;
 import id.ac.ui.cs.advprog.course.dto.MataKuliahPatch;
 import id.ac.ui.cs.advprog.course.model.MataKuliah;
-import org.mapstruct.BeanMapping;
-import org.mapstruct.Mapper;
-import org.mapstruct.MappingTarget;
-import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.*;
+import org.springframework.beans.factory.annotation.Autowired;
 
-/**
- * MapStruct mapper — konversi Entity ⇄ DTO serta
- * menerapkan patch (partial update) dengan strategi
- * “abaikan property yang null”.
- */
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.UUID;
+
 @Mapper(
         componentModel = "spring",
-        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE
+        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
+        unmappedTargetPolicy           = ReportingPolicy.IGNORE
 )
-public interface MataKuliahMapper {
+public abstract class MataKuliahMapper {
 
-    /* ---------- Entity ⇄ DTO ---------- */
+    /* ---------- Dependency lookup ---------- */
+    @Autowired
+    protected UserRepository userRepository;
 
-    MataKuliahDto toDto(MataKuliah entity);
+    /* ---------- Mapping utama ---------- */
 
-    MataKuliah toEntity(MataKuliahDto dto);
+    @Mapping(source = "dosenPengampu", target = "dosenPengampu")
+    public abstract MataKuliahDto toDto(MataKuliah entity);
 
-    /* ---------- PATCH (partial update) ---------- */
+    @Mapping(source = "dosenPengampu", target = "dosenPengampu")
+    public abstract MataKuliah toEntity(MataKuliahDto dto);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    void patch(MataKuliahPatch patch, @MappingTarget MataKuliah entity);
+    public abstract void patch(MataKuliahPatch patch, @MappingTarget MataKuliah entity);
+
+    /* ---------- Custom converters ---------- */
+
+    /** Entity → DTO : Set<User> → List<UUID>. */
+    protected List<UUID> map(Set<User> users) {
+        if (users == null || users.isEmpty()) {
+            return List.of();
+        }
+        return users.stream()
+                .map(User::getUserId)         // asumsi field 'userId' bertipe UUID
+                .collect(Collectors.toList());
+    }
+
+    /** DTO → Entity : List<UUID> → Set<User>. */
+    protected Set<User> map(List<UUID> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return Collections.emptySet();
+        }
+        // UserRepository#findAllById mengembalikan Iterable<User>
+        Iterable<User> fetched = userRepository.findAllById(ids);
+        Set<User> result = new HashSet<>();
+        fetched.forEach(result::add);
+        return result;
+    }
 }
