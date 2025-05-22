@@ -6,15 +6,6 @@ plugins {
     id("org.springframework.boot") version "3.4.4"
     id("io.spring.dependency-management") version "1.1.7"
     id("com.github.johnrengelman.processes") version "0.5.0"
-    id("org.sonarqube") version "4.4.1.3373"
-}
-
-sonar {
-    properties {
-        property("sonar.projectKey", "HiringGo-B04_HiringGo-BE")
-        property("sonar.organization", "hiringgo-b04")
-        property("sonar.host.url", "https://sonarcloud.io")
-    }
 }
 
 group = "id.ac.ui.cs.advprog"
