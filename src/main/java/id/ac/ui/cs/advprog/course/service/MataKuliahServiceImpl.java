@@ -78,7 +78,7 @@ public class MataKuliahServiceImpl implements MataKuliahService {
             entity.setDosenPengampu(new HashSet<>());
         }
 
-        MataKuliah saved = repo.save(entity);
+        MataKuliah saved = repo.addMataKuliah(entity);
         return mapper.toDto(saved);
     }
 

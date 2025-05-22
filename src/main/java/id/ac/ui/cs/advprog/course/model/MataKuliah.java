@@ -40,8 +40,8 @@ public class MataKuliah {
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "mata_kuliah_lecturer",
-            joinColumns        = @JoinColumn(name = "matkul_kode", referencedColumnName = "kode"),
-            inverseJoinColumns = @JoinColumn(name = "user_id",    referencedColumnName = "user_id")
+            joinColumns = @JoinColumn(name = "matkul_kode", referencedColumnName = "kode"),
+            inverseJoinColumns = @JoinColumn(name = "user_id", referencedColumnName = "userId")
     )
     private Set<User> dosenPengampu = new HashSet<>();
 
@@ -51,14 +51,20 @@ public class MataKuliah {
         this.nama       = nama;
         this.deskripsi  = deskripsi;
         this.sks        = sks;
+        this.dosenPengampu = new HashSet<>();
     }
 
     /* ---------- Helper ---------- */
     public void addDosenPengampu(User dosen) {
+        if (this.dosenPengampu == null) {
+            this.dosenPengampu = new HashSet<>();
+        }
         this.dosenPengampu.add(dosen);
     }
 
     public void removeDosenPengampu(UUID userId) {
-        this.dosenPengampu.removeIf(d -> d.getUserId().equals(userId));
+        if (this.dosenPengampu != null) {
+            this.dosenPengampu.removeIf(d -> d.getUserId().equals(userId));
+        }
     }
 }

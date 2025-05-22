@@ -153,3 +153,7 @@ tasks.jacocoTestReport {
 tasks.withType<Test> {
     useJUnitPlatform()
 }
+
+tasks.withType<JavaCompile> {
+    options.annotationProcessorPath = configurations.annotationProcessor.get()
+}

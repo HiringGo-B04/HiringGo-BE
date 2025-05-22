@@ -12,11 +12,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.UUID;
 
-/**
- * MapStruct mapper — konversi Entity ⇄ DTO untuk modul Mata Kuliah.
- * • Entity → DTO : Set<User>  → List<UUID>   (ambil userId)
- * • DTO    → Entity : List<UUID> → Set<User>  (lookup ke UserRepository)
- */
 @Mapper(
         componentModel = "spring",
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
