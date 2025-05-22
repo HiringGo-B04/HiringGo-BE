@@ -13,15 +13,18 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -45,6 +48,7 @@ class LamaranControllerTest {
     private LamaranDTO dummyLamaranDTO;
     private UUID dummyId;
     private UUID dummyUserId;
+    private CompletableFuture<Lamaran> dummyLamaranFuture;
 
     @BeforeEach
     void setUp() {
@@ -68,47 +72,64 @@ class LamaranControllerTest {
                 dummyUserId,
                 UUID.randomUUID()
         );
+
+        dummyLamaranFuture = CompletableFuture.completedFuture(dummyLamaran);
     }
 
     @Test
+    @WithMockUser(roles = "STUDENT")
     void testCreateLamaran() throws Exception {
         when(jwtUtil.getUserIdFromToken("testToken")).thenReturn(dummyUserId.toString());
         when(lamaranService.createLamaran(any(LamaranDTO.class), any(UUID.class)))
-                .thenReturn(dummyLamaran);
+                .thenReturn(CompletableFuture.completedFuture(dummyLamaran));
 
         mockMvc.perform(post("/api/lamaran/student/add")
                         .header("Authorization", "Bearer testToken")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dummyLamaranDTO)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(dummyLamaran.getId().toString()))
-                .andExpect(jsonPath("$.ipk").value(dummyLamaran.getIpk()))
-                .andExpect(jsonPath("$.sks").value(dummyLamaran.getSks()));
+                .andExpect(request().asyncStarted())
+                .andDo(result -> mockMvc.perform(asyncDispatch(result))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.id").value(dummyLamaran.getId().toString()))
+                        .andExpect(jsonPath("$.ipk").value(dummyLamaran.getIpk()))
+                        .andExpect(jsonPath("$.sks").value(dummyLamaran.getSks())));
     }
 
     @Test
+    @WithMockUser(roles = "STUDENT")
     void testGetLamaranByLowonganId() throws Exception {
-        List<Lamaran> lamarans = Collections.singletonList(dummyLamaran);
-        when(lamaranService.getLamaranByLowonganId(dummyId)).thenReturn(lamarans);
+        when(lamaranService.getLamaranById(dummyId))
+                .thenReturn(CompletableFuture.completedFuture(dummyLamaran));
 
-        mockMvc.perform(get("/api/lamaran/user/get-by-lowongan/" + dummyId))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(dummyLamaran.getId().toString()));
+        mockMvc.perform(get("/api/lamaran/" + dummyId))
+                .andExpect(request().asyncStarted())
+                .andDo(result -> mockMvc.perform(asyncDispatch(result))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.id").value(dummyLamaran.getId().toString())));
     }
 
     @Test
+    @WithMockUser(roles = "LECTURER")
     void testAcceptLamaran() throws Exception {
+        // Mock service agar tidak return null
+        when(lamaranService.acceptLamaran(dummyId)).thenReturn(CompletableFuture.completedFuture(null));
+
         mockMvc.perform(post("/api/lamaran/lecturer/accept/" + dummyId))
                 .andExpect(status().isOk());
 
-        org.mockito.Mockito.verify(lamaranService).acceptLamaran(eq(dummyId));
+        verify(lamaranService).acceptLamaran(eq(dummyId));
     }
 
     @Test
+    @WithMockUser(roles = "STUDENT")
     void testRejectLamaran() throws Exception {
+        // Mock service agar tidak return null
+        when(lamaranService.rejectLamaran(dummyId)).thenReturn(CompletableFuture.completedFuture(null));
+
         mockMvc.perform(post("/api/lamaran/lecturer/reject/" + dummyId))
                 .andExpect(status().isOk());
 
-        org.mockito.Mockito.verify(lamaranService).rejectLamaran(eq(dummyId));
+        verify(lamaranService).rejectLamaran(eq(dummyId));
     }
+
 }
