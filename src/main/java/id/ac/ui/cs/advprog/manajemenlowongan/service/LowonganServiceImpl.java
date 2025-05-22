@@ -3,15 +3,12 @@ package id.ac.ui.cs.advprog.manajemenlowongan.service;
 import id.ac.ui.cs.advprog.manajemenlowongan.model.Lowongan;
 import id.ac.ui.cs.advprog.manajemenlowongan.repository.LowonganRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
-@Profile("manual")
 public class LowonganServiceImpl implements LowonganService {
 
     @Autowired
@@ -32,7 +29,7 @@ public class LowonganServiceImpl implements LowonganService {
             throw new IllegalArgumentException("Semester harus Genap atau Ganjil");
         }
 
-        if (lowongan.getYear() <= 0) {
+        if (lowongan.getTahun() <= 0) {
             throw new IllegalArgumentException("Tahun ajaran tidak valid");
         }
 
@@ -42,12 +39,12 @@ public class LowonganServiceImpl implements LowonganService {
 
         // Validasi kombinasi matakuliah, semester, dan tahun ajaran harus unik
         // Pemeriksaan ini sebaiknya dilakukan juga di isLowonganExists
-        List<Lowongan> existingLowongan = lowonganRepository.getLowongan();
+        List<Lowongan> existingLowongan = lowonganRepository.findAll();
         boolean isDuplicate = existingLowongan.stream()
                 .anyMatch(l -> !l.getId().equals(lowongan.getId()) && // Abaikan lowongan yang sedang diupdate
                         l.getMatkul().equals(lowongan.getMatkul()) &&
                         l.getTerm().equals(lowongan.getTerm()) &&
-                        l.getYear() == lowongan.getYear());
+                        l.getTahun() == lowongan.getTahun());
 
         if (isDuplicate) {
             throw new IllegalArgumentException("Lowongan dengan kombinasi mata kuliah, semester, dan tahun ajaran yang sama sudah ada");
@@ -62,26 +59,26 @@ public class LowonganServiceImpl implements LowonganService {
 
     @Override
     public List<Lowongan> getLowongan() {
-        return lowonganRepository.getLowongan();
+        return lowonganRepository.findAll();
     }
 
     @Override
     public Lowongan getLowonganById(UUID id) {
-        return lowonganRepository.getLowonganById(id);
+        return lowonganRepository.findById(id).orElse(null);
     }
 
     @Override
     public Lowongan addLowongan(Lowongan lowongan) {
-        if (lowongan.getYear() < 2025) {
+        if (lowongan.getTahun() < 2025) {
             throw new IllegalArgumentException("Tahun ajaran harus lebih dari atau sama dengan 2025");
         }
         validateLowongan(lowongan);
-        return lowonganRepository.addLowongan(lowongan);
+        return lowonganRepository.save(lowongan);
     }
 
     @Override
     public Lowongan updateLowongan(UUID id, Lowongan lowongan) {
-        Lowongan existingLowongan = lowonganRepository.getLowonganById(id);
+        Lowongan existingLowongan = lowonganRepository.findById(id).orElse(null);
         if (existingLowongan == null) {
             throw new IllegalArgumentException("Lowongan dengan ID tersebut tidak ditemukan");
         }
@@ -92,16 +89,16 @@ public class LowonganServiceImpl implements LowonganService {
         // validateLowongan sekarang melempar exception langsung dengan pesan spesifik
         validateLowongan(lowongan);
 
-        return lowonganRepository.updateLowongan(id, lowongan);
+        return lowonganRepository.save(lowongan);
     }
 
     public void deleteLowongan(UUID id) {
-        lowonganRepository.deleteLowongan(id);
+        lowonganRepository.deleteById(id);
     }
 
     @Override
     public boolean isLowonganExists(Lowongan lowongan) {
-        List<Lowongan> existingLowongans = lowonganRepository.getLowongan();
+        List<Lowongan> existingLowongans = lowonganRepository.findAll();
 
         for (Lowongan existing : existingLowongans) {
             if (isSameLowongan(existing, lowongan)) {
@@ -114,7 +111,7 @@ public class LowonganServiceImpl implements LowonganService {
 
     private boolean isSameLowongan(Lowongan a, Lowongan b) {
         return a.getMatkul().equals(b.getMatkul()) &&
-                a.getYear() == b.getYear() &&
+                a.getTahun() == b.getTahun() &&
                 a.getTerm().equals(b.getTerm());
     }
 

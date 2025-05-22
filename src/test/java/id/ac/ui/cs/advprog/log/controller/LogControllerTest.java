@@ -108,7 +108,7 @@ public class LogControllerTest {
         List<Log> logs = Arrays.asList(sampleLog);
         when(logService.findByMahasiswaAndLowongan(mahasiswaId, lowonganId)).thenReturn(logs);
 
-        mockMvc.perform(get("/api/hiringgo/student/logs/lowongan/{lowonganId}", lowonganId))
+        mockMvc.perform(get("/api/log/student/lowongan/{lowonganId}", lowonganId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].judul").value("Asistensi"));
 
@@ -120,7 +120,7 @@ public class LogControllerTest {
         when(authentication.getName()).thenReturn(mahasiswaId.toString());
         when(logService.findById(logId)).thenReturn(sampleLog);
 
-        mockMvc.perform(get("/api/hiringgo/student/logs/{logId}", logId))
+        mockMvc.perform(get("/api/log/student/{logId}", logId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.judul").value("Asistensi"));
 
@@ -133,7 +133,7 @@ public class LogControllerTest {
         when(authentication.getName()).thenReturn(differentMahasiswaId.toString());
         when(logService.findById(logId)).thenReturn(sampleLog);
 
-        mockMvc.perform(get("/api/hiringgo/student/logs/{logId}", logId))
+        mockMvc.perform(get("/api/log/student/{logId}", logId))
                 .andExpect(status().isForbidden());
 
         verify(logService).findById(logId);
@@ -145,7 +145,7 @@ public class LogControllerTest {
         when(logService.createLogForMahasiswa(any(LogDTO.class), eq(mahasiswaId), eq(dosenId)))
                 .thenReturn(sampleLog);
 
-        mockMvc.perform(post("/api/hiringgo/student/logs")
+        mockMvc.perform(post("/api/log/student")
                         .param("dosenId", dosenId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(logDTO)))
@@ -161,7 +161,7 @@ public class LogControllerTest {
         when(logService.updateLogForMahasiswa(eq(logId), any(LogDTO.class), eq(mahasiswaId)))
                 .thenReturn(sampleLog);
 
-        mockMvc.perform(put("/api/hiringgo/student/logs/{logId}", logId)
+        mockMvc.perform(put("/api/log/student/{logId}", logId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(logDTO)))
                 .andExpect(status().isOk())
@@ -175,7 +175,7 @@ public class LogControllerTest {
         when(authentication.getName()).thenReturn(mahasiswaId.toString());
         doNothing().when(logService).deleteLogForMahasiswa(logId, mahasiswaId);
 
-        mockMvc.perform(delete("/api/hiringgo/student/logs/{logId}", logId))
+        mockMvc.perform(delete("/api/log/student/{logId}", logId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Log berhasil dihapus"));
 
@@ -191,7 +191,7 @@ public class LogControllerTest {
 
         when(logService.calculateHonor(mahasiswaId, lowonganId, tahun, bulan)).thenReturn(honor);
 
-        mockMvc.perform(get("/api/hiringgo/student/honor")
+        mockMvc.perform(get("/api/log/student/honor")
                         .param("lowonganId", lowonganId.toString())
                         .param("tahun", String.valueOf(tahun))
                         .param("bulan", String.valueOf(bulan)))
@@ -210,7 +210,7 @@ public class LogControllerTest {
         List<Log> logs = Arrays.asList(sampleLog);
         when(logService.findByDosen(dosenId)).thenReturn(logs);
 
-        mockMvc.perform(get("/api/hiringgo/lecturer/logs"))
+        mockMvc.perform(get("/api/log/lecturer"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].judul").value("Asistensi"));
 
@@ -223,7 +223,7 @@ public class LogControllerTest {
         List<Log> logs = Arrays.asList(sampleLog);
         when(logService.findByLowonganAndDosen(lowonganId, dosenId)).thenReturn(logs);
 
-        mockMvc.perform(get("/api/hiringgo/lecturer/logs/lowongan/{lowonganId}", lowonganId))
+        mockMvc.perform(get("/api/log/lecturer/lowongan/{lowonganId}", lowonganId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].judul").value("Asistensi"));
 
@@ -238,7 +238,7 @@ public class LogControllerTest {
         when(logService.verifyLog(eq(logId), eq(StatusLog.DITERIMA), eq(dosenId)))
                 .thenReturn(sampleLog);
 
-        mockMvc.perform(patch("/api/hiringgo/lecturer/logs/{logId}/status", logId)
+        mockMvc.perform(patch("/api/log/lecturer/{logId}/status", logId)
                         .param("status", "DITERIMA"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("DITERIMA"));
@@ -250,7 +250,7 @@ public class LogControllerTest {
     void testUpdateLogStatus_InvalidStatus() throws Exception {
         when(authentication.getName()).thenReturn(dosenId.toString());
 
-        mockMvc.perform(patch("/api/hiringgo/lecturer/logs/{logId}/status", logId)
+        mockMvc.perform(patch("/api/log/lecturer/{logId}/status", logId)
                         .param("status", "INVALID_STATUS"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("Status tidak valid. Gunakan DITERIMA atau DITOLAK"));

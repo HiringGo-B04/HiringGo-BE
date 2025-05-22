@@ -25,6 +25,10 @@ public class StudentRoleUpdateStrategy implements RoleUpdateStrategy {
     public ResponseEntity<ResponseUpdateDTO> updateRole(UserUpdateDTO updateData, User user) {
         UserIntoStudentDTO userIntoLecturerDTO = (UserIntoStudentDTO) updateData;
 
+        if(userRepository.existsByNip(userIntoLecturerDTO.nim)){
+            throw new IllegalArgumentException("NIM with this student already exists");
+        }
+
         user.setNip(null);
         user.setFullName(userIntoLecturerDTO.fullName);
         user.setNim(userIntoLecturerDTO.nim);

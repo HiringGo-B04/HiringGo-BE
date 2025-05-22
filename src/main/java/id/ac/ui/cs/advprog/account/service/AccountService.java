@@ -2,6 +2,7 @@ package id.ac.ui.cs.advprog.account.service;
 
 import id.ac.ui.cs.advprog.account.dto.delete.DeleteRequestDTO;
 import id.ac.ui.cs.advprog.account.dto.delete.DeleteResponseDTO;
+import id.ac.ui.cs.advprog.account.dto.get.GetAllUserDTO;
 import id.ac.ui.cs.advprog.account.dto.update.ResponseUpdateDTO;
 import id.ac.ui.cs.advprog.account.dto.update.UserUpdateDTO;
 import id.ac.ui.cs.advprog.account.service.strategy.AdminRoleUpdateStrategy;
@@ -11,17 +12,26 @@ import id.ac.ui.cs.advprog.account.service.strategy.StudentRoleUpdateStrategy;
 import id.ac.ui.cs.advprog.authjwt.model.User;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
 
+import id.ac.ui.cs.advprog.course.repository.MataKuliahRepository;
+import id.ac.ui.cs.advprog.manajemenlowongan.repository.LowonganRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 public class AccountService{
     private final UserRepository userRepository;
+    private final LowonganRepository lowonganRepository;
+    private final MataKuliahRepository mataKuliahRepository;
 
-    public AccountService(UserRepository userRepository) {
+    public AccountService(UserRepository userRepository, LowonganRepository lowonganRepository, MataKuliahRepository mataKuliahRepository) {
         this.userRepository = userRepository;
+        this.lowonganRepository = lowonganRepository;
+        this.mataKuliahRepository = mataKuliahRepository;
     }
 
     @Transactional
@@ -61,6 +71,38 @@ public class AccountService{
             return new ResponseEntity<>(
                     new ResponseUpdateDTO("error", e.getMessage()),
 
+                    HttpStatus.valueOf(400));
+        }
+    }
+
+    public ResponseEntity<GetAllUserDTO> getAllUser(){
+        try{
+            List<User> student = userRepository.findAllByRole("STUDENT");
+            List<User> lecturer = userRepository.findAllByRole("LECTURER");
+            List<User> admin = userRepository.findAllByRole("ADMIN");
+
+            List<User> users = new ArrayList<>();
+            users.addAll(student);
+            users.addAll(lecturer);
+            users.addAll(admin);
+
+            int numberOfStudents = student.size();
+            int numberOfLecturers = lecturer.size();
+            int numberOfCourses = mataKuliahRepository.findAll().size();
+            int numberOfVacancies = lowonganRepository.findAll().size();
+
+            for (User user : users) {
+                user.setPassword(null);
+            }
+
+            return new ResponseEntity<>(
+                    new GetAllUserDTO("accept", "test", numberOfLecturers, numberOfStudents, numberOfVacancies, numberOfCourses, users),
+                    HttpStatus.valueOf(200));
+
+        }
+        catch (Exception e) {
+            return new ResponseEntity<>(
+                    new GetAllUserDTO("error", e.getMessage(), 0, 0, 0, 0,null),
                     HttpStatus.valueOf(400));
         }
     }

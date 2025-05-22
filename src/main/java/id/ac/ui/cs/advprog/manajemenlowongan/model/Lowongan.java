@@ -12,10 +12,11 @@ import lombok.Setter;
 @Table(name = "lowongan")
 public class Lowongan {
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     private String matkul;
-    private int year;
+    private int tahun;
     private String term;
 
     @Column(name = "total_asdos_needed", nullable = false)
@@ -30,7 +31,7 @@ public class Lowongan {
     private Lowongan(Builder builder) {
         this.id = UUID.randomUUID();
         this.matkul = builder.matkul;
-        this.year = builder.year;
+        this.tahun = builder.year;
         this.term = builder.term;
         this.totalAsdosNeeded = builder.totalAsdosNeeded;
         this.totalAsdosRegistered = builder.totalAsdosRegistered;

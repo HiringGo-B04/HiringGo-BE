@@ -22,7 +22,7 @@ class LowonganTest {
 
         assertNotNull(lowongan.getId());
         assertEquals("Adpro", lowongan.getMatkul());
-        assertEquals(2025, lowongan.getYear());
+        assertEquals(2025, lowongan.getTahun());
         assertEquals("Genap", lowongan.getTerm());
         assertEquals(3, lowongan.getTotalAsdosNeeded());
         assertEquals(25, lowongan.getTotalAsdosRegistered());
