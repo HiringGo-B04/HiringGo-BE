@@ -44,6 +44,7 @@ jobs:
             # Run new container
             docker run -d \
               --name=web_server \
+              --network=host \
               -p 8080:8080 \
               -e DB_HOST=${{ secrets.PROD_DB_HOST }} \
               -e DB_PORT=${{ secrets.PROD_DB_PORT }} \
