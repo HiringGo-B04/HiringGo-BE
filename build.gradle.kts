@@ -1,5 +1,10 @@
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 
+configurations.all {
+    exclude(group = "org.antlr", module = "antlr4-runtime")
+}
+
+
 plugins {
     java
     jacoco
@@ -74,6 +79,9 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
     // VALIDATION  ➜ jakarta.validation.Valid  (@NotBlank, @Min, dst.)
     implementation("org.springframework.boot:spring-boot-starter-validation")
+
+    // ANTLR
+    implementation("org.antlr:antlr4-runtime:4.13.0")
 
     // SECURITY    ➜ PreAuthorize, EnableMethodSecurity, dll.
     implementation("org.springframework.boot:spring-boot-starter-security")
