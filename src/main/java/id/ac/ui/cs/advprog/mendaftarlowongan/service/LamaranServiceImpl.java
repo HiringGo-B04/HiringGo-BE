@@ -44,7 +44,12 @@ public class LamaranServiceImpl implements LamaranService {
     }
 
     @Override
-    public Lamaran createLamaran(LamaranDTO lamaranDTO) {
+    public Lamaran createLamaran(LamaranDTO lamaranDTO, UUID userIdFromToken) {
+        // Cek apakah idMahasiswa dari body sama dengan userId dari token
+        if (!lamaranDTO.getIdMahasiswa().equals(userIdFromToken)) {
+            throw new RuntimeException("ID Mahasiswa tidak sesuai dengan userId pada token.");
+        }
+
         Lamaran lamaran = toEntity(lamaranDTO);
 
         try {
@@ -52,8 +57,10 @@ public class LamaranServiceImpl implements LamaranService {
         } catch (Exception e) {
             throw new RuntimeException("Error validating lamaran: " + e.getMessage());
         }
+
         return lamaranRepository.save(lamaran);
     }
+
 
     @Override
     public Lamaran updateLamaran(UUID id, Lamaran lamaran) {

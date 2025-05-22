@@ -9,7 +9,7 @@ import java.util.UUID;
 public interface LamaranService {
     List<Lamaran> getLamaran();
     Lamaran getLamaranById(UUID id);
-    Lamaran createLamaran(LamaranDTO lamaran);
+    Lamaran createLamaran(LamaranDTO lamaran, UUID uuid);
     Lamaran updateLamaran(UUID id, Lamaran lamaran);
     void deleteLamaran(UUID id);
     boolean isLamaranExists(Lamaran lamaran);
