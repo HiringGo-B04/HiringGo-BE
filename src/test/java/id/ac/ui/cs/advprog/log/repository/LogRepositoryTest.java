@@ -205,15 +205,15 @@ class LogRepositoryTest {
     void testFindAcceptedLogsByMahasiswaAndLowonganAndMonth() {
         int tahun = LocalDate.now().getYear();
         int bulan = LocalDate.now().getMonthValue();
-        when(repository.findAcceptedLogsByMahasiswaAndLowonganAndMonth(idMahasiswa, idLowongan, tahun, bulan))
+        when(repository.findAcceptedLogsByMahasiswaAndLowonganAndMonth(idMahasiswa, idLowongan, StatusLog.DITERIMA, tahun, bulan))
                 .thenReturn(Arrays.asList(sampleLog));
 
         List<Log> logs = repository.findAcceptedLogsByMahasiswaAndLowonganAndMonth(
-                idMahasiswa, idLowongan, tahun, bulan);
+                idMahasiswa, idLowongan, StatusLog.DITERIMA, tahun, bulan);
 
         assertEquals(1, logs.size());
         verify(repository).findAcceptedLogsByMahasiswaAndLowonganAndMonth(
-                idMahasiswa, idLowongan, tahun, bulan);
+                idMahasiswa, idLowongan, StatusLog.DITERIMA, tahun, bulan);
     }
 
     @Test
