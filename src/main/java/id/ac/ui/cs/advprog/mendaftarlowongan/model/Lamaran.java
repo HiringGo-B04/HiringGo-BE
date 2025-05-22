@@ -21,7 +21,7 @@ public class Lamaran {
     private int sks;
     private float ipk;
 
-    @Enumerated(EnumType.STRING)
+    @Enumerated(EnumType.ORDINAL)
     private StatusLamaran status = StatusLamaran.MENUNGGU;
 
     @Column(name = "id_mahasiswa", nullable = false)
@@ -76,5 +76,18 @@ public class Lamaran {
         public Lamaran build() {
             return new Lamaran(this);
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Lamaran)) return false;
+        Lamaran lamaran = (Lamaran) o;
+        return id != null && id.equals(lamaran.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return 31;
     }
 }

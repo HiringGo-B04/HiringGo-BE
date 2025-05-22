@@ -55,7 +55,7 @@ public class AuthService implements AuthenticationFacade {
         }
 
         try{
-            String jwt_token = jwtUtils.generateToken(user.username(), exist_user.getRole());
+            String jwt_token = jwtUtils.generateToken(user.username(), exist_user.getRole(), exist_user.getUserId());
             Token user_token = new Token(jwt_token);
             tokenRepository.save(user_token);
 

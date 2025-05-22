@@ -106,7 +106,6 @@ public class LogServiceImpl implements LogService {
             throw new ResourceNotFoundException("Dosen tidak ditemukan");
         }
 
-        // Validasi bahwa mahasiswa sudah diterima di lowongan ini
         if (!isMahasiswaAcceptedForLowongan(idMahasiswa, logDTO.getIdLowongan())) {
             throw new BadRequestException("Mahasiswa belum diterima pada lowongan ini");
         }
@@ -236,8 +235,8 @@ public class LogServiceImpl implements LogService {
 
     @Override
     public boolean validateLowongan(UUID idLowongan) {
-        Lowongan lowongan = lowonganRepository.getLowonganById(idLowongan);
-        return lowongan != null;
+        Optional<Lowongan> lowongan = lowonganRepository.findById(idLowongan);
+        return lowongan.isPresent();
     }
 
     @Override
@@ -276,7 +275,7 @@ public class LogServiceImpl implements LogService {
 
     private boolean isMahasiswaAcceptedForLowongan(UUID idMahasiswa, UUID idLowongan) {
         // Cek apakah mahasiswa sudah diterima di lowongan ini
-        List<Lamaran> lamaranList = lamaranRepository.getLamaran();
+        List<Lamaran> lamaranList = lamaranRepository.findAll();
         return lamaranList.stream()
                 .anyMatch(lamaran ->
                         lamaran.getIdMahasiswa().equals(idMahasiswa) &&

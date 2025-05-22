@@ -16,6 +16,12 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -40,19 +46,6 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/user/**").hasAnyRole("ADMIN", "STUDENT", "LECTURER")
 
                         .requestMatchers("/api/account/admin/**").hasRole("ADMIN")
-
-                        /* ---------- COURSE / MATA KULIAH ---------- */
-                        .requestMatchers(
-                                HttpMethod.GET,
-                                "/api/course/student/**",
-                                "/api/course/lecturer/**",
-                                "/api/course/user/**"
-                        ).hasAnyRole("ADMIN", "STUDENT", "LECTURER")
-
-                        .requestMatchers("/api/course/admin/**").hasRole("ADMIN")
-
-                        .requestMatchers("/api/course/public/**").permitAll()
-
                         /*
                          * Hingga sini yang permitAll bawah ngga usah itu kayak namanya nge permit semuanya
                          */
