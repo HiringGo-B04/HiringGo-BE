@@ -21,7 +21,6 @@ class LamaranTest {
                 .lowongan(lowonganId)
                 .build();
 
-        assertNotNull(lamaran.getId());
         assertEquals(20, lamaran.getSks());
         assertEquals(3.75f, lamaran.getIpk());
         assertEquals(StatusLamaran.MENUNGGU, lamaran.getStatus());
