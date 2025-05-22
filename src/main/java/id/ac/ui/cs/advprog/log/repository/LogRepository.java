@@ -23,20 +23,14 @@ public interface LogRepository extends JpaRepository<Log, UUID> {
     SELECT l FROM Log l
     WHERE l.idMahasiswa = :idMahasiswa
       AND l.idLowongan = :idLowongan
-      AND l.status = :status
+      AND l.status = id.ac.ui.cs.advprog.log.enums.StatusLog.DITERIMA
       AND FUNCTION('YEAR', l.tanggalLog) = :tahun
       AND FUNCTION('MONTH', l.tanggalLog) = :bulan
-""")
+    """)
     List<Log> findAcceptedLogsByMahasiswaAndLowonganAndMonth(
             @Param("idMahasiswa") UUID idMahasiswa,
             @Param("idLowongan") UUID idLowongan,
-            @Param("status") id.ac.ui.cs.advprog.log.enums.StatusLog status,
             @Param("tahun") int tahun,
             @Param("bulan") int bulan
     );
-    List<Log> findAcceptedLogsByMahasiswaAndLowonganAndMonth(
-            @Param("idMahasiswa") UUID idMahasiswa,
-            @Param("idLowongan") UUID idLowongan,
-            @Param("tahun") int tahun,
-            @Param("bulan") int bulan);
 }
