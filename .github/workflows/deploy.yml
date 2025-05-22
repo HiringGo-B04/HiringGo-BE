@@ -31,9 +31,17 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            docker rmi $(docker images -a -q)
+            # Stop and remove existing container if it exists
+            docker rm -f web_server || true
+            
+            # Remove old image (optional, for clean pulls)
+            docker rmi ${{ secrets.DOCKER_HUB_USERNAME }}/${{ secrets.DOCKER_HUB_REPO_NAME }}:latest || true
+            
+            # Pull latest image
             docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} -p ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
             docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/${{ secrets.DOCKER_HUB_REPO_NAME }}:latest
+            
+            # Run new container
             docker run -d \
               --name=web_server \
               -p 8080:8080 \
