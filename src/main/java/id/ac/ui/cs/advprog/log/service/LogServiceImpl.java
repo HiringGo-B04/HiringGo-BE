@@ -178,7 +178,7 @@ public class LogServiceImpl implements LogService {
         validateLowongan(idLowongan);
 
         List<Log> acceptedLogs = logRepository.findAcceptedLogsByMahasiswaAndLowonganAndMonth(
-                idMahasiswa, idLowongan, tahun, bulan);
+                idMahasiswa, idLowongan, StatusLog.DITERIMA, tahun, bulan);
 
         double totalHoursWorked = 0;
         for (Log log : acceptedLogs) {
