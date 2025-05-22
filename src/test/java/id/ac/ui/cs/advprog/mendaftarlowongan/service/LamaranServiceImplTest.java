@@ -54,7 +54,7 @@ public class LamaranServiceImplTest {
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
-        Lamaran result = lamaranService.createLamaran(dummyLamaranDTO);
+        Lamaran result = lamaranService.createLamaran(dummyLamaranDTO, dummyLamaranDTO.getIdMahasiswa());
 
         // Assert
         assertNotNull(result);
@@ -75,7 +75,7 @@ public class LamaranServiceImplTest {
 
         // Act & Assert
         RuntimeException ex = assertThrows(RuntimeException.class, () -> {
-            lamaranService.createLamaran(dummyLamaranDTO);
+            lamaranService.createLamaran(dummyLamaranDTO, dummyLamaranDTO.getIdMahasiswa());
         });
 
         assertTrue(ex.getMessage().contains("IPK tidak valid"));
