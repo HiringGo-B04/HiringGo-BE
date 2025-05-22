@@ -9,13 +9,10 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Unit‑test sederhana untuk memastikan anotasi Bean Validation
- * pada {@link MataKuliahDto} berfungsi.
- */
 class MataKuliahDtoTest {
 
     private static Validator validator;
@@ -35,46 +32,44 @@ class MataKuliahDtoTest {
                 "Algoritma",
                 3,
                 "Pemrograman dasar algoritma",
-                List.of("Dosen A", "Dosen B")
+                List.of(UUID.randomUUID())
         );
 
-        Set<ConstraintViolation<MataKuliahDto>> violations = validator.validate(dto);
-        assertThat(violations).isEmpty();
+        assertThat(validator.validate(dto)).isEmpty();
     }
 
-    /* ---------- NEGATIVE SKS ---------- */
+    /* ---------- SKS < 1 ---------- */
     @Test
-    void negativeSks_shouldFailValidation() {
+    void zeroOrNegativeSks_shouldFailValidation() {
         MataKuliahDto dto = new MataKuliahDto(
                 "MK002",
-                "Basis Data",
-                -1,
+                "Basis Data",
+                0,
                 "Desc",
                 List.of()
         );
 
         Set<ConstraintViolation<MataKuliahDto>> violations = validator.validate(dto);
-        assertThat(violations).extracting(ConstraintViolation::getPropertyPath)
-                .anyMatch(p -> p.toString().equals("sks"));
+        assertThat(violations)
+                .extracting(v -> v.getPropertyPath().toString())
+                .contains("sks");
     }
 
     /* ---------- KODE / NAMA BLANK ---------- */
     @Test
     void blankKodeOrNama_shouldFailValidation() {
         MataKuliahDto dto = new MataKuliahDto(
-                "   ",      // kode blank
+                "   ",
                 "",
                 2,
                 null,
-                List.of("Dosen X")
+                List.of(UUID.randomUUID())
         );
 
         Set<ConstraintViolation<MataKuliahDto>> violations = validator.validate(dto);
-        assertThat(violations).hasSizeGreaterThanOrEqualTo(2)
-                .extracting(ConstraintViolation::getPropertyPath)
-                .anySatisfy(path -> {
-                    assertThat(path.toString()).isIn("kode", "nama");
-                });
+        assertThat(violations)
+                .extracting(v -> v.getPropertyPath().toString())
+                .contains("kode", "nama");
     }
 
     /* ---------- DOSEN LIST NULL ---------- */
@@ -85,11 +80,12 @@ class MataKuliahDtoTest {
                 "Jaringan",
                 3,
                 null,
-                null               // ← tidak boleh null
+                null
         );
 
         Set<ConstraintViolation<MataKuliahDto>> violations = validator.validate(dto);
-        assertThat(violations).extracting(ConstraintViolation::getPropertyPath)
-                .anyMatch(p -> p.toString().equals("dosenPengampu"));
+        assertThat(violations)
+                .extracting(v -> v.getPropertyPath().toString())
+                .contains("dosenPengampu");
     }
 }

@@ -106,7 +106,6 @@ public class LogServiceImpl implements LogService {
             throw new ResourceNotFoundException("Dosen tidak ditemukan");
         }
 
-        // Validasi bahwa mahasiswa sudah diterima di lowongan ini
         if (!isMahasiswaAcceptedForLowongan(idMahasiswa, logDTO.getIdLowongan())) {
             throw new BadRequestException("Mahasiswa belum diterima pada lowongan ini");
         }
@@ -179,7 +178,7 @@ public class LogServiceImpl implements LogService {
         validateLowongan(idLowongan);
 
         List<Log> acceptedLogs = logRepository.findAcceptedLogsByMahasiswaAndLowonganAndMonth(
-                idMahasiswa, idLowongan, tahun, bulan);
+                idMahasiswa, idLowongan, StatusLog.DITERIMA, tahun, bulan);
 
         double totalHoursWorked = 0;
         for (Log log : acceptedLogs) {

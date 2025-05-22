@@ -6,15 +6,6 @@ plugins {
     id("org.springframework.boot") version "3.4.4"
     id("io.spring.dependency-management") version "1.1.7"
     id("com.github.johnrengelman.processes") version "0.5.0"
-    id("org.sonarqube") version "4.4.1.3373"
-}
-
-sonar {
-    properties {
-        property("sonar.projectKey", "HiringGo-B04_HiringGo-BE")
-        property("sonar.organization", "hiringgo-b04")
-        property("sonar.host.url", "https://sonarcloud.io")
-    }
 }
 
 group = "id.ac.ui.cs.advprog"
@@ -55,47 +46,47 @@ val webdrivermanagerVersion = "5.6.3"
 val junitJupiterVersion = "5.9.1"
 
 dependencies {
+
     runtimeOnly("org.postgresql:postgresql:42.7.2")
+    runtimeOnly("org.postgresql:postgresql")
+    runtimeOnly("com.h2database:h2")
+    runtimeOnly("org.hibernate.orm:hibernate-core:6.3.1.Final")
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
+
     compileOnly("jakarta.servlet:jakarta.servlet-api:6.0.0")
+    compileOnly("org.projectlombok:lombok")
+
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    runtimeOnly("org.postgresql:postgresql") // still needed for prod
-    runtimeOnly("com.h2database:h2") // ✅ this is the one you’re missing
-    implementation("org.json:json:20210307") // Use the latest version
+    implementation("org.json:json:20210307")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("jakarta.persistence:jakarta.persistence-api:3.1.0")
-    runtimeOnly("org.hibernate.orm:hibernate-core:6.3.1.Final")
     implementation("org.postgresql:postgresql:42.7.2")
     implementation("io.jsonwebtoken:jjwt-api:0.11.5")
-    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
-    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
     implementation("org.springframework.boot:spring-boot-starter-web")
-    compileOnly("org.projectlombok:lombok")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.mapstruct:mapstruct:1.5.5.Final")
+    implementation("org.springframework.data:spring-data-commons")
+
     developmentOnly("org.springframework.boot:spring-boot-devtools")
+
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     annotationProcessor("org.projectlombok:lombok")
+    annotationProcessor("org.mapstruct:mapstruct-processor:1.5.5.Final")
+
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-    testImplementation("org.seleniumhq.selenium:selenium-java:$seleniumJavaVersion")
-    testImplementation("io.github.bonigarcia:selenium-jupiter:$seleniumJupiterVersion")
-    testImplementation("io.github.bonigarcia:webdrivermanager:$webdrivermanagerVersion")
-    testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
-    // VALIDATION  ➜ jakarta.validation.Valid  (@NotBlank, @Min, dst.)
-    implementation("org.springframework.boot:spring-boot-starter-validation")
-
-    // SECURITY    ➜ PreAuthorize, EnableMethodSecurity, dll.
-    implementation("org.springframework.boot:spring-boot-starter-security")
-
+    testImplementation("org.seleniumhq.selenium:selenium-java:${seleniumJavaVersion}")
+    testImplementation("io.github.bonigarcia:selenium-jupiter:${seleniumJupiterVersion}")
+    testImplementation("io.github.bonigarcia:webdrivermanager:${webdrivermanagerVersion}")
+    testImplementation("org.junit.jupiter:junit-jupiter:${junitJupiterVersion}")
     testImplementation("org.springframework.security:spring-security-test")
 
-    // MapStruct runtime (dipanggil saat konversi DTO ↔ entity)
-    implementation("org.mapstruct:mapstruct:1.5.5.Final")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
-    // Annotation‑processor: Gradle akan men‑generate class mapper
-    annotationProcessor("org.mapstruct:mapstruct-processor:1.5.5.Final")
     testAnnotationProcessor("org.mapstruct:mapstruct-processor:1.5.5.Final")
-    implementation("org.springframework.data:spring-data-commons")
 }
 
 // tasks.register<Test>("unitTest") {
@@ -161,4 +152,8 @@ tasks.jacocoTestReport {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+tasks.withType<JavaCompile> {
+    options.annotationProcessorPath = configurations.annotationProcessor.get()
 }
