@@ -1,5 +1,5 @@
 # ----------- Build Stage -----------
-FROM amazoncorretto:21 AS builder
+FROM gradle:jdk21-alpine AS builder
 
 WORKDIR /app
 COPY . .
@@ -8,7 +8,7 @@ COPY . .
 RUN ./gradlew clean build -x test -x check
 
 # ----------- Runtime Stage -----------
-FROM amazoncorretto:21
+FROM gradle:jdk21-alpine
 
 WORKDIR /app
 
