@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.course.config;
 
+import id.ac.ui.cs.advprog.authjwt.config.AsyncConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -33,7 +34,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class IsolatedAsyncConfigTest {
 
     @Autowired
-    @Qualifier("courseTaskExecutor")
+    @Qualifier("taskExecutor")
     private Executor courseTaskExecutor;
 
     @Test
