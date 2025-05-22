@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.mendaftarlowongan.controller;
 
+import id.ac.ui.cs.advprog.authjwt.config.JwtUtil;
 import id.ac.ui.cs.advprog.mendaftarlowongan.dto.LamaranDTO;
 import id.ac.ui.cs.advprog.mendaftarlowongan.model.Lamaran;
 import id.ac.ui.cs.advprog.mendaftarlowongan.service.LamaranService;
@@ -14,14 +15,20 @@ import java.util.UUID;
 public class LamaranController {
 
     private final LamaranService lamaranService;
+    private final JwtUtil jwtUtil; // Inject instead of creating new
 
-    public LamaranController(LamaranService lamaranService) {
+    public LamaranController(LamaranService lamaranService, JwtUtil jwtUtil) {
         this.lamaranService = lamaranService;
+        this.jwtUtil = jwtUtil;
     }
 
     @PostMapping("/student/add")
-    public ResponseEntity<Lamaran> createLamaran(@RequestBody LamaranDTO lamaranDTO) {
-        Lamaran created = lamaranService.createLamaran(lamaranDTO);
+    public ResponseEntity<Lamaran> createLamaran(@RequestHeader("Authorization") String authHeader,
+                                                 @RequestBody LamaranDTO lamaranDTO) {
+        String token = authHeader.replace("Bearer ", "");
+        String userIdFromToken = jwtUtil.getUserIdFromToken(token);
+
+        Lamaran created = lamaranService.createLamaran(lamaranDTO, UUID.fromString(userIdFromToken));
         return ResponseEntity.ok(created);
     }
 
