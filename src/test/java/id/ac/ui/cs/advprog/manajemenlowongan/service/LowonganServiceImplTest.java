@@ -85,7 +85,7 @@ public class LowonganServiceImplTest {
 
     @Test
     void testGetLowonganByIdNotFound() {
-        when(lowonganRepository.findById(any())).thenReturn(null);
+        when(lowonganRepository.findById(any())).thenReturn(Optional.empty());
 
         Lowongan result = lowonganService.getLowonganById(UUID.randomUUID());
 
@@ -95,7 +95,7 @@ public class LowonganServiceImplTest {
     @Test
     void testUpdateLowongan() {
         when(lowonganRepository.findById(dummyLowongan.getId())).thenReturn(Optional.ofNullable(dummyLowongan));
-        when(lowonganRepository.save(any(Lowongan.class))).thenAnswer(i -> i.getArgument(1));
+        when(lowonganRepository.save(any(Lowongan.class))).thenAnswer(i -> i.getArgument(0));
 
         dummyLowongan.setTotalAsdosNeeded(15);
         Lowongan updated = lowonganService.updateLowongan(dummyLowongan.getId(), dummyLowongan);

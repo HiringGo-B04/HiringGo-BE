@@ -6,11 +6,14 @@ import id.ac.ui.cs.advprog.manajemenlowongan.service.LowonganService;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import id.ac.ui.cs.advprog.mendaftarlowongan.service.LamaranService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
@@ -22,6 +25,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -85,16 +89,24 @@ class LowonganControllerTest {
         List<Lowongan> lowonganList = Collections.singletonList(dummyLowongan);
         when(lowonganService.getLowonganById(dummyId)).thenReturn((Lowongan) lowonganList);
 
-        mockMvc.perform(get("/api/lowongan/user" + dummyId))
+        mockMvc.perform(get("/api/lowongan/user/" + dummyId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(dummyLowongan.getId().toString()));
+                .andExpect(jsonPath("$.id").value(dummyLowongan.getId().toString()));
     }
 
     @Test
     void testGetLowonganById_NotFound() throws Exception {
         when(lowonganService.getLowonganById(dummyId)).thenThrow(new RuntimeException("Lowongan tidak ditemukan"));
 
-        mockMvc.perform(get("/api/lowongan/user" + dummyId))
+        mockMvc.perform(get("/api/lowongan/user/" + dummyId))
                 .andExpect(status().isInternalServerError());
+    }
+
+    @TestConfiguration
+    static class MockServiceConfig {
+        @Bean
+        public LowonganService lowonganService() {
+            return mock(LowonganService.class);
+        }
     }
 }

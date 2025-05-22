@@ -78,13 +78,16 @@ public class LowonganServiceImpl implements LowonganService {
 
     @Override
     public Lowongan updateLowongan(UUID id, Lowongan lowongan) {
-        Lowongan existingLowongan = lowonganRepository.findById(id).orElse(null);
+        Lowongan existingLowongan = getLowonganById(id);
         if (existingLowongan == null) {
             throw new IllegalArgumentException("Lowongan dengan ID tersebut tidak ditemukan");
         }
 
         // Pastikan ID lowongan yang diupdate sama dengan ID yang diminta
         lowongan.setId(id);
+        lowongan.setMatkul(lowongan.getMatkul());
+        lowongan.setTerm(lowongan.getTerm());
+        lowongan.setTahun(lowongan.getTahun());
 
         // validateLowongan sekarang melempar exception langsung dengan pesan spesifik
         validateLowongan(lowongan);
@@ -113,16 +116,5 @@ public class LowonganServiceImpl implements LowonganService {
         return a.getMatkul().equals(b.getMatkul()) &&
                 a.getTahun() == b.getTahun() &&
                 a.getTerm().equals(b.getTerm());
-    }
-
-    @Override
-    public boolean isLowonganClosed(Lowongan lowongan) {
-        // Lowongan dianggap tutup jika jumlah asisten dosen yang diterima
-        // sudah sama dengan atau melebihi jumlah yang dibutuhkan
-        if (lowongan.getTotalAsdosAccepted() >= lowongan.getTotalAsdosNeeded()) {
-            return true;
-        }
-
-        return false;
     }
 }

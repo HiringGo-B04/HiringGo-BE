@@ -20,7 +20,7 @@ public interface LogRepository extends JpaRepository<Log, UUID> {
     List<Log> findByIdMahasiswaAndIdLowongan(UUID idMahasiswa, UUID idLowongan);
 
     @Query("SELECT l FROM Log l WHERE l.idMahasiswa = :idMahasiswa AND l.idLowongan = :idLowongan " +
-            "AND l.status = id.ac.ui.cs.advprog.log.enums.StatusLog.DITERIMA " +
+            "AND l.status = 'DITERIMA' " +
             "AND YEAR(l.tanggalLog) = :tahun AND MONTH(l.tanggalLog) = :bulan")
     List<Log> findAcceptedLogsByMahasiswaAndLowonganAndMonth(
             @Param("idMahasiswa") UUID idMahasiswa,
