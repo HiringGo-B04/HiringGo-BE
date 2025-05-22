@@ -3,7 +3,7 @@ name: Deploying to Production
 on:
   push:
     branches:
-      - staging-v1
+      - staging
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
