@@ -20,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import java.util.List;
 import java.util.Collections;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -30,36 +31,39 @@ public class AccountServiceTest {
     private UserRepository userRepository;
     private LowonganRepository lowonganRepository;
     private MataKuliahRepository mataKuliahRepository;
+    private AsyncAccountHelper asyncHelper;
 
     @BeforeEach
     void setUp() {
         userRepository = mock(UserRepository.class);
         lowonganRepository = mock(LowonganRepository.class);
         mataKuliahRepository = mock(MataKuliahRepository.class);
-        accountService = new AccountService(userRepository, lowonganRepository, mataKuliahRepository);
+        asyncHelper = mock(AsyncAccountHelper.class);
+        accountService = new AccountService(userRepository, lowonganRepository, mataKuliahRepository, asyncHelper);
     }
 
     @Test
-    void testGetAllUser_Success() {
+    void testGetAllUser_Success() throws Exception {
         // Given
         User student1 = new User(); student1.setRole("STUDENT"); student1.setPassword("pass1");
         User lecturer1 = new User(); lecturer1.setRole("LECTURER"); lecturer1.setPassword("pass2");
         User admin1 = new User(); admin1.setRole("ADMIN"); admin1.setPassword("pass3");
 
-        when(userRepository.findAllByRole("STUDENT")).thenReturn(List.of(student1));
-        when(userRepository.findAllByRole("LECTURER")).thenReturn(List.of(lecturer1));
-        when(userRepository.findAllByRole("ADMIN")).thenReturn(List.of(admin1));
-        MataKuliah mata1 = new MataKuliah();
-        MataKuliah mata2 = new MataKuliah();
-        when(mataKuliahRepository.findAll()).thenReturn(List.of(mata1, mata2));
+        when(asyncHelper.getUsersByRoleAsync("STUDENT"))
+                .thenReturn(CompletableFuture.completedFuture(List.of(student1)));
+        when(asyncHelper.getUsersByRoleAsync("LECTURER"))
+                .thenReturn(CompletableFuture.completedFuture(List.of(lecturer1)));
+        when(asyncHelper.getUsersByRoleAsync("ADMIN"))
+                .thenReturn(CompletableFuture.completedFuture(List.of(admin1)));
 
-        Lowongan low1 = new Lowongan();
-        Lowongan low2 = new Lowongan();
-        Lowongan low3 = new Lowongan();
-        when(lowonganRepository.findAll()).thenReturn(List.of(low1, low2, low3));
+        when(asyncHelper.getNumberOfCoursesAsync())
+                .thenReturn(CompletableFuture.completedFuture(2));
+        when(asyncHelper.getNumberOfVacanciesAsync())
+                .thenReturn(CompletableFuture.completedFuture(3));
 
         // When
-        ResponseEntity<GetAllUserDTO> response = accountService.getAllUser();
+        CompletableFuture<ResponseEntity<GetAllUserDTO>> future = accountService.getAllUser();
+        ResponseEntity<GetAllUserDTO> response = future.get(); // Await future
 
         // Then
         GetAllUserDTO dto = response.getBody();
@@ -78,12 +82,52 @@ public class AccountServiceTest {
     }
 
     @Test
-    void testGetAllUser_ExceptionHandling() {
-        // Given
-        when(userRepository.findAllByRole("STUDENT")).thenThrow(new RuntimeException("DB error"));
+    void testGetAllUser_InternalProcessingException() throws Exception {
+        // Given: Futures all complete normally, but accessing their result throws exception
+        CompletableFuture<List<User>> badStudentFuture = CompletableFuture.completedFuture(null); // null causes NPE when accessing size()
+        CompletableFuture<List<User>> goodFuture = CompletableFuture.completedFuture(List.of());
+        CompletableFuture<Integer> goodCountFuture = CompletableFuture.completedFuture(0);
+
+        when(asyncHelper.getUsersByRoleAsync("STUDENT")).thenReturn(badStudentFuture);
+        when(asyncHelper.getUsersByRoleAsync("LECTURER")).thenReturn(goodFuture);
+        when(asyncHelper.getUsersByRoleAsync("ADMIN")).thenReturn(goodFuture);
+        when(asyncHelper.getNumberOfCoursesAsync()).thenReturn(goodCountFuture);
+        when(asyncHelper.getNumberOfVacanciesAsync()).thenReturn(goodCountFuture);
 
         // When
-        ResponseEntity<GetAllUserDTO> response = accountService.getAllUser();
+        CompletableFuture<ResponseEntity<GetAllUserDTO>> future = accountService.getAllUser();
+        ResponseEntity<GetAllUserDTO> response = future.get(); // .get() will complete normally, error handled inside handle()
+
+        // Then
+        assertEquals(400, response.getStatusCodeValue());
+        GetAllUserDTO dto = response.getBody();
+        assertNotNull(dto);
+        assertEquals("error", dto.status());
+        assertEquals(0, dto.numberOfStudents());
+        assertEquals(0, dto.numberOfLectures());
+        assertEquals(0, dto.numberOfCourses());
+        assertEquals(0, dto.numberOfVacancies());
+        assertNull(dto.users());
+    }
+
+    @Test
+    void testGetAllUser_ExceptionHandling() throws Exception {
+        // Given
+        when(asyncHelper.getUsersByRoleAsync("STUDENT"))
+                .thenReturn(CompletableFuture.failedFuture(new RuntimeException("DB error")));
+
+        when(asyncHelper.getUsersByRoleAsync("LECTURER"))
+                .thenReturn(CompletableFuture.completedFuture(List.of()));
+        when(asyncHelper.getUsersByRoleAsync("ADMIN"))
+                .thenReturn(CompletableFuture.completedFuture(List.of()));
+        when(asyncHelper.getNumberOfCoursesAsync())
+                .thenReturn(CompletableFuture.completedFuture(0));
+        when(asyncHelper.getNumberOfVacanciesAsync())
+                .thenReturn(CompletableFuture.completedFuture(0));
+
+        // When
+        CompletableFuture<ResponseEntity<GetAllUserDTO>> future = accountService.getAllUser();
+        ResponseEntity<GetAllUserDTO> response = future.get(); // Await future
 
         // Then
         GetAllUserDTO dto = response.getBody();
@@ -97,6 +141,7 @@ public class AccountServiceTest {
         assertEquals(0, dto.numberOfVacancies());
         assertNull(dto.users());
     }
+
 
     @Test
     void testUpdateUserRoleToAdmin_Success() {
