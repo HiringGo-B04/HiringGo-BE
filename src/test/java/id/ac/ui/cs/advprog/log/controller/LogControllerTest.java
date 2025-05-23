@@ -5,6 +5,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import id.ac.ui.cs.advprog.log.dto.LogDTO;
 import id.ac.ui.cs.advprog.log.enums.KategoriLog;
 import id.ac.ui.cs.advprog.log.enums.StatusLog;
+import id.ac.ui.cs.advprog.log.exception.ForbiddenException;
 import id.ac.ui.cs.advprog.log.model.Log;
 import id.ac.ui.cs.advprog.log.model.LogBuilder;
 import id.ac.ui.cs.advprog.log.service.LogService;
@@ -25,7 +26,9 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -118,41 +121,42 @@ public class LogControllerTest {
     @Test
     void testGetStudentLog_Success() throws Exception {
         when(authentication.getName()).thenReturn(mahasiswaId.toString());
-        when(logService.findById(logId)).thenReturn(sampleLog);
+        when(logService.findByIdForMahasiswa(logId, mahasiswaId)).thenReturn(sampleLog);
 
         mockMvc.perform(get("/api/log/student/{logId}", logId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.judul").value("Asistensi"));
 
-        verify(logService).findById(logId);
+        verify(logService).findByIdForMahasiswa(logId, mahasiswaId);
     }
 
     @Test
     void testGetStudentLog_Forbidden() throws Exception {
         UUID differentMahasiswaId = UUID.randomUUID();
         when(authentication.getName()).thenReturn(differentMahasiswaId.toString());
-        when(logService.findById(logId)).thenReturn(sampleLog);
+        when(logService.findByIdForMahasiswa(logId, differentMahasiswaId))
+                .thenThrow(new ForbiddenException("Anda tidak dapat mengakses log milik mahasiswa lain"));
 
         mockMvc.perform(get("/api/log/student/{logId}", logId))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value("Anda tidak dapat mengakses log milik mahasiswa lain"));
 
-        verify(logService).findById(logId);
+        verify(logService).findByIdForMahasiswa(logId, differentMahasiswaId);
     }
 
     @Test
     void testCreateStudentLog_Success() throws Exception {
         when(authentication.getName()).thenReturn(mahasiswaId.toString());
-        when(logService.createLogForMahasiswa(any(LogDTO.class), eq(mahasiswaId), eq(dosenId)))
+        when(logService.createLogForMahasiswa(any(LogDTO.class), eq(mahasiswaId)))
                 .thenReturn(sampleLog);
 
         mockMvc.perform(post("/api/log/student")
-                        .param("dosenId", dosenId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(logDTO)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.judul").value("Asistensi"));
 
-        verify(logService).createLogForMahasiswa(any(LogDTO.class), eq(mahasiswaId), eq(dosenId));
+        verify(logService).createLogForMahasiswa(any(LogDTO.class), eq(mahasiswaId));
     }
 
     @Test
@@ -187,19 +191,25 @@ public class LogControllerTest {
         when(authentication.getName()).thenReturn(mahasiswaId.toString());
         int tahun = 2025;
         int bulan = 5;
-        double honor = 137500.0;
 
-        when(logService.calculateHonor(mahasiswaId, lowonganId, tahun, bulan)).thenReturn(honor);
+        Map<String, Object> honorData = new HashMap<>();
+        honorData.put("bulan", bulan);
+        honorData.put("tahun", tahun);
+        honorData.put("lowonganId", lowonganId);
+        honorData.put("honor", 137500.0);
+        honorData.put("formattedHonor", "Rp 137,500.00");
+
+        when(logService.calculateHonorData(mahasiswaId, lowonganId, tahun, bulan)).thenReturn(honorData);
 
         mockMvc.perform(get("/api/log/student/honor")
                         .param("lowonganId", lowonganId.toString())
                         .param("tahun", String.valueOf(tahun))
                         .param("bulan", String.valueOf(bulan)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.honor").value(honor))
-                .andExpect(jsonPath("$.formattedHonor").exists());
+                .andExpect(jsonPath("$.honor").value(137500.0))
+                .andExpect(jsonPath("$.formattedHonor").value("Rp 137,500.00"));
 
-        verify(logService).calculateHonor(mahasiswaId, lowonganId, tahun, bulan);
+        verify(logService).calculateHonorData(mahasiswaId, lowonganId, tahun, bulan);
     }
 
     // API Dosen
@@ -241,7 +251,8 @@ public class LogControllerTest {
         mockMvc.perform(patch("/api/log/lecturer/{logId}/status", logId)
                         .param("status", "DITERIMA"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("DITERIMA"));
+                .andExpect(jsonPath("$.message").value("Log berhasil diterima"))
+                .andExpect(jsonPath("$.log.status").value("DITERIMA"));
 
         verify(logService).verifyLog(eq(logId), eq(StatusLog.DITERIMA), eq(dosenId));
     }
