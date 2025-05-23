@@ -26,6 +26,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -74,8 +75,9 @@ public class AccountControllerTest {
 
         GetAllUserDTO responseDto = new GetAllUserDTO("accept", "test", 1, 1, 1, 1, List.of(user1, user2));
 
+        // Mock the CompletableFuture-returning service method
         when(accountService.getAllUser())
-                .thenReturn(new ResponseEntity<>(responseDto, HttpStatus.OK));
+                .thenReturn(CompletableFuture.completedFuture(new ResponseEntity<>(responseDto, HttpStatus.OK)));
 
         mockMvc.perform(MockMvcRequestBuilders.get(DELETE_ENDPOINT))
                 .andExpect(status().isOk())
@@ -85,7 +87,6 @@ public class AccountControllerTest {
                 .andExpect(jsonPath("$.users[0].username").value("admin1"))
                 .andExpect(jsonPath("$.users[1].username").value("student1"));
     }
-
 
     @Test
     @WithMockUser(roles = "ADMIN")
