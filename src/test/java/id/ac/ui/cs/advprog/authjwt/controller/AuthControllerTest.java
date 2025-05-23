@@ -34,7 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static id.ac.ui.cs.advprog.authjwt.controller.AuthController.*;
 
 @WebMvcTest(AuthController.class)
-@Import({SecurityConfig.class, id.ac.ui.cs.advprog.authjwt.testconfig.TestSecurityBeansConfig.class})
+@Import({SecurityConfig.class, TestSecurityBeansConfig.class})
 @TestPropertySource(properties = {
         "jwt.secret=fakeTestSecretKeyThatIsLongEnoughForHmacSha",
         "jwt.expiration=3600000"

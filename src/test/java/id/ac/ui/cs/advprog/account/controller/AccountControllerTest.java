@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import id.ac.ui.cs.advprog.account.dto.get.GetAllUserDTO;
 import id.ac.ui.cs.advprog.account.dto.update.*;
 import id.ac.ui.cs.advprog.authjwt.model.User;
-import id.ac.ui.cs.advprog.authjwt.testconfig.TestSecurityBeansConfig;
+import id.ac.ui.cs.advprog.authjwt.controller.TestSecurityBeansConfig;
 import id.ac.ui.cs.advprog.account.dto.delete.DeleteRequestDTO;
 import id.ac.ui.cs.advprog.account.dto.delete.DeleteResponseDTO;
 import id.ac.ui.cs.advprog.account.service.AccountService;

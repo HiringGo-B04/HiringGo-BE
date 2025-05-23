@@ -1,6 +1,5 @@
 package id.ac.ui.cs.advprog.authjwt.config;
 
-import id.ac.ui.cs.advprog.authjwt.config.JwtUtil;
 import id.ac.ui.cs.advprog.authjwt.model.Token;
 import id.ac.ui.cs.advprog.authjwt.repository.TokenRepository;
 import org.junit.jupiter.api.BeforeEach;

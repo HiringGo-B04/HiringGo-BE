@@ -1,7 +1,6 @@
 package id.ac.ui.cs.advprog.account.dto.update;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import id.ac.ui.cs.advprog.account.dto.update.*;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -15,12 +14,10 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class UserUpdateDTOTest {
 
-    private ObjectMapper objectMapper;
     private Validator validator;
 
     @BeforeEach
     void setUp() {
-        objectMapper = new ObjectMapper();
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         validator = factory.getValidator();
     }

@@ -7,7 +7,7 @@ import java.util.concurrent.Executor;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class AsyncConfigTest {
+class AsynConfigTest {
 
     @Test
     void testTaskExecutorBeanConfiguration() {

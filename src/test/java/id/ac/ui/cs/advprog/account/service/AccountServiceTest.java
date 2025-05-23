@@ -4,13 +4,10 @@ import id.ac.ui.cs.advprog.account.dto.delete.DeleteRequestDTO;
 import id.ac.ui.cs.advprog.account.dto.delete.DeleteResponseDTO;
 import id.ac.ui.cs.advprog.account.dto.get.GetAllUserDTO;
 import id.ac.ui.cs.advprog.account.dto.update.*;
-import id.ac.ui.cs.advprog.account.service.AccountService;
 import id.ac.ui.cs.advprog.authjwt.model.User;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
 
-import id.ac.ui.cs.advprog.course.model.MataKuliah;
 import id.ac.ui.cs.advprog.course.repository.MataKuliahRepository;
-import id.ac.ui.cs.advprog.manajemenlowongan.model.Lowongan;
 import id.ac.ui.cs.advprog.manajemenlowongan.repository.LowonganRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,8 +15,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
-import java.util.Collections;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.*;
