@@ -147,9 +147,7 @@ public class AccountServiceTest {
     void testUpdateUserRoleToAdmin_Success() {
         // Given
         String username = "adminuser";
-        UserIntoAdminDTO dto = new UserIntoAdminDTO();
-        dto.username = username;
-        dto.role = "ADMIN";
+        UserIntoAdminDTO dto = new UserIntoAdminDTO("ADMIN", username);
 
         User user = new User();
         user.setUsername(username);
@@ -175,11 +173,7 @@ public class AccountServiceTest {
     void testUpdateUserRoleToLecturer_Success() {
         // Given
         String username = "adminuser";
-        UserIntoLecturerDTO dto = new UserIntoLecturerDTO();
-        dto.username = username;
-        dto.role = "LECTURER";
-        dto.nip = "123412341234";
-        dto.fullName = "adminuser";
+        UserIntoLecturerDTO dto = new UserIntoLecturerDTO("adminuser", "123412341234", username, "LECTURER");
 
         User user = new User();
         user.setUsername(username);
@@ -202,7 +196,7 @@ public class AccountServiceTest {
     void testUpdateUserRoleToStudent_Success() {
         // Given
         String username = "adminuser";
-        UserIntoStudentDTO dto = new UserIntoStudentDTO();
+        UserIntoStudentDTO dto = new UserIntoStudentDTO(username, "123412341234", username, "STUDENT");
         dto.username = username;
         dto.role = "STUDENT";
         dto.nim = "123412341234";
@@ -228,7 +222,7 @@ public class AccountServiceTest {
     @Test
     void testUpdateUser_UserNotFound() {
         // Given
-        UserUpdateDTO dto = new UserIntoAdminDTO();
+        UserUpdateDTO dto = new UserIntoAdminDTO("ADMIN", "ghost");
         dto.username = "ghost";
         dto.role = "ADMIN";
 
@@ -250,7 +244,7 @@ public class AccountServiceTest {
     @Test
     void testUpdateUser_UnsupportedRole_ShouldReturnError() {
         // Given
-        UserUpdateDTO dto = new UserIntoAdminDTO();
+        UserUpdateDTO dto = new UserIntoAdminDTO("MODERATOR", "admin");
         dto.username = "admin";
         dto.role = "MODERATOR"; // unsupported
 
@@ -276,7 +270,7 @@ public class AccountServiceTest {
     @Test
     void testUpdateUser_ExceptionThrown_ShouldReturnErrorResponse() {
         // Given
-        UserUpdateDTO dto = new UserIntoAdminDTO();
+        UserUpdateDTO dto = new UserIntoAdminDTO("ADMIN", "erroruser");
         dto.username = "erroruser";
         dto.role = "ADMIN";
 

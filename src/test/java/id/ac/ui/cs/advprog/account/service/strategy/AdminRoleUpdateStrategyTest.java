@@ -27,9 +27,7 @@ public class AdminRoleUpdateStrategyTest {
     @Test
     void testUpdateRole_Success() {
         // Given
-        UserIntoAdminDTO dto = new UserIntoAdminDTO();
-        dto.username = "student1";
-        dto.role = "ADMIN";
+        UserIntoAdminDTO dto = new UserIntoAdminDTO("ADMIN", "student1");
 
         User user = new User();
         user.setUsername("student1");
@@ -59,9 +57,7 @@ public class AdminRoleUpdateStrategyTest {
     @Test
     void testUpdateRole_SaveFails() {
         // Given
-        UserIntoAdminDTO dto = new UserIntoAdminDTO();
-        dto.username = "student1";
-        dto.role = "ADMIN";
+        UserIntoAdminDTO dto = new UserIntoAdminDTO("ADMIN", "student1");
 
         User user = new User();
         user.setUsername("student1");

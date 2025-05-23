@@ -91,7 +91,7 @@ public class AccountControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void updateUserToLecturer_shouldReturn200() throws Exception {
-        UserIntoLecturerDTO request = new UserIntoLecturerDTO();
+        UserIntoLecturerDTO request = new UserIntoLecturerDTO("", "", "", "");
         request.username = "lecturer_user";
         request.role = "LECTURER";
         request.fullName = "Dr. Smith";
@@ -113,7 +113,7 @@ public class AccountControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void updateUserToStudent_shouldReturn200() throws Exception {
-        UserIntoStudentDTO request = new UserIntoStudentDTO();
+        UserIntoStudentDTO request = new UserIntoStudentDTO("", "", "", "");
         request.username = "student_user";
         request.role = "STUDENT";
         request.fullName = "Jane Student";
@@ -135,7 +135,7 @@ public class AccountControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void updateUser_shouldReturn200() throws Exception {
-        UserUpdateDTO request = new UserIntoAdminDTO();
+        UserUpdateDTO request = new UserIntoAdminDTO("", "");
         request.username = "johndoe";
         request.role = "ADMIN";
 
@@ -155,7 +155,7 @@ public class AccountControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void updateUser_userNotFound_shouldReturn400() throws Exception {
-        UserUpdateDTO request = new UserIntoAdminDTO();
+        UserUpdateDTO request = new UserIntoAdminDTO("", "");
         request.username = "unknownuser";
         request.role = "ADMIN";
 
