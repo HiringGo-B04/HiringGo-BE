@@ -1,7 +1,5 @@
 package id.ac.ui.cs.advprog.mendaftarlowongan.service;
 
-import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
-import id.ac.ui.cs.advprog.manajemenlowongan.repository.LowonganRepository;
 import id.ac.ui.cs.advprog.mendaftarlowongan.dto.LamaranDTO;
 import id.ac.ui.cs.advprog.mendaftarlowongan.enums.StatusLamaran;
 import id.ac.ui.cs.advprog.mendaftarlowongan.model.Lamaran;
