@@ -31,7 +31,7 @@ public class LamaranServiceImpl implements LamaranService {
     public LamaranServiceImpl() {}
 
     // Constructor for testing purposes
-    public LamaranServiceImpl(LamaranRepository lamaranRepository, LowonganRepository lowonganRepository, UserRepository userRepository) {
+    public LamaranServiceImpl(LamaranRepository lamaranRepository) {
         this.lamaranRepository = lamaranRepository;
     }
 

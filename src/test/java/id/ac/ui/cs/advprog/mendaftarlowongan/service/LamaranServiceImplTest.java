@@ -50,7 +50,7 @@ public class LamaranServiceImplTest {
         taskExecutor.initialize();
 
         // Create service instance and inject dependencies
-        lamaranService = new LamaranServiceImpl(lamaranRepository, lowonganRepository, userRepository);
+        lamaranService = new LamaranServiceImpl(lamaranRepository);
 
         // Use reflection to set the executor field since it's private
         try {
