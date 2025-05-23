@@ -6,7 +6,9 @@ import id.ac.ui.cs.advprog.mendaftarlowongan.dto.LamaranDTO;
 import id.ac.ui.cs.advprog.mendaftarlowongan.enums.StatusLamaran;
 import id.ac.ui.cs.advprog.mendaftarlowongan.model.Lamaran;
 import id.ac.ui.cs.advprog.mendaftarlowongan.repository.LamaranRepository;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +16,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,7 +30,9 @@ public class LamaranServiceImpl implements LamaranService {
     @Autowired
     private UserRepository userClient;
 
-    private final Executor executor = Executors.newFixedThreadPool(10);
+    @Autowired
+    @Qualifier("taskExecutor")
+    private Executor executor;
 
     // Default constructor for Spring
     public LamaranServiceImpl() {}
@@ -41,8 +44,9 @@ public class LamaranServiceImpl implements LamaranService {
         this.userClient = userRepository;
     }
 
+
     @Override
-    @Async
+    @Async("taskExecutor")
     public CompletableFuture<List<Lamaran>> getLamaran() {
         return CompletableFuture.supplyAsync(() -> {
             return lamaranRepository.findAll();
@@ -50,7 +54,7 @@ public class LamaranServiceImpl implements LamaranService {
     }
 
     @Override
-    @Async
+    @Async("taskExecutor")
     public CompletableFuture<Lamaran> getLamaranById(UUID id) {
         return CompletableFuture.supplyAsync(() -> {
             return lamaranRepository.findById(id).orElse(null);
@@ -58,7 +62,7 @@ public class LamaranServiceImpl implements LamaranService {
     }
 
     @Override
-    @Async
+    @Async("taskExecutor")
     public CompletableFuture<Lamaran> createLamaran(LamaranDTO lamaranDTO, UUID userIdFromToken) {
         return CompletableFuture.supplyAsync(() -> {
             // Cek apakah idMahasiswa dari body sama dengan userId dari token
@@ -79,7 +83,7 @@ public class LamaranServiceImpl implements LamaranService {
     }
 
     @Override
-    @Async
+    @Async("taskExecutor")
     public CompletableFuture<Lamaran> updateLamaran(UUID id, Lamaran lamaran) {
         return getLamaranById(id)
                 .thenCompose(existing -> {
@@ -99,7 +103,7 @@ public class LamaranServiceImpl implements LamaranService {
     }
 
     @Override
-    @Async
+    @Async("taskExecutor")
     public CompletableFuture<Void> deleteLamaran(UUID id) {
         return CompletableFuture.runAsync(() -> {
             lamaranRepository.deleteById(id);
@@ -107,7 +111,7 @@ public class LamaranServiceImpl implements LamaranService {
     }
 
     @Override
-    @Async
+    @Async("taskExecutor")
     public CompletableFuture<Boolean> isLamaranExists(Lamaran lamaran) {
         return CompletableFuture.supplyAsync(() -> {
             return lamaranRepository.findAll().stream()
@@ -117,7 +121,7 @@ public class LamaranServiceImpl implements LamaranService {
     }
 
     @Override
-    @Async
+    @Async("taskExecutor")
     public CompletableFuture<Void> validateLamaran(Lamaran lamaran) {
         return CompletableFuture.supplyAsync(() -> {
                     boolean ipkValid = lamaran.getIpk() >= 0 && lamaran.getIpk() <= 4;
@@ -140,7 +144,7 @@ public class LamaranServiceImpl implements LamaranService {
     }
 
     @Override
-    @Async
+    @Async("taskExecutor")
     public CompletableFuture<List<Lamaran>> getLamaranByLowonganId(UUID idLowongan) {
         return CompletableFuture.supplyAsync(() -> {
             return lamaranRepository.findAll().stream()
@@ -150,7 +154,7 @@ public class LamaranServiceImpl implements LamaranService {
     }
 
     @Override
-    @Async
+    @Async("taskExecutor")
     public CompletableFuture<Void> acceptLamaran(UUID id) {
         return getLamaranById(id)
                 .thenCompose(lamaran -> {
@@ -166,7 +170,7 @@ public class LamaranServiceImpl implements LamaranService {
     }
 
     @Override
-    @Async
+    @Async("taskExecutor")
     public CompletableFuture<Void> rejectLamaran(UUID id) {
         return getLamaranById(id)
                 .thenCompose(lamaran -> {

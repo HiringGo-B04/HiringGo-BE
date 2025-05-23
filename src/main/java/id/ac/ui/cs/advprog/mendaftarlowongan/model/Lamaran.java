@@ -6,6 +6,8 @@ import id.ac.ui.cs.advprog.mendaftarlowongan.enums.StatusLamaran;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.UuidGenerator;
 
 import java.util.UUID;
 
@@ -15,13 +17,14 @@ import java.util.UUID;
 public class Lamaran {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
     private UUID id;
 
     private int sks;
     private float ipk;
 
-    @Enumerated(EnumType.ORDINAL)
+    @Enumerated(EnumType.STRING)
     private StatusLamaran status = StatusLamaran.MENUNGGU;
 
     @Column(name = "id_mahasiswa", nullable = false)
