@@ -21,7 +21,7 @@ public class Lamaran {
     private int sks;
     private float ipk;
 
-    @Enumerated(EnumType.ORDINAL)
+    @Enumerated(EnumType.STRING)
     private StatusLamaran status = StatusLamaran.MENUNGGU;
 
     @Column(name = "id_mahasiswa", nullable = false)
@@ -80,8 +80,7 @@ public class Lamaran {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Lamaran)) return false;
-        Lamaran lamaran = (Lamaran) o;
+        if (!(o instanceof Lamaran lamaran)) return false;
         return id != null && id.equals(lamaran.id);
     }
 
