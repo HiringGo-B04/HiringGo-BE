@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -140,7 +141,7 @@ class LamaranControllerTest {
     @Test
     @WithMockUser(roles = "USER")
     void testGetLamaranByLowonganId() throws Exception {
-        List<Lamaran> lamaranList = Arrays.asList(dummyLamaran);
+        List<Lamaran> lamaranList = Collections.singletonList(dummyLamaran);
         when(lamaranService.getLamaranByLowonganId(dummyLowonganId))
                 .thenReturn(CompletableFuture.completedFuture(lamaranList));
 
@@ -155,7 +156,7 @@ class LamaranControllerTest {
     @Test
     @WithMockUser(roles = "USER")
     void testGetAllLamaran() throws Exception {
-        List<Lamaran> lamaranList = Arrays.asList(dummyLamaran);
+        List<Lamaran> lamaranList = Collections.singletonList(dummyLamaran);
         when(lamaranService.getLamaran())
                 .thenReturn(CompletableFuture.completedFuture(lamaranList));
 

@@ -7,7 +7,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.UuidGenerator;
 
 import java.util.UUID;
 
@@ -83,8 +82,7 @@ public class Lamaran {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Lamaran)) return false;
-        Lamaran lamaran = (Lamaran) o;
+        if (!(o instanceof Lamaran lamaran)) return false;
         return id != null && id.equals(lamaran.id);
     }
 

@@ -16,7 +16,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -171,7 +170,7 @@ public class LamaranServiceImplTest {
         List<Lamaran> result = completableResult.get();
 
         assertEquals(1, result.size());
-        assertEquals(dummyLamaran, result.get(0));
+        assertEquals(dummyLamaran, result.getFirst());
         verify(lamaranRepository).findAll();
     }
 
@@ -267,7 +266,7 @@ public class LamaranServiceImplTest {
     }
 
     @Test
-    void testValidateLamaranValid() throws ExecutionException, InterruptedException {
+    void testValidateLamaranValid() {
         when(lamaranRepository.findAll()).thenReturn(Collections.emptyList());
 
         CompletableFuture<Void> completableResult = lamaranService.validateLamaran(dummyLamaran);
@@ -286,7 +285,7 @@ public class LamaranServiceImplTest {
         List<Lamaran> result = completableResult.get();
 
         assertEquals(1, result.size());
-        assertEquals(idLowongan, result.get(0).getIdLowongan());
+        assertEquals(idLowongan, result.getFirst().getIdLowongan());
         verify(lamaranRepository).findAll();
     }
 
@@ -315,7 +314,7 @@ public class LamaranServiceImplTest {
     }
 
     @Test
-    void testAcceptLamaranNotFound() throws ExecutionException, InterruptedException {
+    void testAcceptLamaranNotFound() {
         UUID randomId = UUID.randomUUID();
         when(lamaranRepository.findById(randomId)).thenReturn(Optional.empty());
 
@@ -339,7 +338,7 @@ public class LamaranServiceImplTest {
     }
 
     @Test
-    void testRejectLamaranNotFound() throws ExecutionException, InterruptedException {
+    void testRejectLamaranNotFound() {
         UUID randomId = UUID.randomUUID();
         when(lamaranRepository.findById(randomId)).thenReturn(Optional.empty());
 

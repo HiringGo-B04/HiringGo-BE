@@ -34,8 +34,6 @@ public class LamaranController {
 
             Lamaran lamaran = lamaranService.createLamaran(lamaranDTO, userId).join();
             return ResponseEntity.ok(lamaran);
-        } catch (CompletionException e) {
-            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
@@ -46,8 +44,6 @@ public class LamaranController {
         try {
             List<Lamaran> lamaranList = lamaranService.getLamaranByLowonganId(id).join();
             return ResponseEntity.ok(lamaranList);
-        } catch (CompletionException e) {
-            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
@@ -58,8 +54,6 @@ public class LamaranController {
         try {
             lamaranService.acceptLamaran(id).join();
             return ResponseEntity.ok("Lamaran accepted successfully");
-        } catch (CompletionException e) {
-            return ResponseEntity.badRequest().body("Failed to accept lamaran");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Failed to accept lamaran");
         }
@@ -70,8 +64,6 @@ public class LamaranController {
         try {
             lamaranService.rejectLamaran(id).join();
             return ResponseEntity.ok("Lamaran rejected successfully");
-        } catch (CompletionException e) {
-            return ResponseEntity.badRequest().body("Failed to reject lamaran");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Failed to reject lamaran");
         }
@@ -82,8 +74,6 @@ public class LamaranController {
         try {
             List<Lamaran> lamaranList = lamaranService.getLamaran().join();
             return ResponseEntity.ok(lamaranList);
-        } catch (CompletionException e) {
-            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
@@ -98,8 +88,6 @@ public class LamaranController {
             } else {
                 return ResponseEntity.notFound().build();
             }
-        } catch (CompletionException e) {
-            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
@@ -117,8 +105,6 @@ public class LamaranController {
             } else {
                 return ResponseEntity.notFound().build();
             }
-        } catch (CompletionException e) {
-            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
@@ -129,8 +115,6 @@ public class LamaranController {
         try {
             lamaranService.deleteLamaran(id).join();
             return ResponseEntity.ok("Lamaran deleted successfully");
-        } catch (CompletionException e) {
-            return ResponseEntity.badRequest().body("Failed to delete lamaran");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Failed to delete lamaran");
         }
