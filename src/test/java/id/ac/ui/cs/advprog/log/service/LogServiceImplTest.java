@@ -7,6 +7,7 @@ import id.ac.ui.cs.advprog.log.enums.KategoriLog;
 import id.ac.ui.cs.advprog.log.enums.StatusLog;
 import id.ac.ui.cs.advprog.log.exception.BadRequestException;
 import id.ac.ui.cs.advprog.log.exception.ResourceNotFoundException;
+import id.ac.ui.cs.advprog.log.exception.ForbiddenException;
 import id.ac.ui.cs.advprog.log.model.Log;
 import id.ac.ui.cs.advprog.log.model.LogBuilder;
 import id.ac.ui.cs.advprog.log.repository.LogRepository;
@@ -15,6 +16,8 @@ import id.ac.ui.cs.advprog.manajemenlowongan.repository.LowonganRepository;
 import id.ac.ui.cs.advprog.mendaftarlowongan.enums.StatusLamaran;
 import id.ac.ui.cs.advprog.mendaftarlowongan.model.Lamaran;
 import id.ac.ui.cs.advprog.mendaftarlowongan.repository.LamaranRepository;
+import id.ac.ui.cs.advprog.course.model.MataKuliah;
+import id.ac.ui.cs.advprog.course.repository.MataKuliahRepository;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,6 +48,9 @@ public class LogServiceImplTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private MataKuliahRepository mataKuliahRepository;
+
     @InjectMocks
     private LogServiceImpl logService;
 
@@ -56,6 +62,7 @@ public class LogServiceImplTest {
     private User dosen;
     private Lowongan lowongan;
     private Lamaran lamaran;
+    private MataKuliah mataKuliah;
 
     @BeforeEach
     void setUp() {
@@ -84,6 +91,9 @@ public class LogServiceImplTest {
         lamaran.setIdMahasiswa(idMahasiswa);
         lamaran.setIdLowongan(idLowongan);
         lamaran.setStatus(StatusLamaran.DITERIMA);
+
+        mataKuliah = new MataKuliah("CSGE601021", "Pemrograman", "Mata kuliah pemrograman", 3);
+        mataKuliah.addDosenPengampu(dosen);
 
         sampleLog = buildLog();
     }
@@ -131,17 +141,20 @@ public class LogServiceImplTest {
 
     @Test
     void testUpdateLog_Success() {
-        when(logRepository.findById(sampleLog.getId())).thenReturn(Optional.of(sampleLog));
-        when(logRepository.save(any(Log.class))).thenReturn(sampleLog);
+        Log existingLog = buildLog();
+        existingLog.setJudul("Original Judul");
 
-        Log updated = buildLog();
-        updated.setJudul("Update Judul");
+        when(logRepository.findById(existingLog.getId())).thenReturn(Optional.of(existingLog));
+        when(logRepository.save(existingLog)).thenReturn(existingLog);
 
-        Log result = logService.update(sampleLog.getId(), updated);
+        Log updatedLog = buildLog();
+        updatedLog.setJudul("Updated Judul");
 
-        assertEquals("Update Judul", sampleLog.getJudul());
-        verify(logRepository).findById(sampleLog.getId());
-        verify(logRepository).save(sampleLog);
+        Log result = logService.update(existingLog.getId(), updatedLog);
+
+        assertNotNull(result);
+        verify(logRepository).findById(existingLog.getId());
+        verify(logRepository).save(existingLog);
     }
 
     @Test
@@ -157,8 +170,13 @@ public class LogServiceImplTest {
 
     @Test
     void testFindByMahasiswaAndLowongan() {
+        // Mock all required validations
         when(userRepository.findById(idMahasiswa)).thenReturn(Optional.of(mahasiswa));
-        when(lowonganRepository.findById(idLowongan)).thenReturn(Optional.ofNullable(lowongan));
+        when(lowonganRepository.findById(idLowongan)).thenReturn(Optional.of(lowongan));
+
+        // Mock the accepted lamaran check
+        when(lamaranRepository.findAll()).thenReturn(Collections.singletonList(lamaran));
+
         when(logRepository.findByIdMahasiswaAndIdLowongan(idMahasiswa, idLowongan))
                 .thenReturn(Collections.singletonList(sampleLog));
 
@@ -167,7 +185,30 @@ public class LogServiceImplTest {
         assertEquals(1, result.size());
         verify(userRepository).findById(idMahasiswa);
         verify(lowonganRepository).findById(idLowongan);
+        verify(lamaranRepository).findAll();
         verify(logRepository).findByIdMahasiswaAndIdLowongan(idMahasiswa, idLowongan);
+    }
+
+    @Test
+    void testFindByIdForMahasiswa_Success() {
+        when(logRepository.findById(sampleLog.getId())).thenReturn(Optional.of(sampleLog));
+        sampleLog.setIdMahasiswa(idMahasiswa);
+
+        Log result = logService.findByIdForMahasiswa(sampleLog.getId(), idMahasiswa);
+
+        assertNotNull(result);
+        assertEquals(sampleLog.getId(), result.getId());
+        verify(logRepository).findById(sampleLog.getId());
+    }
+
+    @Test
+    void testFindByIdForMahasiswa_Forbidden() {
+        UUID differentMahasiswaId = UUID.randomUUID();
+        when(logRepository.findById(sampleLog.getId())).thenReturn(Optional.of(sampleLog));
+        sampleLog.setIdMahasiswa(idMahasiswa);
+
+        assertThrows(ForbiddenException.class, () ->
+                logService.findByIdForMahasiswa(sampleLog.getId(), differentMahasiswaId));
     }
 
     @Test
@@ -181,20 +222,159 @@ public class LogServiceImplTest {
         logDTO.setWaktuSelesai(LocalTime.of(11, 0));
         logDTO.setIdLowongan(idLowongan);
 
+        // Mock the optimized calls - each should be called only once
         when(userRepository.findById(idMahasiswa)).thenReturn(Optional.of(mahasiswa));
-        when(userRepository.findById(idDosen)).thenReturn(Optional.of(dosen));
-        when(lowonganRepository.findById(idLowongan)).thenReturn(Optional.ofNullable(lowongan));
+        when(lowonganRepository.findById(idLowongan)).thenReturn(Optional.of(lowongan)); // Called once
         when(lamaranRepository.findAll()).thenReturn(Collections.singletonList(lamaran));
+        when(mataKuliahRepository.findAll()).thenReturn(Collections.singletonList(mataKuliah)); // Called once
+        when(userRepository.findById(idDosen)).thenReturn(Optional.of(dosen)); // For dosen validation
         when(logRepository.save(any(Log.class))).thenReturn(sampleLog);
 
-        Log result = logService.createLogForMahasiswa(logDTO, idMahasiswa, idDosen);
+        Log result = logService.createLogForMahasiswa(logDTO, idMahasiswa);
 
+        // Verify the result
         assertNotNull(result);
+        assertEquals("Asistensi", result.getJudul());
+        assertEquals("Membantu kelas", result.getKeterangan());
+        assertEquals(KategoriLog.ASISTENSI, result.getKategori());
+        assertEquals(StatusLog.MENUNGGU, result.getStatus());
+        assertEquals(idMahasiswa, result.getIdMahasiswa());
+        assertEquals(idDosen, result.getIdDosen());
+        assertEquals(idLowongan, result.getIdLowongan());
+
+        // Verify optimized calls - each should be called exactly once
+        verify(userRepository, times(1)).findById(idMahasiswa);
+        verify(lowonganRepository, times(1)).findById(idLowongan); // OPTIMIZED: Only 1 call
+        verify(lamaranRepository, times(1)).findAll();
+        verify(mataKuliahRepository, times(1)).findAll(); // OPTIMIZED: Only 1 call
+        verify(userRepository, times(1)).findById(idDosen);
+        verify(logRepository, times(1)).save(any(Log.class));
+    }
+
+    @Test
+    void testCreateLogForMahasiswa_MahasiswaNotFound() {
+        LogDTO logDTO = new LogDTO();
+        logDTO.setIdLowongan(idLowongan);
+
+        when(userRepository.findById(idMahasiswa)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () ->
+                logService.createLogForMahasiswa(logDTO, idMahasiswa));
+
         verify(userRepository).findById(idMahasiswa);
-        verify(userRepository).findById(idDosen);
+        verify(lowonganRepository, never()).findById(any()); // Should not reach lowongan validation
+    }
+
+    @Test
+    void testCreateLogForMahasiswa_LowonganNotFound() {
+        LogDTO logDTO = new LogDTO();
+        logDTO.setIdLowongan(idLowongan);
+
+        when(userRepository.findById(idMahasiswa)).thenReturn(Optional.of(mahasiswa));
+        when(lowonganRepository.findById(idLowongan)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () ->
+                logService.createLogForMahasiswa(logDTO, idMahasiswa));
+
+        verify(userRepository).findById(idMahasiswa);
+        verify(lowonganRepository).findById(idLowongan);
+        verify(lamaranRepository, never()).findAll(); // Should not reach lamaran validation
+    }
+
+    @Test
+    void testCreateLogForMahasiswa_MahasiswaNotAccepted() {
+        LogDTO logDTO = new LogDTO();
+        logDTO.setIdLowongan(idLowongan);
+
+        when(userRepository.findById(idMahasiswa)).thenReturn(Optional.of(mahasiswa));
+        when(lowonganRepository.findById(idLowongan)).thenReturn(Optional.of(lowongan));
+        when(lamaranRepository.findAll()).thenReturn(Collections.emptyList()); // No accepted lamaran
+
+        assertThrows(BadRequestException.class, () ->
+                logService.createLogForMahasiswa(logDTO, idMahasiswa));
+
+        verify(userRepository).findById(idMahasiswa);
         verify(lowonganRepository).findById(idLowongan);
         verify(lamaranRepository).findAll();
-        verify(logRepository).save(any(Log.class));
+        verify(mataKuliahRepository, never()).findAll(); // Should not reach mata kuliah lookup
+    }
+
+    @Test
+    void testCreateLogForMahasiswa_FutureDate() {
+        LogDTO logDTO = new LogDTO();
+        logDTO.setJudul("Asistensi");
+        logDTO.setKeterangan("Membantu kelas");
+        logDTO.setKategori("ASISTENSI");
+        logDTO.setTanggalLog(LocalDate.now().plusDays(1)); // Future date
+        logDTO.setWaktuMulai(LocalTime.of(9, 0));
+        logDTO.setWaktuSelesai(LocalTime.of(11, 0));
+        logDTO.setIdLowongan(idLowongan);
+
+        when(userRepository.findById(idMahasiswa)).thenReturn(Optional.of(mahasiswa));
+        when(lowonganRepository.findById(idLowongan)).thenReturn(Optional.of(lowongan));
+        when(lamaranRepository.findAll()).thenReturn(Collections.singletonList(lamaran));
+
+        assertThrows(BadRequestException.class, () ->
+                logService.createLogForMahasiswa(logDTO, idMahasiswa));
+
+        verify(userRepository).findById(idMahasiswa);
+        verify(lowonganRepository).findById(idLowongan);
+        verify(lamaranRepository).findAll();
+        verify(mataKuliahRepository, never()).findAll(); // Should not reach mata kuliah lookup
+    }
+
+    @Test
+    void testCreateLogForMahasiswa_MataKuliahNotFound() {
+        LogDTO logDTO = new LogDTO();
+        logDTO.setJudul("Asistensi");
+        logDTO.setKeterangan("Membantu kelas");
+        logDTO.setKategori("ASISTENSI");
+        logDTO.setTanggalLog(LocalDate.now());
+        logDTO.setWaktuMulai(LocalTime.of(9, 0));
+        logDTO.setWaktuSelesai(LocalTime.of(11, 0));
+        logDTO.setIdLowongan(idLowongan);
+
+        when(userRepository.findById(idMahasiswa)).thenReturn(Optional.of(mahasiswa));
+        when(lowonganRepository.findById(idLowongan)).thenReturn(Optional.of(lowongan));
+        when(lamaranRepository.findAll()).thenReturn(Collections.singletonList(lamaran));
+        when(mataKuliahRepository.findAll()).thenReturn(Collections.emptyList()); // No mata kuliah found
+
+        assertThrows(ResourceNotFoundException.class, () ->
+                logService.createLogForMahasiswa(logDTO, idMahasiswa));
+
+        verify(userRepository).findById(idMahasiswa);
+        verify(lowonganRepository).findById(idLowongan);
+        verify(lamaranRepository).findAll();
+        verify(mataKuliahRepository).findAll();
+        verify(userRepository, never()).findById(idDosen); // Should not reach dosen validation
+    }
+
+    @Test
+    void testCreateLogForMahasiswa_DosenNotFound() {
+        LogDTO logDTO = new LogDTO();
+        logDTO.setJudul("Asistensi");
+        logDTO.setKeterangan("Membantu kelas");
+        logDTO.setKategori("ASISTENSI");
+        logDTO.setTanggalLog(LocalDate.now());
+        logDTO.setWaktuMulai(LocalTime.of(9, 0));
+        logDTO.setWaktuSelesai(LocalTime.of(11, 0));
+        logDTO.setIdLowongan(idLowongan);
+
+        when(userRepository.findById(idMahasiswa)).thenReturn(Optional.of(mahasiswa));
+        when(lowonganRepository.findById(idLowongan)).thenReturn(Optional.of(lowongan));
+        when(lamaranRepository.findAll()).thenReturn(Collections.singletonList(lamaran));
+        when(mataKuliahRepository.findAll()).thenReturn(Collections.singletonList(mataKuliah));
+        when(userRepository.findById(idDosen)).thenReturn(Optional.empty()); // Dosen not found
+
+        assertThrows(ResourceNotFoundException.class, () ->
+                logService.createLogForMahasiswa(logDTO, idMahasiswa));
+
+        verify(userRepository).findById(idMahasiswa);
+        verify(lowonganRepository).findById(idLowongan);
+        verify(lamaranRepository).findAll();
+        verify(mataKuliahRepository).findAll();
+        verify(userRepository).findById(idDosen);
+        verify(logRepository, never()).save(any()); // Should not save
     }
 
     @Test
@@ -228,7 +408,7 @@ public class LogServiceImplTest {
 
         when(logRepository.findById(sampleLog.getId())).thenReturn(Optional.of(sampleLog));
 
-        assertThrows(BadRequestException.class, () ->
+        assertThrows(ForbiddenException.class, () ->
                 logService.updateLogForMahasiswa(sampleLog.getId(), logDTO, differentMahasiswaId)
         );
     }
@@ -249,15 +429,31 @@ public class LogServiceImplTest {
 
     @Test
     void testVerifyLog_Success() {
-        sampleLog.setIdDosen(idDosen);
+        sampleLog.setIdLowongan(idLowongan);
+        sampleLog.setStatus(StatusLog.MENUNGGU);
 
+        // Mock the findById call
         when(logRepository.findById(sampleLog.getId())).thenReturn(Optional.of(sampleLog));
+
+        // Mock the ownership validation - dosen validation
+        when(userRepository.findById(idDosen)).thenReturn(Optional.of(dosen));
+
+        // Mock the lowongan validation
+        when(lowonganRepository.findById(idLowongan)).thenReturn(Optional.of(lowongan));
+
+        // Mock the mata kuliah lookup for ownership check
+        when(mataKuliahRepository.findAll()).thenReturn(Collections.singletonList(mataKuliah));
+
+        // Mock the save operation
         when(logRepository.save(sampleLog)).thenReturn(sampleLog);
 
         Log result = logService.verifyLog(sampleLog.getId(), StatusLog.DITERIMA, idDosen);
 
         assertEquals(StatusLog.DITERIMA, result.getStatus());
         verify(logRepository).findById(sampleLog.getId());
+        verify(userRepository).findById(idDosen);
+        verify(lowonganRepository, times(2)).findById(idLowongan);
+        verify(mataKuliahRepository).findAll();
         verify(logRepository).save(sampleLog);
     }
 
@@ -268,7 +464,7 @@ public class LogServiceImplTest {
 
         when(logRepository.findById(sampleLog.getId())).thenReturn(Optional.of(sampleLog));
 
-        assertThrows(BadRequestException.class, () ->
+        assertThrows(ForbiddenException.class, () ->
                 logService.verifyLog(sampleLog.getId(), StatusLog.DITERIMA, differentDosenId)
         );
     }
@@ -311,6 +507,39 @@ public class LogServiceImplTest {
 
         assertFalse(result);
         verify(userRepository).findById(idDosen);
+    }
+
+    @Test
+    void testCalculateHonor() {
+        List<Log> acceptedLogs = Arrays.asList(sampleLog);
+        when(userRepository.findById(idMahasiswa)).thenReturn(Optional.of(mahasiswa));
+        when(lowonganRepository.findById(idLowongan)).thenReturn(Optional.of(lowongan));
+        when(logRepository.findAcceptedLogsByMahasiswaAndLowonganAndMonth(
+                idMahasiswa, idLowongan, StatusLog.DITERIMA, 2025, 5)).thenReturn(acceptedLogs);
+
+        double result = logService.calculateHonor(idMahasiswa, idLowongan, 2025, 5);
+
+        assertEquals(55000.0, result); // 2 hours * 27500
+        verify(logRepository).findAcceptedLogsByMahasiswaAndLowonganAndMonth(
+                idMahasiswa, idLowongan, StatusLog.DITERIMA, 2025, 5);
+    }
+
+    @Test
+    void testCalculateHonorData() {
+        List<Log> acceptedLogs = Arrays.asList(sampleLog);
+        when(userRepository.findById(idMahasiswa)).thenReturn(Optional.of(mahasiswa));
+        when(lowonganRepository.findById(idLowongan)).thenReturn(Optional.of(lowongan));
+        when(logRepository.findAcceptedLogsByMahasiswaAndLowonganAndMonth(
+                idMahasiswa, idLowongan, StatusLog.DITERIMA, 2025, 5)).thenReturn(acceptedLogs);
+
+        Map<String, Object> result = logService.calculateHonorData(idMahasiswa, idLowongan, 2025, 5);
+
+        assertNotNull(result);
+        assertEquals(5, result.get("bulan"));
+        assertEquals(2025, result.get("tahun"));
+        assertEquals(idLowongan, result.get("lowonganId"));
+        assertEquals(55000.0, result.get("honor"));
+        assertEquals("Rp 55,000.00", result.get("formattedHonor"));
     }
 
     private Log buildLog() {

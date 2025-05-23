@@ -5,6 +5,7 @@ import id.ac.ui.cs.advprog.log.enums.StatusLog;
 import id.ac.ui.cs.advprog.log.model.Log;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public interface LogService {
@@ -17,10 +18,12 @@ public interface LogService {
 
     // Manajemen Log (Mahasiswa)
     List<Log> findByMahasiswaAndLowongan(UUID idMahasiswa, UUID idLowongan);
-    Log createLogForMahasiswa(LogDTO logDTO, UUID idMahasiswa, UUID idDosen);
+    Log findByIdForMahasiswa(UUID logId, UUID idMahasiswa);
+    Log createLogForMahasiswa(LogDTO logDTO, UUID idMahasiswa);
     Log updateLogForMahasiswa(UUID id, LogDTO logDTO, UUID idMahasiswa);
     void deleteLogForMahasiswa(UUID id, UUID idMahasiswa);
     double calculateHonor(UUID idMahasiswa, UUID idLowongan, int tahun, int bulan);
+    Map<String, Object> calculateHonorData(UUID idMahasiswa, UUID idLowongan, int tahun, int bulan);
 
     // Periksa Log (Dosen)
     List<Log> findByDosen(UUID idDosen);
@@ -32,4 +35,5 @@ public interface LogService {
     boolean validateMahasiswa(UUID idMahasiswa);
     boolean validateDosen(UUID idDosen);
     boolean isDosenOwnsLowongan(UUID idLowongan, UUID idDosen);
+    List<UUID> getDosenIdsByLowonganId(UUID idLowongan); // Updated method name
 }
