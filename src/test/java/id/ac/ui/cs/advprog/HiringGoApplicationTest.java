@@ -1,11 +1,15 @@
 package id.ac.ui.cs.advprog;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
 
-public class HiringGoApplicationTest {
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+
+class HiringGoApplicationTest {
 
     @Test
     void contextLoads() {
-        // This will test if the Spring Application context can be loaded successfully.
+        // The test will fail if the application context cannot be loaded
     }
+
 }
