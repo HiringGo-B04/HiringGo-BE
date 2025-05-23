@@ -20,4 +20,9 @@ public abstract class UserUpdateDTO {
 
     @NotBlank
     public String username;
+
+    public UserUpdateDTO(String role, String username) {
+        this.role = role;
+        this.username = username;
+    }
 }
