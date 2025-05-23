@@ -11,8 +11,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @Component
 public class JwtUtilTest {
@@ -51,6 +50,22 @@ public class JwtUtilTest {
         assertEquals("testuser", username);
         assertEquals("STUDENT", role);
         assertEquals(UUID.fromString(userId), uuid);
+    }
+
+    @Test
+    void testValidateJwtToken_shouldReturnFalseIfTokenNotFoundInRepository() {
+        // Arrange
+        String token = jwtUtil.generateToken("user1", "STUDENT", UUID.randomUUID());
+
+        // TokenRepository returns null (simulate not found)
+        when(tokenRespository.findByToken(token)).thenReturn(null);
+
+        // Act
+        boolean isValid = jwtUtil.validateJwtToken(token);
+
+        // Assert
+        assertFalse(isValid);
+        verify(tokenRespository, times(1)).findByToken(token);
     }
 
     @Test
