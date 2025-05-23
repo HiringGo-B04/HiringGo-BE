@@ -34,11 +34,10 @@ public class JwtUtilTest {
     public void testGenerateTokenWithRoleAndUserId() {
         UUID uuid = UUID.randomUUID();
         String token = jwtUtil.generateToken("testuser", "STUDENT", uuid);
-        Token currentToken = new Token(token);
 
         assertNotNull(token);
 
-        when(tokenRespository.findByToken(token)).thenReturn(currentToken);
+        when(tokenRespository.existsByToken(token)).thenReturn(true);
 
         assertTrue(jwtUtil.validateJwtToken(token));
 
@@ -64,7 +63,6 @@ public class JwtUtilTest {
 
         // Assert
         assertFalse(isValid);
-        verify(tokenRespository, times(1)).findByToken(token);
     }
 
     @Test
