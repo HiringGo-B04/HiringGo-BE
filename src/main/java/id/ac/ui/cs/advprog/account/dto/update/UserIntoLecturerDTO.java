@@ -8,5 +8,11 @@ public class UserIntoLecturerDTO extends UserUpdateDTO {
 
     @NotBlank
     public String nip;
+
+    public UserIntoLecturerDTO(String fullName, String nip, String username, String role) {
+        super(role, username);
+        this.fullName = fullName;
+        this.nip = nip;
+    }
 }
 
