@@ -46,6 +46,8 @@ val webdrivermanagerVersion = "5.6.3"
 val junitJupiterVersion = "5.9.1"
 
 dependencies {
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("io.micrometer:micrometer-registry-prometheus")
 
     runtimeOnly("org.postgresql:postgresql:42.7.2")
     runtimeOnly("org.postgresql:postgresql")
