@@ -12,5 +12,4 @@ public interface LowonganService {
     Lowongan updateLowongan(UUID id, Lowongan lowongan);
     void deleteLowongan(UUID id);
     boolean isLowonganExists(Lowongan lowongan);
-    boolean isLowonganClosed(Lowongan lowongan);
 }

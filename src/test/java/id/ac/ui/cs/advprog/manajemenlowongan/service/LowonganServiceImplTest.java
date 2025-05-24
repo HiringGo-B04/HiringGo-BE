@@ -83,6 +83,26 @@ public class LowonganServiceImplTest {
         assertEquals(dummyLowongan, found);
     }
 
+    @Test
+    void testGetLowonganByIdNotFound() {
+        when(lowonganRepository.findById(any())).thenReturn(Optional.empty());
+
+        Lowongan result = lowonganService.getLowonganById(UUID.randomUUID());
+
+        assertNull(result);
+    }
+
+    @Test
+    void testUpdateLowongan() {
+        when(lowonganRepository.findById(dummyLowongan.getId())).thenReturn(Optional.ofNullable(dummyLowongan));
+        when(lowonganRepository.save(any(Lowongan.class))).thenAnswer(i -> i.getArgument(0));
+
+        dummyLowongan.setTotalAsdosNeeded(15);
+        Lowongan updated = lowonganService.updateLowongan(dummyLowongan.getId(), dummyLowongan);
+
+        assertEquals(15, updated.getTotalAsdosNeeded());
+        verify(lowonganRepository).save(dummyLowongan);
+    }
 //    @Test
 //    void testGetLowonganByIdNotFound() {
 //        when(lowonganRepository.findById(any())).thenReturn(null);
