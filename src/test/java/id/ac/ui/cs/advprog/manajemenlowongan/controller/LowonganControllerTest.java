@@ -126,20 +126,30 @@ class LowonganControllerTest {
     }
 
     @Test
-    void testGetLecturerDataById() throws Exception {
+    @WithMockUser(username = "LECTURER")
+    void testGetLowonganByDosen_ReturnsExpectedValues() throws Exception {
+        UUID lecturerId = UUID.randomUUID();
         String token = "valid.jwt.token";
         String authHeader = "Bearer " + token;
-        UUID userId = UUID.randomUUID();
-        Map<String, Object> responseMap = new HashMap<>();
-        responseMap.put("status", "success");
 
-        when(jwtUtil.getUserIdFromToken(token)).thenReturn(userId.toString());
-        when(lowonganService.getLowonganByDosen(userId)).thenReturn(ResponseEntity.ok(responseMap));
+        Map<String, Object> expectedResponse = new HashMap<>();
+        expectedResponse.put("message", "Success");
+        expectedResponse.put("course", 4);
+        expectedResponse.put("assistant", 6);
+        expectedResponse.put("vacan", 2);
+
+        when(jwtUtil.getUserIdFromToken(token)).thenReturn(lecturerId.toString());
+        when(lowonganService.getLowonganByDosen(eq(lecturerId)))
+                .thenReturn(ResponseEntity.ok(expectedResponse));
 
         mockMvc.perform(get("/api/lowongan/lecturer/get")
-                        .header("Authorization", authHeader))
+                        .header("Authorization", authHeader)
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("success"));
+                .andExpect(jsonPath("$.message").value("Success"))
+                .andExpect(jsonPath("$.course").value(4))
+                .andExpect(jsonPath("$.assistant").value(6))
+                .andExpect(jsonPath("$.vacan").value(2));
     }
 
     @Test
