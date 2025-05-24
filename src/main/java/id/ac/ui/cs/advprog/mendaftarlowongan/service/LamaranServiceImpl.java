@@ -1,8 +1,10 @@
 package id.ac.ui.cs.advprog.mendaftarlowongan.service;
 
+import id.ac.ui.cs.advprog.manajemenlowongan.model.Lowongan;
 import id.ac.ui.cs.advprog.manajemenlowongan.repository.LowonganRepository;
 import id.ac.ui.cs.advprog.mendaftarlowongan.dto.LamaranDTO;
 import id.ac.ui.cs.advprog.mendaftarlowongan.enums.StatusLamaran;
+import id.ac.ui.cs.advprog.mendaftarlowongan.exception.*;
 import id.ac.ui.cs.advprog.mendaftarlowongan.model.Lamaran;
 import id.ac.ui.cs.advprog.mendaftarlowongan.repository.LamaranRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +40,11 @@ public class LamaranServiceImpl implements LamaranService {
         this.lamaranRepository = lamaranRepository;
     }
 
+    public LamaranServiceImpl(LamaranRepository lamaranRepository, LowonganRepository lowonganRepository) {
+        this.lamaranRepository = lamaranRepository;
+        this.lowonganRepository = lowonganRepository;
+    }
+
 
     @Override
     @Async("taskExecutor")
@@ -48,7 +55,8 @@ public class LamaranServiceImpl implements LamaranService {
     @Override
     @Async("taskExecutor")
     public CompletableFuture<Lamaran> getLamaranById(UUID id) {
-        return CompletableFuture.supplyAsync(() -> lamaranRepository.findById(id).orElse(null), executor);
+        return CompletableFuture.supplyAsync(() -> lamaranRepository.findById(id)
+                .orElseThrow(() -> new LamaranNotFoundExceptionException(id.toString())), executor);
     }
 
     @Override
@@ -116,9 +124,9 @@ public class LamaranServiceImpl implements LamaranService {
                     boolean sksValid = lamaran.getSks() >= 0 && lamaran.getSks() <= 24;
 
                     if (!ipkValid) {
-                        throw new RuntimeException("IPK tidak valid");
+                        throw new IPKInvalidException();
                     } else if (!sksValid) {
-                        throw new RuntimeException("SKS tidak valid");
+                        throw new SKSInvalidException();
                     }
 
                     return null;
@@ -126,7 +134,7 @@ public class LamaranServiceImpl implements LamaranService {
                 .thenCompose(v -> isLamaranExists(lamaran))
                 .thenAccept(exists -> {
                     if (exists) {
-                        throw new RuntimeException("Sudah pernah melamar");
+                        throw new DuplicateLamaranException();
                     }
                 });
     }
@@ -144,37 +152,42 @@ public class LamaranServiceImpl implements LamaranService {
     public CompletableFuture<Void> acceptLamaran(UUID id) {
         return getLamaranById(id)
                 .thenCompose(lamaran -> {
-                    if (lamaran != null) {
-                        lamaran.setStatus(StatusLamaran.DITERIMA);
-                        return CompletableFuture.supplyAsync(() -> {
-                            lamaranRepository.save(lamaran);
-                            lowonganRepository.findById(lamaran.getIdLowongan())
-                                    .ifPresent(lowongan -> {
-                                        lowongan.setTotalAsdosAccepted(lowongan.getTotalAsdosAccepted() + 1);
-                                        lowonganRepository.save(lowongan);
-                                    });
-                            return null;
-                        }, executor);
+                    if (lamaran == null) {
+                        throw new LamaranNotFoundExceptionException(id.toString());
                     }
-                    return CompletableFuture.completedFuture(null);
+
+                    lamaran.setStatus(StatusLamaran.DITERIMA);
+
+                    return CompletableFuture.supplyAsync(() -> {
+                        lamaranRepository.save(lamaran);
+
+                        Lowongan lowongan = lowonganRepository.findById(lamaran.getIdLowongan())
+                                .orElseThrow(() -> new LowonganNotFoundExceptionException(lamaran.getIdLowongan().toString()));
+
+                        lowongan.setTotalAsdosAccepted(lowongan.getTotalAsdosAccepted() + 1);
+                        lowonganRepository.save(lowongan);
+
+                        return null;
+                    }, executor);
                 });
-
-
     }
+
+
 
     @Override
     @Async("taskExecutor")
     public CompletableFuture<Void> rejectLamaran(UUID id) {
         return getLamaranById(id)
                 .thenCompose(lamaran -> {
-                    if (lamaran != null) {
+                    if (lamaran == null) {
+                        throw new LamaranNotFoundExceptionException(id.toString());
+                    } else {
                         lamaran.setStatus(StatusLamaran.DITOLAK);
                         return CompletableFuture.supplyAsync(() -> {
                             lamaranRepository.save(lamaran);
                             return null;
                         }, executor);
                     }
-                    return CompletableFuture.completedFuture(null);
                 });
     }
 

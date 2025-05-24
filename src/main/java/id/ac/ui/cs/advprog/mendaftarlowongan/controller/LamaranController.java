@@ -50,12 +50,8 @@ public class LamaranController {
 
     @PostMapping("/lecturer/accept/{id}")
     public ResponseEntity<String> acceptLamaran(@PathVariable UUID id) {
-        try {
-            lamaranService.acceptLamaran(id).join();
-            return ResponseEntity.ok("Lamaran accepted successfully");
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Failed to accept lamaran");
-        }
+        lamaranService.acceptLamaran(id).join();
+        return ResponseEntity.ok("Lamaran accepted successfully");
     }
 
     @PostMapping("/lecturer/reject/{id}")

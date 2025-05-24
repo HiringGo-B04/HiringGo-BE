@@ -180,16 +180,6 @@ class LamaranControllerTest {
         verify(lamaranService).acceptLamaran(eq(dummyId));
     }
 
-    @Test
-    @WithMockUser(roles = "LECTURER")
-    void testAcceptLamaranWithException() throws Exception {
-        when(lamaranService.acceptLamaran(dummyId))
-                .thenReturn(CompletableFuture.failedFuture(new RuntimeException("Test exception")));
-
-        mockMvc.perform(post("/api/lamaran/lecturer/accept/" + dummyId))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string("Failed to accept lamaran"));
-    }
 
     @Test
     @WithMockUser(roles = "LECTURER")
