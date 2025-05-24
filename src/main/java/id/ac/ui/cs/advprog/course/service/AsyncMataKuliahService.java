@@ -68,7 +68,11 @@ public class AsyncMataKuliahService {
                     .toList();
 
             return CompletableFuture.completedFuture(results);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
+            if(e instanceof InterruptedException){
+                Thread.currentThread().interrupt();
+            }
             CompletableFuture<List<MataKuliahDto>> future = new CompletableFuture<>();
             future.completeExceptionally(e);
             return future;
@@ -90,7 +94,11 @@ public class AsyncMataKuliahService {
                     .toList();
 
             return CompletableFuture.completedFuture(results);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
+            if(e instanceof InterruptedException){
+                Thread.currentThread().interrupt();
+            }
             CompletableFuture<List<MataKuliahDto>> future = new CompletableFuture<>();
             future.completeExceptionally(e);
             return future;

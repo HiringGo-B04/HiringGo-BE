@@ -108,13 +108,14 @@ public class AccountService{
                                 new GetAllUserDTO(defaultAcceptResponse, "test", lecturers.size(), students.size(), numberOfVacancies, numberOfCourses, users),
                                 HttpStatus.OK);
                     }
-                    catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        return new ResponseEntity<>(
-                                new GetAllUserDTO(defaultErrorResponse, "Thread was interrupted", 0, 0, 0, 0, null),
-                                HttpStatus.INTERNAL_SERVER_ERROR);
-                    }
                     catch (Exception e) {
+                        if (e.getCause() instanceof InterruptedException) {
+                            Thread.currentThread().interrupt(); // Re-interrupt the thread
+                            return new ResponseEntity<>(
+                                    new GetAllUserDTO(defaultErrorResponse, "Thread was interrupted", 0, 0, 0, 0, null),
+                                    HttpStatus.INTERNAL_SERVER_ERROR);
+                        }
+
                         return new ResponseEntity<>(
                                 new GetAllUserDTO(defaultErrorResponse, e.getMessage(), 0, 0, 0, 0, null),
                                 HttpStatus.BAD_REQUEST);
