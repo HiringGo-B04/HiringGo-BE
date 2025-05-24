@@ -23,6 +23,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
+import static id.ac.ui.cs.advprog.manajemenlowongan.controller.LowonganController.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -78,7 +79,7 @@ class LowonganControllerTest {
         when(lowonganService.getLowonganByDosen(lecturerId))
                 .thenReturn(ResponseEntity.ok(responseMap));
 
-        mockMvc.perform(get("/api/lowongan/lecturer/get")
+        mockMvc.perform(get(ENDPOINT_LOWONGAN+DASHBOARD_LECTURER)
                         .header("Authorization", authHeader)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -92,7 +93,7 @@ class LowonganControllerTest {
     void testAddLowongan() throws Exception {
         when(lowonganService.addLowongan(any(Lowongan.class))).thenReturn(sampleLowongan);
 
-        mockMvc.perform(post("/api/lowongan/user/add")
+        mockMvc.perform(post(ENDPOINT_LOWONGAN+LOWONGAN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(sampleLowongan)))
                 .andExpect(status().isOk())
@@ -103,7 +104,7 @@ class LowonganControllerTest {
     void testGetLowongan() throws Exception {
         when(lowonganService.getLowongan()).thenReturn(List.of(sampleLowongan));
 
-        mockMvc.perform(get("/api/lowongan/user/get"))
+        mockMvc.perform(get(ENDPOINT_LOWONGAN+LOWONGAN))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].matkul").value("Pemrograman Lanjut"));
     }
@@ -112,7 +113,7 @@ class LowonganControllerTest {
     void testGetLowonganById() throws Exception {
         when(lowonganService.getLowonganById(sampleUUID)).thenReturn(sampleLowongan);
 
-        mockMvc.perform(get("/api/lowongan/user/get/" + sampleUUID))
+        mockMvc.perform(get(ENDPOINT_LOWONGAN+LOWONGAN+ sampleUUID))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.matkul").value("Pemrograman Lanjut"));
     }
@@ -121,7 +122,7 @@ class LowonganControllerTest {
     void testGetLowonganById_NotFound() throws Exception {
         when(lowonganService.getLowonganById(any(UUID.class))).thenThrow(new LowonganController.LowonganNotFoundException("Lowongan dengan ID tidak ditemukan"));
 
-        mockMvc.perform(get("/api/lowongan/user/get/" + UUID.randomUUID()))
+        mockMvc.perform(get(ENDPOINT_LOWONGAN+LOWONGAN + UUID.randomUUID()))
                 .andExpect(status().isInternalServerError());
     }
 
@@ -142,7 +143,7 @@ class LowonganControllerTest {
         when(lowonganService.getLowonganByDosen(eq(lecturerId)))
                 .thenReturn(ResponseEntity.ok(expectedResponse));
 
-        mockMvc.perform(get("/api/lowongan/lecturer/get")
+        mockMvc.perform(get(ENDPOINT_LOWONGAN+DASHBOARD_LECTURER)
                         .header("Authorization", authHeader)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -159,7 +160,7 @@ class LowonganControllerTest {
 
         when(jwtUtil.getUserIdFromToken(token)).thenThrow(new IllegalArgumentException("Invalid token"));
 
-        mockMvc.perform(get("/api/lowongan/lecturer/get")
+        mockMvc.perform(get(ENDPOINT_LOWONGAN+DASHBOARD_LECTURER)
                         .header("Authorization", authHeader))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Invalid token"));

@@ -4,6 +4,8 @@ import id.ac.ui.cs.advprog.authjwt.config.JwtUtil;
 import id.ac.ui.cs.advprog.manajemenlowongan.model.Lowongan;
 import id.ac.ui.cs.advprog.manajemenlowongan.service.LowonganService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,8 +17,12 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("api/lowongan")
+@RequestMapping("/api/lowongan")
 public class LowonganController {
+
+    public static final String ENDPOINT_LOWONGAN = "/api/lowongan";
+    public static final String LOWONGAN = "/lecturer/lowongan";
+    public static final String DASHBOARD_LECTURER = "/lecturer/dashboard";
 
     private final LowonganService lowonganService;
     private final JwtUtil jwtUtil;
@@ -26,14 +32,14 @@ public class LowonganController {
         this.jwtUtil = jwtUtil;
     }
 
-    @PostMapping("/user/add")
+    @PostMapping(LOWONGAN)
     public ResponseEntity<Lowongan> addLowongan(@RequestBody Lowongan lowongan) {
         Lowongan createdLowongan = lowonganService.addLowongan(lowongan);
         return ResponseEntity.ok(createdLowongan);
     }
 
-    @GetMapping("/user/get")
-    public ResponseEntity<List<Lowongan>> getLowongan() {
+    @GetMapping(LOWONGAN)
+    public ResponseEntity<List<Lowongan>> getAllLowongan() {
         try {
             List<Lowongan> lowongans = lowonganService.getLowongan();
             return ResponseEntity.ok(lowongans);
@@ -43,7 +49,7 @@ public class LowonganController {
         }
     }
 
-    @GetMapping("/user/get/{id}")
+    @GetMapping(LOWONGAN+"{id}")
     public ResponseEntity<Lowongan> getLowonganById(@PathVariable UUID id) {
         try {
             Lowongan lowongan = lowonganService.getLowonganById(id);
@@ -54,7 +60,7 @@ public class LowonganController {
         }
     }
 
-    @GetMapping("/lecturer/get")
+    @GetMapping(DASHBOARD_LECTURER)
     public ResponseEntity<Map<String, Object>> getLecturerDataById(@RequestHeader("Authorization") String authHeader) {
         try {
             String token = authHeader.substring(7); // Remove "Bearer "
