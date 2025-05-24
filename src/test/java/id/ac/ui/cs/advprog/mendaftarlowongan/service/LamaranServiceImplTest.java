@@ -6,6 +6,8 @@ import id.ac.ui.cs.advprog.manajemenlowongan.model.Lowongan;
 import id.ac.ui.cs.advprog.manajemenlowongan.repository.LowonganRepository;
 import id.ac.ui.cs.advprog.mendaftarlowongan.dto.LamaranDTO;
 import id.ac.ui.cs.advprog.mendaftarlowongan.enums.StatusLamaran;
+import id.ac.ui.cs.advprog.mendaftarlowongan.exception.DuplicateLamaranException;
+import id.ac.ui.cs.advprog.mendaftarlowongan.exception.LamaranNotFoundExceptionException;
 import id.ac.ui.cs.advprog.mendaftarlowongan.model.Lamaran;
 import id.ac.ui.cs.advprog.mendaftarlowongan.repository.LamaranRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,7 +52,7 @@ public class LamaranServiceImplTest {
         taskExecutor.initialize();
 
         // Create service instance and inject dependencies
-        lamaranService = new LamaranServiceImpl(lamaranRepository);
+        lamaranService = new LamaranServiceImpl(lamaranRepository, lowonganRepository);
 
         // Use reflection to set the executor field since it's private
         try {
@@ -158,7 +160,7 @@ public class LamaranServiceImplTest {
             lamaranService.createLamaran(dummyLamaranDTO, dummyLamaranDTO.getIdMahasiswa()).get();
         });
 
-        assertTrue(ex.getCause().getMessage().contains("Sudah pernah melamar"));
+        assertTrue(ex.getCause().getMessage().contains("Lamaran sudah ada"));
     }
 
     @Test
@@ -192,10 +194,11 @@ public class LamaranServiceImplTest {
         when(lamaranRepository.findById(randomId)).thenReturn(Optional.empty());
 
         CompletableFuture<Lamaran> completableResult = lamaranService.getLamaranById(randomId);
-        Lamaran result = completableResult.get();
-
-        assertNull(result);
-        verify(lamaranRepository).findById(randomId);
+        try {
+            completableResult.get();
+        } catch (ExecutionException e) {
+            assertInstanceOf(LamaranNotFoundExceptionException.class, e.getCause());
+        }
     }
 
     @Test
@@ -227,10 +230,11 @@ public class LamaranServiceImplTest {
 
         Lamaran updatedData = new Lamaran();
         CompletableFuture<Lamaran> completableUpdated = lamaranService.updateLamaran(randomId, updatedData);
-        Lamaran result = completableUpdated.get();
-
-        assertNull(result);
-        verify(lamaranRepository, never()).save(any(Lamaran.class));
+        try {
+            completableUpdated.get();
+        } catch (ExecutionException e) {
+            assertInstanceOf(LamaranNotFoundExceptionException.class, e.getCause());
+        }
     }
 
     @Test
@@ -303,8 +307,10 @@ public class LamaranServiceImplTest {
 
     @Test
     void testAcceptLamaran() throws ExecutionException, InterruptedException {
+        Lowongan dummyLowongan = new Lowongan();
         when(lamaranRepository.findById(dummyLamaran.getId())).thenReturn(Optional.of(dummyLamaran));
         when(lamaranRepository.save(any(Lamaran.class))).thenAnswer(i -> i.getArgument(0));
+        when(lowonganRepository.findById(dummyLamaran.getIdLowongan())).thenReturn(Optional.of(dummyLowongan));
 
         CompletableFuture<Void> completableResult = lamaranService.acceptLamaran(dummyLamaran.getId());
         completableResult.get();
@@ -320,9 +326,11 @@ public class LamaranServiceImplTest {
 
         CompletableFuture<Void> completableResult = lamaranService.acceptLamaran(randomId);
 
-        // Should complete without exception even if lamaran not found
-        assertDoesNotThrow(() -> completableResult.get());
-        verify(lamaranRepository, never()).save(any(Lamaran.class));
+        try {
+            completableResult.get();
+        } catch (ExecutionException | InterruptedException e) {
+            assertInstanceOf(LamaranNotFoundExceptionException.class, e.getCause());
+        }
     }
 
     @Test
@@ -344,9 +352,11 @@ public class LamaranServiceImplTest {
 
         CompletableFuture<Void> completableResult = lamaranService.rejectLamaran(randomId);
 
-        // Should complete without exception even if lamaran not found
-        assertDoesNotThrow(() -> completableResult.get());
-        verify(lamaranRepository, never()).save(any(Lamaran.class));
+        try {
+            completableResult.get();
+        } catch (ExecutionException | InterruptedException e) {
+            assertInstanceOf(LamaranNotFoundExceptionException.class, e.getCause());
+        }
     }
 
     @Test

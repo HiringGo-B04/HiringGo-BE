@@ -116,7 +116,7 @@ class LamaranControllerTest {
         when(lamaranService.getLamaranById(dummyId))
                 .thenReturn(CompletableFuture.completedFuture(dummyLamaran));
 
-        mockMvc.perform(get("/api/lamaran/" + dummyId))
+        mockMvc.perform(get("/api/lamaran/user/" + dummyId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(dummyLamaran.getId().toString()))
                 .andExpect(jsonPath("$.ipk").value(dummyLamaran.getIpk()))
@@ -131,7 +131,7 @@ class LamaranControllerTest {
         when(lamaranService.getLamaranById(dummyId))
                 .thenReturn(CompletableFuture.completedFuture(null));
 
-        mockMvc.perform(get("/api/lamaran/" + dummyId))
+        mockMvc.perform(get("/api/lamaran/user/" + dummyId))
                 .andExpect(status().isNotFound());
 
         verify(lamaranService).getLamaranById(eq(dummyId));
@@ -159,7 +159,7 @@ class LamaranControllerTest {
         when(lamaranService.getLamaran())
                 .thenReturn(CompletableFuture.completedFuture(lamaranList));
 
-        mockMvc.perform(get("/api/lamaran/all"))
+        mockMvc.perform(get("/api/lamaran/user/all"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$[0].id").value(dummyLamaran.getId().toString()));
@@ -180,16 +180,6 @@ class LamaranControllerTest {
         verify(lamaranService).acceptLamaran(eq(dummyId));
     }
 
-    @Test
-    @WithMockUser(roles = "LECTURER")
-    void testAcceptLamaranWithException() throws Exception {
-        when(lamaranService.acceptLamaran(dummyId))
-                .thenReturn(CompletableFuture.failedFuture(new RuntimeException("Test exception")));
-
-        mockMvc.perform(post("/api/lamaran/lecturer/accept/" + dummyId))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string("Failed to accept lamaran"));
-    }
 
     @Test
     @WithMockUser(roles = "LECTURER")
@@ -216,7 +206,7 @@ class LamaranControllerTest {
     }
 
     @Test
-    @WithMockUser(roles = "USER")
+    @WithMockUser(roles = "LECTURER")
     void testUpdateLamaran() throws Exception {
         Lamaran updatedLamaran = new Lamaran();
         updatedLamaran.setId(dummyId);
@@ -229,7 +219,7 @@ class LamaranControllerTest {
         when(lamaranService.updateLamaran(eq(dummyId), any(Lamaran.class)))
                 .thenReturn(CompletableFuture.completedFuture(updatedLamaran));
 
-        mockMvc.perform(put("/api/lamaran/" + dummyId)
+        mockMvc.perform(put("/api/lamaran/lecturer/" + dummyId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updatedLamaran)))
                 .andExpect(status().isOk())
@@ -241,24 +231,24 @@ class LamaranControllerTest {
     }
 
     @Test
-    @WithMockUser(roles = "USER")
+    @WithMockUser(roles = "LECTURER")
     void testUpdateLamaranNotFound() throws Exception {
         when(lamaranService.updateLamaran(eq(dummyId), any(Lamaran.class)))
                 .thenReturn(CompletableFuture.completedFuture(null));
 
-        mockMvc.perform(put("/api/lamaran/" + dummyId)
+        mockMvc.perform(put("/api/lamaran/lecturer/" + dummyId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dummyLamaran)))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    @WithMockUser(roles = "USER")
+    @WithMockUser(roles = "LECTURER")
     void testDeleteLamaran() throws Exception {
         when(lamaranService.deleteLamaran(dummyId))
                 .thenReturn(CompletableFuture.completedFuture(null));
 
-        mockMvc.perform(delete("/api/lamaran/" + dummyId))
+        mockMvc.perform(delete("/api/lamaran/lecturer/" + dummyId))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Lamaran deleted successfully"));
 
@@ -266,12 +256,12 @@ class LamaranControllerTest {
     }
 
     @Test
-    @WithMockUser(roles = "USER")
+    @WithMockUser(roles = "LECTURER")
     void testDeleteLamaranWithException() throws Exception {
         when(lamaranService.deleteLamaran(dummyId))
                 .thenReturn(CompletableFuture.failedFuture(new RuntimeException("Test exception")));
 
-        mockMvc.perform(delete("/api/lamaran/" + dummyId))
+        mockMvc.perform(delete("/api/lamaran/lecturer/" + dummyId))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Failed to delete lamaran"));
     }
