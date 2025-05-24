@@ -13,6 +13,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -63,7 +64,7 @@ public class LamaranServiceImpl implements LamaranService {
     @Async("taskExecutor")
     public CompletableFuture<Lamaran> createLamaran(LamaranDTO lamaranDTO, UUID userIdFromToken) {
         return CompletableFuture.supplyAsync(() -> {
-            // Cek apakah idMahasiswa dari body sama dengan userId dari token
+            // Validasi idMahasiswa harus sama dengan userId pada token
             if (!lamaranDTO.getIdMahasiswa().equals(userIdFromToken)) {
                 throw new RuntimeException("ID Mahasiswa tidak sesuai dengan userId pada token.");
             }
@@ -71,14 +72,28 @@ public class LamaranServiceImpl implements LamaranService {
             Lamaran lamaran = toEntity(lamaranDTO);
 
             return validateLamaran(lamaran)
-                    .thenCompose(v -> CompletableFuture.supplyAsync(() ->
-                            lamaranRepository.save(lamaran), executor))
-                    .exceptionally(throwable -> {
+                    .thenCompose(v -> CompletableFuture.supplyAsync(() -> {
+                        // Simpan lamaran terlebih dahulu
+                        Lamaran savedLamaran = lamaranRepository.save(lamaran);
+
+                        // Cari lowongan terkait
+                        Optional<Lowongan> optionalLowongan = lowonganRepository.findById(lamaran.getIdLowongan());
+                        if (optionalLowongan.isEmpty()) {
+                            throw new RuntimeException("Lowongan tidak ditemukan.");
+                        }
+
+                        Lowongan lowongan = optionalLowongan.get();
+                        // Tambah totalAsdosRegistered
+                        lowongan.setTotalAsdosRegistered(lowongan.getTotalAsdosRegistered() + 1);
+                        lowonganRepository.save(lowongan);
+
+                        return savedLamaran;
+                    }, executor)).exceptionally(throwable -> {
                         throw new RuntimeException("Error creating lamaran: " + throwable.getMessage());
-                    })
-                    .join();
+                    }).join();
         }, executor);
     }
+
 
     @Override
     @Async("taskExecutor")
