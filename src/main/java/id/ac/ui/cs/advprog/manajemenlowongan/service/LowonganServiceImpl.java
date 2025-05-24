@@ -2,6 +2,8 @@ package id.ac.ui.cs.advprog.manajemenlowongan.service;
 
 import id.ac.ui.cs.advprog.authjwt.model.User;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
+import id.ac.ui.cs.advprog.course.model.MataKuliah;
+import id.ac.ui.cs.advprog.course.repository.MataKuliahRepository;
 import id.ac.ui.cs.advprog.manajemenlowongan.model.Lowongan;
 import id.ac.ui.cs.advprog.manajemenlowongan.repository.LowonganRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,10 +19,12 @@ public class LowonganServiceImpl implements LowonganService {
 
     private LowonganRepository lowonganRepository;
     private UserRepository userRepository;
+    private MataKuliahRepository mataKuliahRepository;
 
-    public LowonganServiceImpl(UserRepository userRepository, LowonganRepository lowonganRepository) {
+    public LowonganServiceImpl(UserRepository userRepository, LowonganRepository lowonganRepository, MataKuliahRepository mataKuliahRepository) {
         this.userRepository = userRepository;
         this.lowonganRepository = lowonganRepository;
+        this.mataKuliahRepository = mataKuliahRepository;
     }
 
     public boolean validateLowongan(Lowongan lowongan) {
@@ -116,12 +120,16 @@ public class LowonganServiceImpl implements LowonganService {
             int needTeachingAssitant = 0;
             for (Lowongan lowongan : lowongans) {
                 teachingAssitant += lowongan.getTotalAsdosAccepted();
-                needTeachingAssitant += max(lowongan.getTotalAsdosNeeded() - lowongan.getTotalAsdosAccepted(), 0);
+                if(lowongan.getTotalAsdosNeeded() > lowongan.getTotalAsdosAccepted()){
+                    needTeachingAssitant += 1;
+                }
             }
+
+            int totalCourse = mataKuliahRepository.findByDosenPengampuContaining(user).size();
 
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Success");
-            response.put("lowongan", lowongans.size());
+            response.put("course", totalCourse);
             response.put("assistant", teachingAssitant);
             response.put("vacan", needTeachingAssitant);
 
