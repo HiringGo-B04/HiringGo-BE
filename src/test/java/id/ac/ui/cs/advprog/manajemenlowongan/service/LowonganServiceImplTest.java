@@ -136,6 +136,7 @@ public class LowonganServiceImplTest {
 
     @Test
     void testUpdateLowongan() {
+        when(mataKuliahRepository.existsByKode(any())).thenReturn(true);
         when(lowonganRepository.findById(dummyLowongan.getId())).thenReturn(Optional.ofNullable(dummyLowongan));
         when(lowonganRepository.save(any(Lowongan.class))).thenAnswer(i -> i.getArgument(0));
 
@@ -161,4 +162,107 @@ public class LowonganServiceImplTest {
 
         assertFalse(exists);
     }
+
+    @Test
+    void testAddLowonganWithInvalidYear() {
+        dummyLowongan.setTahun(2024); // invalid year
+
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            lowonganService.addLowongan(dummyLowongan);
+        });
+
+        assertEquals("Tahun ajaran harus lebih dari atau sama dengan 2025", exception.getMessage());
+    }
+
+    @Test
+    void testAddLowonganWithValidInput() {
+        when(mataKuliahRepository.existsByKode("Adpro")).thenReturn(true);
+        when(lowonganRepository.findAll()).thenReturn(List.of());
+        when(lowonganRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        Lowongan saved = lowonganService.addLowongan(dummyLowongan);
+
+        assertEquals(dummyLowongan, saved);
+        verify(lowonganRepository, times(1)).save(dummyLowongan);
+    }
+
+    @Test
+    void testValidateLowonganFailsWithInvalidMatkul() {
+        dummyLowongan.setMatkul("InvalidMatkul");
+        when(mataKuliahRepository.existsByKode("InvalidMatkul")).thenReturn(false);
+
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            lowonganService.validateLowongan(dummyLowongan);
+        });
+
+        assertEquals("Nama Mata Kuliah tidak valid", exception.getMessage());
+    }
+
+    @Test
+    void testValidateLowonganFailsWithInvalidSemester() {
+        dummyLowongan.setTerm("Spring"); // invalid
+        when(mataKuliahRepository.existsByKode("Adpro")).thenReturn(true);
+
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            lowonganService.validateLowongan(dummyLowongan);
+        });
+
+        assertEquals("Semester harus Genap atau Ganjil", exception.getMessage());
+    }
+
+    @Test
+    void testValidateLowonganFailsWithDuplicate() {
+        when(mataKuliahRepository.existsByKode("Adpro")).thenReturn(true);
+
+        Lowongan existing = new Lowongan.Builder()
+                .matkul("Adpro")
+                .year(2025)
+                .term("Genap")
+                .totalAsdosNeeded(10)
+                .build();
+
+        when(lowonganRepository.findAll()).thenReturn(List.of(existing));
+
+        // New lowongan with same matkul/year/term
+        Lowongan newLowongan = new Lowongan.Builder()
+                .matkul("Adpro")
+                .year(2025)
+                .term("Genap")
+                .totalAsdosNeeded(5)
+                .build();
+
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            lowonganService.validateLowongan(newLowongan);
+        });
+
+        assertEquals("Lowongan dengan kombinasi mata kuliah, semester, dan tahun ajaran yang sama sudah ada", exception.getMessage());
+    }
+
+    @Test
+    void testIsLowonganExistsTrue() {
+        Lowongan existing = new Lowongan.Builder()
+                .matkul("Adpro")
+                .year(2025)
+                .term("Genap")
+                .build();
+
+        when(lowonganRepository.findAll()).thenReturn(List.of(existing));
+
+        boolean result = lowonganService.isLowonganExists(dummyLowongan);
+
+        assertTrue(result);
+    }
+
+    @Test
+    void testUpdateLowonganNotFoundThrowsException() {
+        UUID id = UUID.randomUUID();
+        when(lowonganRepository.findById(id)).thenReturn(Optional.empty());
+
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            lowonganService.updateLowongan(id, dummyLowongan);
+        });
+
+        assertEquals("Lowongan dengan ID tersebut tidak ditemukan", exception.getMessage());
+    }
+
 }
