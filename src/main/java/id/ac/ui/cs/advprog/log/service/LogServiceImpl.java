@@ -21,14 +21,20 @@ import id.ac.ui.cs.advprog.authjwt.model.User;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class LogServiceImpl implements LogService {
 
     @Autowired
@@ -46,18 +52,25 @@ public class LogServiceImpl implements LogService {
     @Autowired
     private UserRepository userRepository;
 
-    // CRUD Methods
+    // Inject the custom task executor
+    @Autowired
+    @Qualifier("taskExecutor")
+    private Executor taskExecutor;
+
+    // CRUD Methods - Keep synchronous for simple operations
     @Override
     public Log create(Log log) {
         return logRepository.save(log);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Log> findAll() {
         return logRepository.findAll();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Log findById(UUID id) {
         return logRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Log tidak ditemukan dengan id: " + id));
@@ -66,7 +79,17 @@ public class LogServiceImpl implements LogService {
     @Override
     public Log update(UUID id, Log updatedLog) {
         Log existingLog = findById(id);
-        // Update logic here
+
+        // Update fields
+        existingLog.setJudul(updatedLog.getJudul());
+        existingLog.setKeterangan(updatedLog.getKeterangan());
+        existingLog.setKategori(updatedLog.getKategori());
+        existingLog.setTanggalLog(updatedLog.getTanggalLog());
+        existingLog.setWaktuMulai(updatedLog.getWaktuMulai());
+        existingLog.setWaktuSelesai(updatedLog.getWaktuSelesai());
+        existingLog.setPesanUntukDosen(updatedLog.getPesanUntukDosen());
+        existingLog.setStatus(updatedLog.getStatus());
+
         return logRepository.save(existingLog);
     }
 
@@ -76,7 +99,7 @@ public class LogServiceImpl implements LogService {
         logRepository.delete(log);
     }
 
-    // Manajemen Log (Mahasiswa)
+    // Manajemen Log (Mahasiswa) - Synchronous versions
 
     @Override
     public List<Log> findByMahasiswaAndLowongan(UUID idMahasiswa, UUID idLowongan) {
@@ -92,6 +115,25 @@ public class LogServiceImpl implements LogService {
         }
 
         return logRepository.findByIdMahasiswaAndIdLowongan(idMahasiswa, idLowongan);
+    }
+
+    // Async version using custom executor
+    @Override
+    public CompletableFuture<List<Log>> findByMahasiswaAndLowonganAsync(UUID idMahasiswa, UUID idLowongan) {
+        return CompletableFuture.supplyAsync(() -> {
+            if (!validateMahasiswa(idMahasiswa)) {
+                throw new ResourceNotFoundException("Mahasiswa tidak ditemukan");
+            }
+            if (!validateLowongan(idLowongan)) {
+                throw new ResourceNotFoundException("Lowongan tidak ditemukan");
+            }
+
+            if (!isMahasiswaAcceptedForLowongan(idMahasiswa, idLowongan)) {
+                throw new ForbiddenException("Anda belum diterima pada lowongan ini");
+            }
+
+            return logRepository.findByIdMahasiswaAndIdLowongan(idMahasiswa, idLowongan);
+        }, taskExecutor);
     }
 
     @Override
@@ -135,8 +177,6 @@ public class LogServiceImpl implements LogService {
             throw new BadRequestException("Tidak ada dosen pengampu untuk lowongan ini");
         }
 
-        // FIXED: Store all dosen IDs in a special format or just use first dosen
-        // For now, we'll use the first dosen as primary, but modify verification logic
         UUID idDosen = dosenIds.get(0);
 
         // Validate the selected dosen exists
@@ -161,18 +201,24 @@ public class LogServiceImpl implements LogService {
         return logRepository.save(log);
     }
 
-    // NEW HELPER METHOD - reuse Lowongan object
+    // Async version using custom executor
+    @Override
+    public CompletableFuture<Log> createLogForMahasiswaAsync(LogDTO logDTO, UUID idMahasiswa) {
+        return CompletableFuture.supplyAsync(() -> {
+            return createLogForMahasiswa(logDTO, idMahasiswa);
+        }, taskExecutor);
+    }
+
     private List<UUID> getDosenIdsByLowonganWithLowongan(Lowongan lowongan) {
         String mataKuliahNama = lowongan.getMatkul();
 
-        // Find MataKuliah by nama
         List<MataKuliah> allMataKuliah = mataKuliahRepository.findAll();
         Optional<MataKuliah> mataKuliahOpt = allMataKuliah.stream()
                 .filter(mk -> mk.getNama().equals(mataKuliahNama))
                 .findFirst();
 
         if (mataKuliahOpt.isEmpty()) {
-            throw new ResourceNotFoundException("Mata kuliah tidak ditemukan: " + mataKuliahNama);
+            throw new ResourceNotFoundException("Mata kuliah tidak ditemukan dengan kode: " + mataKuliahNama);
         }
 
         MataKuliah mataKuliah = mataKuliahOpt.get();
@@ -194,22 +240,15 @@ public class LogServiceImpl implements LogService {
             throw new BadRequestException("Tanggal log tidak boleh di masa depan");
         }
 
-        Log updatedLog = new LogBuilder()
-                .id(log.getId())
-                .judul(logDTO.getJudul())
-                .keterangan(logDTO.getKeterangan())
-                .kategori(KategoriLog.valueOf(logDTO.getKategori()))
-                .tanggalLog(logDTO.getTanggalLog())
-                .waktuMulai(logDTO.getWaktuMulai())
-                .waktuSelesai(logDTO.getWaktuSelesai())
-                .pesanUntukDosen(logDTO.getPesanUntukDosen())
-                .status(log.getStatus())
-                .idLowongan(log.getIdLowongan())
-                .idMahasiswa(log.getIdMahasiswa())
-                .idDosen(log.getIdDosen())
-                .build();
+        log.setJudul(logDTO.getJudul());
+        log.setKeterangan(logDTO.getKeterangan());
+        log.setKategori(KategoriLog.valueOf(logDTO.getKategori()));
+        log.setTanggalLog(logDTO.getTanggalLog());
+        log.setWaktuMulai(logDTO.getWaktuMulai());
+        log.setWaktuSelesai(logDTO.getWaktuSelesai());
+        log.setPesanUntukDosen(logDTO.getPesanUntukDosen());
 
-        return logRepository.save(updatedLog);
+        return logRepository.save(log);
     }
 
     @Override
@@ -245,6 +284,14 @@ public class LogServiceImpl implements LogService {
         return totalHoursWorked * 27500;
     }
 
+    // Async version using custom executor
+    @Override
+    public CompletableFuture<Double> calculateHonorAsync(UUID idMahasiswa, UUID idLowongan, int tahun, int bulan) {
+        return CompletableFuture.supplyAsync(() -> {
+            return calculateHonor(idMahasiswa, idLowongan, tahun, bulan);
+        }, taskExecutor);
+    }
+
     @Override
     public Map<String, Object> calculateHonorData(UUID idMahasiswa, UUID idLowongan, int tahun, int bulan) {
         double honor = calculateHonor(idMahasiswa, idLowongan, tahun, bulan);
@@ -259,34 +306,65 @@ public class LogServiceImpl implements LogService {
         return response;
     }
 
-    // Periksa Log (Dosen)
+    // Async version using custom executor
+    @Override
+    public CompletableFuture<Map<String, Object>> calculateHonorDataAsync(UUID idMahasiswa, UUID idLowongan, int tahun, int bulan) {
+        return CompletableFuture.supplyAsync(() -> {
+            return calculateHonorData(idMahasiswa, idLowongan, tahun, bulan);
+        }, taskExecutor);
+    }
 
+    // Periksa Log (Dosen)
     @Override
     public List<Log> findByDosen(UUID idDosen) {
         if (!validateDosen(idDosen)) {
             throw new ResourceNotFoundException("Dosen tidak ditemukan");
         }
 
-        // FIXED: Get all logs where dosen is pengampu of the matakuliah
-        List<Log> allLogs = new ArrayList<>();
+        // SIMPLIFIED: Just return all logs where idDosen matches
+        // This works because when creating log, we already set idDosen
+        // based on dosen pengampu of the mata kuliah
+        return logRepository.findByIdDosen(idDosen);
+    }
 
-        // Get all lowongan where this dosen is pengampu
-        List<Lowongan> allLowongan = lowonganRepository.findAll();
-        for (Lowongan lowongan : allLowongan) {
-            if (isDosenOwnsLowongan(lowongan.getId(), idDosen)) {
-                List<Log> logsForLowongan = logRepository.findByIdLowongan(lowongan.getId());
-                allLogs.addAll(logsForLowongan);
+    // Async version with parallel processing using custom executor
+    @Override
+    public CompletableFuture<List<Log>> findByDosenAsync(UUID idDosen) {
+        return CompletableFuture.supplyAsync(() -> {
+            if (!validateDosen(idDosen)) {
+                throw new ResourceNotFoundException("Dosen tidak ditemukan");
             }
-        }
 
-        return allLogs;
+            List<Lowongan> allLowongan = lowonganRepository.findAll();
+
+            // Process lowongan in parallel using custom executor
+            List<CompletableFuture<List<Log>>> futures = new ArrayList<>();
+
+            for (Lowongan lowongan : allLowongan) {
+                CompletableFuture<List<Log>> future = CompletableFuture.supplyAsync(() -> {
+                    if (isDosenOwnsLowongan(lowongan.getId(), idDosen)) {
+                        return logRepository.findByIdLowongan(lowongan.getId());
+                    }
+                    return new ArrayList<>();
+                }, taskExecutor);
+                futures.add(future);
+            }
+
+            // Combine all results
+            List<Log> allLogs = new ArrayList<>();
+            for (CompletableFuture<List<Log>> future : futures) {
+                allLogs.addAll(future.join());
+            }
+
+            return allLogs;
+        }, taskExecutor);
     }
 
     @Override
     public Log verifyLog(UUID logId, StatusLog status, UUID idDosen) {
         Log log = findById(logId);
 
-        // FIXED: Check if dosen is pengampu of the matakuliah for this lowongan
+        // Check if dosen is pengampu of the matakuliah for this lowongan
         if (!isDosenOwnsLowongan(log.getIdLowongan(), idDosen)) {
             throw new ForbiddenException("Anda tidak dapat memverifikasi log untuk lowongan ini");
         }
@@ -310,6 +388,13 @@ public class LogServiceImpl implements LogService {
         return logRepository.save(log);
     }
 
+    // Async version using custom executor
+    @Override
+    public CompletableFuture<Log> verifyLogAsync(UUID logId, StatusLog status, UUID idDosen) {
+        return CompletableFuture.supplyAsync(() -> {
+            return verifyLog(logId, status, idDosen);
+        }, taskExecutor);
+    }
 
     @Override
     public List<Log> findByLowonganAndDosen(UUID idLowongan, UUID idDosen) {
@@ -327,7 +412,15 @@ public class LogServiceImpl implements LogService {
         return logRepository.findByIdLowongan(idLowongan);
     }
 
-    // Validation methods
+    // Async version using custom executor
+    @Override
+    public CompletableFuture<List<Log>> findByLowonganAndDosenAsync(UUID idLowongan, UUID idDosen) {
+        return CompletableFuture.supplyAsync(() -> {
+            return findByLowonganAndDosen(idLowongan, idDosen);
+        }, taskExecutor);
+    }
+
+    // Validation methods - Keep synchronous for quick validation
 
     @Override
     public boolean validateLowongan(UUID idLowongan) {
@@ -346,9 +439,24 @@ public class LogServiceImpl implements LogService {
         return dosen.isPresent() && "LECTURER".equals(dosen.get().getRole());
     }
 
+    // Async validation methods using custom executor
+    @Override
+    public CompletableFuture<Boolean> validateLowonganAsync(UUID idLowongan) {
+        return CompletableFuture.supplyAsync(() -> validateLowongan(idLowongan), taskExecutor);
+    }
+
+    @Override
+    public CompletableFuture<Boolean> validateMahasiswaAsync(UUID idMahasiswa) {
+        return CompletableFuture.supplyAsync(() -> validateMahasiswa(idMahasiswa), taskExecutor);
+    }
+
+    @Override
+    public CompletableFuture<Boolean> validateDosenAsync(UUID idDosen) {
+        return CompletableFuture.supplyAsync(() -> validateDosen(idDosen), taskExecutor);
+    }
+
     @Override
     public List<UUID> getDosenIdsByLowonganId(UUID idLowongan) {
-        // Tracing: Lowongan -> MataKuliah -> DosenPengampu
         Optional<Lowongan> lowonganOpt = lowonganRepository.findById(idLowongan);
         if (lowonganOpt.isEmpty()) {
             throw new ResourceNotFoundException("Lowongan tidak ditemukan");
@@ -357,14 +465,13 @@ public class LogServiceImpl implements LogService {
         Lowongan lowongan = lowonganOpt.get();
         String mataKuliahNama = lowongan.getMatkul();
 
-        // Find MataKuliah by nama
         List<MataKuliah> allMataKuliah = mataKuliahRepository.findAll();
         Optional<MataKuliah> mataKuliahOpt = allMataKuliah.stream()
                 .filter(mk -> mk.getNama().equals(mataKuliahNama))
                 .findFirst();
 
         if (mataKuliahOpt.isEmpty()) {
-            throw new ResourceNotFoundException("Mata kuliah tidak ditemukan: " + mataKuliahNama);
+            throw new ResourceNotFoundException("Mata kuliah tidak ditemukan dengan kode: " + mataKuliahNama);
         }
 
         MataKuliah mataKuliah = mataKuliahOpt.get();
@@ -394,6 +501,7 @@ public class LogServiceImpl implements LogService {
         }
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     private boolean isMahasiswaAcceptedForLowongan(UUID idMahasiswa, UUID idLowongan) {
         return lamaranRepository.findAll().stream()
                 .anyMatch(lamaran ->
