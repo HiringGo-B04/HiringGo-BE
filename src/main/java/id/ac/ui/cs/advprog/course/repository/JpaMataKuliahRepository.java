@@ -16,12 +16,10 @@ public interface JpaMataKuliahRepository
     default MataKuliah addMataKuliah(MataKuliah mk) {
         return save(mk);
     }
-
     @Override
     default Optional<MataKuliah> findByKode(String kode) {
         return findById(kode);
     }
-
     @Override
     default void deleteByKode(@NonNull String kode) {
         deleteById(kode);
