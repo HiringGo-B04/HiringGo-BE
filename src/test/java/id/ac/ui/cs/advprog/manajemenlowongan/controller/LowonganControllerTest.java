@@ -1,132 +1,157 @@
 package id.ac.ui.cs.advprog.manajemenlowongan.controller;
 
-import id.ac.ui.cs.advprog.authjwt.config.SecurityConfig;
-import id.ac.ui.cs.advprog.manajemenlowongan.model.Lowongan;
-import id.ac.ui.cs.advprog.manajemenlowongan.service.LowonganService;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import id.ac.ui.cs.advprog.authjwt.config.JwtUtil;
+import id.ac.ui.cs.advprog.manajemenlowongan.model.Lowongan;
+import id.ac.ui.cs.advprog.manajemenlowongan.service.LowonganServiceImpl;
+import id.ac.ui.cs.advprog.mendaftarlowongan.dto.LamaranDTO;
+import id.ac.ui.cs.advprog.mendaftarlowongan.enums.StatusLamaran;
+import id.ac.ui.cs.advprog.mendaftarlowongan.model.Lamaran;
+import id.ac.ui.cs.advprog.mendaftarlowongan.service.LamaranService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import;
-import org.springframework.http.HttpStatus;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.security.test.context.support.WithMockUser;
-import id.ac.ui.cs.advprog.authjwt.controller.TestSecurityBeansConfig;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@TestPropertySource(properties = {
-        "jwt.secret=fakeTestSecretKeyThatIsLongEnoughForHmacSha",
-        "jwt.expiration=3600000"
-})
-@Import({ SecurityConfig.class, TestSecurityBeansConfig.class })
-@WebMvcTest(LowonganController.class)
+@ExtendWith(MockitoExtension.class)
 class LowonganControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+    @Mock
+    private LowonganServiceImpl lowonganService;
 
     @Mock
-    private LowonganService lowonganService;
+    private JwtUtil jwtUtil;
 
     @InjectMocks
     private LowonganController lowonganController;
 
-    @Autowired
-    private ObjectMapper objectMapper = new ObjectMapper();
-
-    private Lowongan dummyLowongan;
-    private UUID dummyId;
-    private List<Lowongan> dummyLowongans;
+    private MockMvc mockMvc;
+    private UUID sampleUUID;
+    private ObjectMapper objectMapper;
+    private Lowongan sampleLowongan;
 
     @BeforeEach
     void setUp() {
-        dummyId = UUID.randomUUID();
-        dummyLowongan = new Lowongan();
-        dummyLowongan.setId(dummyId);
-        dummyLowongan.setMatkul("Advanced Programming");
-        dummyLowongan.setTahun(2025);
-        dummyLowongan.setTerm("Genap");
-        dummyLowongan.setTotalAsdosNeeded(5);
-        dummyLowongan.setTotalAsdosRegistered(35);
-        dummyLowongan.setTotalAsdosAccepted(3);
-
-        Lowongan lowongan1 = new Lowongan();
-        lowongan1.setId(UUID.randomUUID());
-        lowongan1.setMatkul("Sistem Interakso");
-
-        Lowongan lowongan2 = new Lowongan();
-        lowongan2.setId(UUID.randomUUID());
-        lowongan2.setMatkul("Pemrograman Lanjut");
-
-        dummyLowongans = Arrays.asList(lowongan1, lowongan2);
+        objectMapper = new ObjectMapper();
+        mockMvc = MockMvcBuilders.standaloneSetup(lowonganController).build();
+        sampleUUID = UUID.randomUUID();
+        sampleLowongan = new Lowongan.Builder()
+                .matkul("Pemrograman Lanjut")
+                .year(2025)
+                .term("Genap")
+                .idDosen(sampleUUID)
+                .totalAsdosNeeded(3)
+                .build();
     }
 
     @Test
-    void testGetLowonganSuccess() {
-        when(lowonganService.getLowongan()).thenReturn(dummyLowongans);
+    @WithMockUser(username = "LECTURER")
+    public void testGetLecturerDataById_Success() throws Exception {
+        UUID lecturerId = UUID.randomUUID();
+        String token = "header.payload.signature"; // Must have exactly 2 dots
+        String authHeader = "Bearer " + token;
 
-        ResponseEntity<List<Lowongan>> response = lowonganController.getLowongan();
+        Map<String, Object> responseMap = new HashMap<>();
+        responseMap.put("message", "Success");
+        responseMap.put("lowongan", 3);
+        responseMap.put("assistant", 5);
+        responseMap.put("vacan", 2);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(2, response.getBody().size());
-        Mockito.verify(lowonganService, times(1)).getLowongan();
+        when(jwtUtil.getUserIdFromToken(token)).thenReturn(lecturerId.toString());
+        when(lowonganService.getLowonganByDosen(lecturerId))
+                .thenReturn(ResponseEntity.ok(responseMap));
+
+        mockMvc.perform(get("/api/lowongan/lecturer/get")
+                        .header("Authorization", authHeader)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Success"))
+                .andExpect(jsonPath("$.lowongan").value(3))
+                .andExpect(jsonPath("$.assistant").value(5))
+                .andExpect(jsonPath("$.vacan").value(2));
     }
 
     @Test
-    @WithMockUser(roles = "LECTURER")
     void testAddLowongan() throws Exception {
-        when(lowonganService.addLowongan(any(Lowongan.class))).thenReturn(dummyLowongan);
+        when(lowonganService.addLowongan(any(Lowongan.class))).thenReturn(sampleLowongan);
+
         mockMvc.perform(post("/api/lowongan/user/add")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(dummyLowongan)))
-                .andExpect(status().isOk());
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(sampleLowongan)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.matkul").value("Pemrograman Lanjut"));
     }
 
     @Test
-    @WithMockUser(roles = "LECTURER")
-    void testGetLowonganById() throws Exception {
-        when(lowonganService.getLowonganById(dummyId)).thenReturn(dummyLowongan);
+    void testGetLowongan() throws Exception {
+        when(lowonganService.getLowongan()).thenReturn(List.of(sampleLowongan));
 
-        mockMvc.perform(get("/api/lowongan/user/get/" + dummyId))
-                .andExpect(status().isOk());
+        mockMvc.perform(get("/api/lowongan/user/get"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].matkul").value("Pemrograman Lanjut"));
+    }
+
+    @Test
+    void testGetLowonganById() throws Exception {
+        when(lowonganService.getLowonganById(sampleUUID)).thenReturn(sampleLowongan);
+
+        mockMvc.perform(get("/api/lowongan/user/get/" + sampleUUID))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.matkul").value("Pemrograman Lanjut"));
     }
 
     @Test
     void testGetLowonganById_NotFound() throws Exception {
-        when(lowonganService.getLowonganById(dummyId)).thenThrow(new RuntimeException("Lowongan tidak ditemukan"));
+        when(lowonganService.getLowonganById(any(UUID.class))).thenThrow(new LowonganController.LowonganNotFoundException("Lowongan dengan ID tidak ditemukan"));
 
-        mockMvc.perform(get("/api/lowongan/user/" + dummyId))
+        mockMvc.perform(get("/api/lowongan/user/get/" + UUID.randomUUID()))
                 .andExpect(status().isInternalServerError());
     }
 
-    @TestConfiguration
-    static class MockServiceConfig {
-        @Bean
-        public LowonganService lowonganService() {
-            return mock(LowonganService.class);
-        }
+    @Test
+    void testGetLecturerDataById() throws Exception {
+        String token = "valid.jwt.token";
+        String authHeader = "Bearer " + token;
+        UUID userId = UUID.randomUUID();
+        Map<String, Object> responseMap = new HashMap<>();
+        responseMap.put("status", "success");
+
+        when(jwtUtil.getUserIdFromToken(token)).thenReturn(userId.toString());
+        when(lowonganService.getLowonganByDosen(userId)).thenReturn(ResponseEntity.ok(responseMap));
+
+        mockMvc.perform(get("/api/lowongan/lecturer/get")
+                        .header("Authorization", authHeader))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("success"));
+    }
+
+    @Test
+    void testGetLecturerDataById_InvalidToken() throws Exception {
+        String token = "invalid.jwt.token";
+        String authHeader = "Bearer " + token;
+
+        when(jwtUtil.getUserIdFromToken(token)).thenThrow(new IllegalArgumentException("Invalid token"));
+
+        mockMvc.perform(get("/api/lowongan/lecturer/get")
+                        .header("Authorization", authHeader))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Invalid token"));
     }
 }

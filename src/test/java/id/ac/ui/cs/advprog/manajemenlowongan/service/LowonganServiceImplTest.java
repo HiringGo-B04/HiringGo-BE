@@ -1,46 +1,19 @@
 package id.ac.ui.cs.advprog.manajemenlowongan.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import id.ac.ui.cs.advprog.account.dto.get.GetAllUserDTO;
-import id.ac.ui.cs.advprog.account.dto.update.*;
 import id.ac.ui.cs.advprog.authjwt.model.User;
-import id.ac.ui.cs.advprog.authjwt.controller.TestSecurityBeansConfig;
-import id.ac.ui.cs.advprog.account.dto.delete.DeleteRequestDTO;
-import id.ac.ui.cs.advprog.account.dto.delete.DeleteResponseDTO;
-import id.ac.ui.cs.advprog.account.service.AccountService;
-import id.ac.ui.cs.advprog.authjwt.config.SecurityConfig;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
 
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-import id.ac.ui.cs.advprog.authjwt.model.User;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
 import id.ac.ui.cs.advprog.manajemenlowongan.model.Lowongan;
 import id.ac.ui.cs.advprog.manajemenlowongan.repository.LowonganRepository;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 
 import java.util.*;
 
@@ -123,25 +96,6 @@ public class LowonganServiceImplTest {
         assertEquals(new ArrayList<>(), body.get("data"));
     }
 
-//    @Test
-//    void testAddLowonganInvalidYearThrowsException() {
-//        // Asumsikan ada validasi pada tahun (contoh: tahun tidak boleh kurang dari 2020)
-//        Lowongan invalidLowongan = new Lowongan.Builder()
-//                .matkul("Adpro")
-//                .year(2000) // Invalid year
-//                .term("Genap")
-//                .totalAsdosNeeded(10)
-//                .totalAsdosRegistered(0)
-//                .totalAsdosAccepted(0)
-//                .build();
-//
-//        assertThrows(IllegalArgumentException.class, () -> {
-//            lowonganService.addLowongan(invalidLowongan);
-//        });
-//
-//        verify(lowonganRepository, never()).addLowongan(any());
-//    }
-
     @Test
     void testGetAllLowongan() {
         List<Lowongan> list = List.of(dummyLowongan);
@@ -183,26 +137,6 @@ public class LowonganServiceImplTest {
         assertEquals(15, updated.getTotalAsdosNeeded());
         verify(lowonganRepository).save(dummyLowongan);
     }
-//    @Test
-//    void testGetLowonganByIdNotFound() {
-//        when(lowonganRepository.findById(any())).thenReturn(null);
-//
-//        Lowongan result = lowonganService.getLowonganById(UUID.randomUUID());
-//
-//        assertNull(result);
-//    }
-//
-//    @Test
-//    void testUpdateLowongan() {
-//        when(lowonganRepository.findById(dummyLowongan.getId())).thenReturn(Optional.ofNullable(dummyLowongan));
-//        when(lowonganRepository.save(any(Lowongan.class))).thenAnswer(i -> i.getArgument(1));
-//
-//        dummyLowongan.setTotalAsdosNeeded(15);
-//        Lowongan updated = lowonganService.updateLowongan(dummyLowongan.getId(), dummyLowongan);
-//
-//        assertEquals(15, updated.getTotalAsdosNeeded());
-//        verify(lowonganRepository).save(dummyLowongan);
-//    }
 
     @Test
     void testDeleteLowongan() {
@@ -210,15 +144,6 @@ public class LowonganServiceImplTest {
         lowonganService.deleteLowongan(id);
         verify(lowonganRepository, times(1)).deleteById(id);
     }
-
-//    @Test
-//    void testIsLowonganExistsTrue() {
-//        when(lowonganRepository.getLowongan()).thenReturn(List.of(dummyLowongan));
-//
-//        boolean exists = lowonganService.isLowonganExists(dummyLowongan);
-//
-//        assertTrue(exists);
-//    }
 
     @Test
     void testIsLowonganExistsFalse() {
