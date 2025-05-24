@@ -10,14 +10,11 @@ import id.ac.ui.cs.advprog.account.service.strategy.LecturerRoleUpdateStrategy;
 import id.ac.ui.cs.advprog.account.service.strategy.RoleUpdateStrategy;
 import id.ac.ui.cs.advprog.account.service.strategy.StudentRoleUpdateStrategy;
 import id.ac.ui.cs.advprog.authjwt.model.User;
+import id.ac.ui.cs.advprog.authjwt.model.UserRole;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
 
-import id.ac.ui.cs.advprog.course.repository.MataKuliahRepository;
-import id.ac.ui.cs.advprog.manajemenlowongan.repository.LowonganRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.scheduling.annotation.Async;
@@ -29,15 +26,12 @@ import java.util.List;
 @Service
 public class AccountService{
     private final UserRepository userRepository;
-    private final LowonganRepository lowonganRepository;
-    private final MataKuliahRepository mataKuliahRepository;
     private final AsyncAccountHelper asyncHelper;
+    private final String defaultAcceptResponse = "accept";
+    private final String defaultErrorResponse = "error";
 
-
-    public AccountService(UserRepository userRepository, LowonganRepository lowonganRepository, MataKuliahRepository mataKuliahRepository, AsyncAccountHelper asyncHelper) {
+    public AccountService(UserRepository userRepository, AsyncAccountHelper asyncHelper) {
         this.userRepository = userRepository;
-        this.lowonganRepository = lowonganRepository;
-        this.mataKuliahRepository = mataKuliahRepository;
         this.asyncHelper = asyncHelper;
     }
 
@@ -52,13 +46,13 @@ public class AccountService{
             userRepository.deleteByUsername(user.getUsername());
 
             return new ResponseEntity<>(
-                    new DeleteResponseDTO("accept", "Succes delete user"),
+                    new DeleteResponseDTO(defaultAcceptResponse, "Succes delete user"),
                     HttpStatus.valueOf(200));
         }
 
         catch (Exception e) {
             return new ResponseEntity<>(
-                    new DeleteResponseDTO("error", e.getMessage()),
+                    new DeleteResponseDTO(defaultErrorResponse, e.getMessage()),
                     HttpStatus.valueOf(400));
         }
     }
@@ -76,7 +70,7 @@ public class AccountService{
         }
         catch (Exception e) {
             return new ResponseEntity<>(
-                    new ResponseUpdateDTO("error", e.getMessage()),
+                    new ResponseUpdateDTO(defaultErrorResponse, e.getMessage()),
 
                     HttpStatus.valueOf(400));
         }
@@ -85,19 +79,14 @@ public class AccountService{
     @Async("taskExecutor")
     public CompletableFuture<ResponseEntity<GetAllUserDTO>> getAllUser() {
 
-        CompletableFuture<List<User>> studentFuture = asyncHelper.getUsersByRoleAsync("STUDENT");
-        CompletableFuture<List<User>> lecturerFuture = asyncHelper.getUsersByRoleAsync("LECTURER");
-        CompletableFuture<List<User>> adminFuture = asyncHelper.getUsersByRoleAsync("ADMIN");
+        CompletableFuture<List<User>> studentFuture = asyncHelper.getUsersByRoleAsync(UserRole.STUDENT.getValue());
+        CompletableFuture<List<User>> lecturerFuture = asyncHelper.getUsersByRoleAsync(UserRole.LECTURER.getValue());
+        CompletableFuture<List<User>> adminFuture = asyncHelper.getUsersByRoleAsync(UserRole.ADMIN.getValue());
         CompletableFuture<Integer> courseCountFuture = asyncHelper.getNumberOfCoursesAsync();
         CompletableFuture<Integer> vacancyCountFuture = asyncHelper.getNumberOfVacanciesAsync();
 
         return CompletableFuture.allOf(studentFuture, lecturerFuture, adminFuture, courseCountFuture, vacancyCountFuture)
                 .handle((ignored, throwable) -> {
-                    if (throwable != null) {
-                        return new ResponseEntity<>(
-                                new GetAllUserDTO("error", throwable.getCause().getMessage(), 0, 0, 0, 0, null),
-                                HttpStatus.BAD_REQUEST);
-                    }
 
                     try {
                         List<User> students = studentFuture.get();
@@ -116,11 +105,11 @@ public class AccountService{
                         }
 
                         return new ResponseEntity<>(
-                                new GetAllUserDTO("accept", "test", lecturers.size(), students.size(), numberOfVacancies, numberOfCourses, users),
+                                new GetAllUserDTO(defaultAcceptResponse, "test", lecturers.size(), students.size(), numberOfVacancies, numberOfCourses, users),
                                 HttpStatus.OK);
                     } catch (Exception e) {
                         return new ResponseEntity<>(
-                                new GetAllUserDTO("error", e.getMessage(), 0, 0, 0, 0, null),
+                                new GetAllUserDTO(defaultErrorResponse, e.getMessage(), 0, 0, 0, 0, null),
                                 HttpStatus.BAD_REQUEST);
                     }
                 });
@@ -128,13 +117,13 @@ public class AccountService{
 
     private RoleUpdateStrategy getRoleUpdateStrategy(UserUpdateDTO userUpdateDTO) {
         RoleUpdateStrategy strategy;
-        if(userUpdateDTO.role.equals("ADMIN")){
+        if(userUpdateDTO.role.equals(UserRole.ADMIN.getValue())) {
             strategy = new AdminRoleUpdateStrategy(userRepository);
         }
-        else if(userUpdateDTO.role.equals("LECTURER")){
+        else if(userUpdateDTO.role.equals(UserRole.LECTURER.getValue())) {
             strategy = new LecturerRoleUpdateStrategy(userRepository);
         }
-        else if(userUpdateDTO.role.equals("STUDENT")){
+        else if(userUpdateDTO.role.equals(UserRole.STUDENT.getValue())) {
             strategy = new StudentRoleUpdateStrategy(userRepository);
         }
         else{

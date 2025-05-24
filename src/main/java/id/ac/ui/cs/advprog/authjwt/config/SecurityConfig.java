@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.authjwt.config;
 
+import id.ac.ui.cs.advprog.authjwt.model.UserRole;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -26,6 +27,9 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtFilter;
+    private final String ADMIN_ROLE = UserRole.ADMIN.name();
+    private final String STUDENT_ROLE = UserRole.STUDENT.name();
+    private final String LECTURER_ROLE = UserRole.LECTURER.name();
 
     public SecurityConfig(JwtUtil jwtUtil) {
         this.jwtFilter = new JwtAuthFilter(jwtUtil);
@@ -41,20 +45,20 @@ public class SecurityConfig {
                         /*
                          * Jika ingin melakukan testing tanpa adanya RBAC comment
                          */
-                        .requestMatchers("/api/auth/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/auth/user/**").hasAnyRole("ADMIN", "STUDENT", "LECTURER")
+                        .requestMatchers("/api/auth/admin/**").hasRole(ADMIN_ROLE)
+                        .requestMatchers("/api/auth/user/**").hasAnyRole(ADMIN_ROLE, STUDENT_ROLE, LECTURER_ROLE)
 
-                        .requestMatchers("/api/account/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/account/admin/**").hasRole(ADMIN_ROLE)
 
-                        .requestMatchers("/api/lamaran/student/**").hasRole("STUDENT")
-                        .requestMatchers("/api/lamaran/user/**").hasAnyRole("ADMIN", "STUDENT", "LECTURER")
-                        .requestMatchers("/api/lamaran/lecturer/**").hasRole("LECTURER")
-                        .requestMatchers("/api/log/student/**").hasRole("STUDENT")
-                        .requestMatchers("/api/log/lecturer/**").hasRole("LECTURER")
+                        .requestMatchers("/api/lamaran/student/**").hasRole(STUDENT_ROLE)
+                        .requestMatchers("/api/lamaran/user/**").hasAnyRole(ADMIN_ROLE, STUDENT_ROLE, LECTURER_ROLE)
+                        .requestMatchers("/api/lamaran/lecturer/**").hasRole(LECTURER_ROLE)
+                        .requestMatchers("/api/log/student/**").hasRole(STUDENT_ROLE)
+                        .requestMatchers("/api/log/lecturer/**").hasRole(LECTURER_ROLE)
 
                         // for debugging purpose
-                        .requestMatchers("/api/lowongan/user/**").hasAnyRole("ADMIN", "STUDENT", "LECTURER")
-                        .requestMatchers("/api/lowongan/lecturer/**").hasRole("LECTURER")
+                        .requestMatchers("/api/lowongan/user/**").hasAnyRole(ADMIN_ROLE, STUDENT_ROLE, LECTURER_ROLE)
+                        .requestMatchers("/api/lowongan/lecturer/**").hasRole(LECTURER_ROLE)
                         /*
                          * Hingga sini yang permitAll bawah ngga usah itu kayak namanya nge permit semuanya
                          */

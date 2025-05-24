@@ -3,6 +3,7 @@ package id.ac.ui.cs.advprog.authjwt.service.command;
 import id.ac.ui.cs.advprog.authjwt.dto.registration.LecturerRegistrationDTO;
 import id.ac.ui.cs.advprog.authjwt.dto.registration.RegisterResponseDTO;
 import id.ac.ui.cs.advprog.authjwt.model.User;
+import id.ac.ui.cs.advprog.authjwt.model.UserRole;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,15 +24,15 @@ public class LecturerRegistrationCommand extends RegistrationCommand {
         LecturerRegistrationDTO lecturer = (LecturerRegistrationDTO) user;
 
         Map<String, String> validity = check_invalid_input("lecturer");
-        if(!"valid".equals(validity.get("message"))) {
+        if(!"valid".equals(validity.get(defaultMessageResponse))) {
             return new ResponseEntity<>(
-                    new RegisterResponseDTO("error", validity.get("message")),
+                    new RegisterResponseDTO(defaultErrorResponse, validity.get(defaultMessageResponse)),
                     HttpStatus.valueOf(400));
         }
 
         if(userRepository.existsByNip(lecturer.nip())) {
             return new ResponseEntity<>(
-                    new RegisterResponseDTO("error", "NIP Already exists"),
+                    new RegisterResponseDTO(defaultErrorResponse, "NIP Already exists"),
                     HttpStatus.valueOf(400));
         }
 
@@ -49,15 +50,15 @@ public class LecturerRegistrationCommand extends RegistrationCommand {
 
             return new ResponseEntity<>(
                     new RegisterResponseDTO(
-                            "accept",
+                            defaultAcceptResponse,
                             "Success register",
                             newUser.getUsername(),
-                            "LECTURER"),
+                            UserRole.LECTURER.getValue()),
                     HttpStatus.valueOf(200));
         }
         catch (Exception e) {
             return new ResponseEntity<>(
-                    new RegisterResponseDTO("error", e.getMessage()),
+                    new RegisterResponseDTO(defaultErrorResponse, e.getMessage()),
                     HttpStatus.valueOf(400));
         }
     }
