@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Map;
 import java.util.UUID;
 
+import static id.ac.ui.cs.advprog.authjwt.config.GeneralUtils.*;
 
 public class AdminRegistrationCommand extends RegistrationCommand {
     public AdminRegistrationCommand(UserRepository userRepository, PasswordEncoder passwordEncoder, AdminRegistrationDTO user) {

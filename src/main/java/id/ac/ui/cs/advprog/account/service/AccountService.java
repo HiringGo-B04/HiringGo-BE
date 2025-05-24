@@ -9,6 +9,7 @@ import id.ac.ui.cs.advprog.account.service.strategy.AdminRoleUpdateStrategy;
 import id.ac.ui.cs.advprog.account.service.strategy.LecturerRoleUpdateStrategy;
 import id.ac.ui.cs.advprog.account.service.strategy.RoleUpdateStrategy;
 import id.ac.ui.cs.advprog.account.service.strategy.StudentRoleUpdateStrategy;
+import id.ac.ui.cs.advprog.authjwt.config.GeneralUtils;
 import id.ac.ui.cs.advprog.authjwt.model.User;
 import id.ac.ui.cs.advprog.authjwt.model.UserRole;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
@@ -23,12 +24,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.ArrayList;
 import java.util.List;
 
+import static id.ac.ui.cs.advprog.authjwt.config.GeneralUtils.defaultAcceptResponse;
+import static id.ac.ui.cs.advprog.authjwt.config.GeneralUtils.defaultErrorResponse;
+
 @Service
 public class AccountService{
     private final UserRepository userRepository;
     private final AsyncAccountHelper asyncHelper;
-    private final String defaultAcceptResponse = "accept";
-    private final String defaultErrorResponse = "error";
 
     public AccountService(UserRepository userRepository, AsyncAccountHelper asyncHelper) {
         this.userRepository = userRepository;
