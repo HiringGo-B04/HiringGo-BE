@@ -3,6 +3,7 @@ package id.ac.ui.cs.advprog.manajemenlowongan.model;
 import java.util.UUID;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,6 +19,9 @@ public class Lowongan {
     private String matkul;
     private int tahun;
     private String term;
+
+    @NotBlank
+    private UUID idDosen;
 
     @Column(name = "total_asdos_needed", nullable = false)
     private int totalAsdosNeeded;
@@ -36,6 +40,7 @@ public class Lowongan {
         this.totalAsdosNeeded = builder.totalAsdosNeeded;
         this.totalAsdosRegistered = builder.totalAsdosRegistered;
         this.totalAsdosAccepted = builder.totalAsdosAccepted;
+        this.idDosen = builder.idDosen;
     }
 
     public Lowongan() {
@@ -49,6 +54,7 @@ public class Lowongan {
         private int totalAsdosNeeded;
         private int totalAsdosRegistered = 0;
         private int totalAsdosAccepted = 0;
+        private UUID idDosen;
 
         public Builder matkul(String matkul) {
             this.matkul = matkul;
@@ -62,6 +68,11 @@ public class Lowongan {
 
         public Builder term(String term) {
             this.term = term;
+            return this;
+        }
+
+        public Builder idDosen(UUID idDosen) {
+            this.idDosen = idDosen;
             return this;
         }
 
