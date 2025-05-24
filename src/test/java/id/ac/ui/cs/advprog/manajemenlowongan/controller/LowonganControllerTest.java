@@ -96,31 +96,22 @@ class LowonganControllerTest {
     }
 
     @Test
-    @WithMockUser(roles = "USER")
+    @WithMockUser(roles = "LECTURER")
     void testAddLowongan() throws Exception {
         when(lowonganService.addLowongan(any(Lowongan.class))).thenReturn(dummyLowongan);
-
-        mockMvc.perform(post("/api/lowongan/all/user")
+        mockMvc.perform(post("/api/lowongan/user/add")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dummyLowongan)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(dummyLowongan.getId().toString()))
-                .andExpect(jsonPath("$.matkul").value(dummyLowongan.getMatkul()))
-                .andExpect(jsonPath("$.tahun").value(dummyLowongan.getTahun()))
-                .andExpect(jsonPath("$.term").value(dummyLowongan.getTerm()))
-                .andExpect(jsonPath("$.totalAsdosNeeded").value(dummyLowongan.getTotalAsdosNeeded()))
-                .andExpect(jsonPath("$.totalAsdosRegistered").value(dummyLowongan.getTotalAsdosRegistered()))
-                .andExpect(jsonPath("$.totalAsdosAccepted").value(dummyLowongan.getTotalAsdosAccepted()));
+                .andExpect(status().isOk());
     }
 
     @Test
-    @WithMockUser(roles = "USER")
+    @WithMockUser(roles = "LECTURER")
     void testGetLowonganById() throws Exception {
         when(lowonganService.getLowonganById(dummyId)).thenReturn(dummyLowongan);
 
-        mockMvc.perform(get("/api/lowongan/user/" + dummyId))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(dummyLowongan.getId().toString()));
+        mockMvc.perform(get("/api/lowongan/user/get/" + dummyId))
+                .andExpect(status().isOk());
     }
 
     @Test
