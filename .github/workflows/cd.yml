@@ -53,3 +53,6 @@ jobs:
               -e DB_PASSWORD=${{ secrets.PROD_DB_PASSWORD }} \
               -e JWT_SECRET=${{ secrets.PROD_JWT_SECRET }} \
               ${{ secrets.DOCKER_HUB_USERNAME }}/${{ secrets.DOCKER_HUB_REPO_NAME }}:latest
+            
+            cd ~/monitoring
+            docker compose up -d
