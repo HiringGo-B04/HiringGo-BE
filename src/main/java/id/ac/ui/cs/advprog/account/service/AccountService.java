@@ -9,7 +9,6 @@ import id.ac.ui.cs.advprog.account.service.strategy.AdminRoleUpdateStrategy;
 import id.ac.ui.cs.advprog.account.service.strategy.LecturerRoleUpdateStrategy;
 import id.ac.ui.cs.advprog.account.service.strategy.RoleUpdateStrategy;
 import id.ac.ui.cs.advprog.account.service.strategy.StudentRoleUpdateStrategy;
-import id.ac.ui.cs.advprog.authjwt.config.GeneralUtils;
 import id.ac.ui.cs.advprog.authjwt.model.User;
 import id.ac.ui.cs.advprog.authjwt.model.UserRole;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
@@ -24,8 +23,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.ArrayList;
 import java.util.List;
 
-import static id.ac.ui.cs.advprog.authjwt.config.GeneralUtils.defaultAcceptResponse;
-import static id.ac.ui.cs.advprog.authjwt.config.GeneralUtils.defaultErrorResponse;
+import static id.ac.ui.cs.advprog.authjwt.config.GeneralUtils.*;
 
 @Service
 public class AccountService{
@@ -48,13 +46,13 @@ public class AccountService{
             userRepository.deleteByUsername(user.getUsername());
 
             return new ResponseEntity<>(
-                    new DeleteResponseDTO(defaultAcceptResponse, "Succes delete user"),
+                    new DeleteResponseDTO(DEFAULT_ACCEPT_RESPONSE, "Succes delete user"),
                     HttpStatus.valueOf(200));
         }
 
         catch (Exception e) {
             return new ResponseEntity<>(
-                    new DeleteResponseDTO(defaultErrorResponse, e.getMessage()),
+                    new DeleteResponseDTO(DEFAULT_ERROR_RESPONSE, e.getMessage()),
                     HttpStatus.valueOf(400));
         }
     }
@@ -72,7 +70,7 @@ public class AccountService{
         }
         catch (Exception e) {
             return new ResponseEntity<>(
-                    new ResponseUpdateDTO(defaultErrorResponse, e.getMessage()),
+                    new ResponseUpdateDTO(DEFAULT_ERROR_RESPONSE, e.getMessage()),
 
                     HttpStatus.valueOf(400));
         }
@@ -107,19 +105,19 @@ public class AccountService{
                         }
 
                         return new ResponseEntity<>(
-                                new GetAllUserDTO(defaultAcceptResponse, "test", lecturers.size(), students.size(), numberOfVacancies, numberOfCourses, users),
+                                new GetAllUserDTO(DEFAULT_ACCEPT_RESPONSE, "test", lecturers.size(), students.size(), numberOfVacancies, numberOfCourses, users),
                                 HttpStatus.OK);
                     }
                     catch (Exception e) {
                         if (e.getCause() instanceof InterruptedException) {
                             Thread.currentThread().interrupt(); // Re-interrupt the thread
                             return new ResponseEntity<>(
-                                    new GetAllUserDTO(defaultErrorResponse, "Thread was interrupted", 0, 0, 0, 0, null),
+                                    new GetAllUserDTO(DEFAULT_ERROR_RESPONSE, "Thread was interrupted", 0, 0, 0, 0, null),
                                     HttpStatus.INTERNAL_SERVER_ERROR);
                         }
 
                         return new ResponseEntity<>(
-                                new GetAllUserDTO(defaultErrorResponse, e.getMessage(), 0, 0, 0, 0, null),
+                                new GetAllUserDTO(DEFAULT_ERROR_RESPONSE, e.getMessage(), 0, 0, 0, 0, null),
                                 HttpStatus.BAD_REQUEST);
                     }
                 });

@@ -26,15 +26,15 @@ public class LecturerRegistrationCommand extends RegistrationCommand {
         LecturerRegistrationDTO lecturer = (LecturerRegistrationDTO) user;
 
         Map<String, String> validity = check_invalid_input("lecturer");
-        if(!"valid".equals(validity.get(defaultMessageResponse))) {
+        if(!"valid".equals(validity.get(DEFAULT_MESSAGE_RESPONSE))) {
             return new ResponseEntity<>(
-                    new RegisterResponseDTO(defaultErrorResponse, validity.get(defaultMessageResponse)),
+                    new RegisterResponseDTO(DEFAULT_ERROR_RESPONSE, validity.get(DEFAULT_MESSAGE_RESPONSE)),
                     HttpStatus.valueOf(400));
         }
 
         if(userRepository.existsByNip(lecturer.nip())) {
             return new ResponseEntity<>(
-                    new RegisterResponseDTO(defaultErrorResponse, "NIP Already exists"),
+                    new RegisterResponseDTO(DEFAULT_ERROR_RESPONSE, "NIP Already exists"),
                     HttpStatus.valueOf(400));
         }
 
@@ -52,7 +52,7 @@ public class LecturerRegistrationCommand extends RegistrationCommand {
 
             return new ResponseEntity<>(
                     new RegisterResponseDTO(
-                            defaultAcceptResponse,
+                            DEFAULT_ACCEPT_RESPONSE,
                             "Success register",
                             newUser.getUsername(),
                             UserRole.LECTURER.getValue()),
@@ -60,7 +60,7 @@ public class LecturerRegistrationCommand extends RegistrationCommand {
         }
         catch (Exception e) {
             return new ResponseEntity<>(
-                    new RegisterResponseDTO(defaultErrorResponse, e.getMessage()),
+                    new RegisterResponseDTO(DEFAULT_ERROR_RESPONSE, e.getMessage()),
                     HttpStatus.valueOf(400));
         }
     }

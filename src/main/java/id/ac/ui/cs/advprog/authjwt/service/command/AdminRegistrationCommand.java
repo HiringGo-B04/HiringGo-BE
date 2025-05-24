@@ -25,9 +25,9 @@ public class AdminRegistrationCommand extends RegistrationCommand {
     public ResponseEntity<RegisterResponseDTO> addUser() {
         Map<String, String> validity = check_invalid_input("admin");
 
-        if(!"valid".equals(validity.get(defaultMessageResponse))) {
+        if(!"valid".equals(validity.get(DEFAULT_MESSAGE_RESPONSE))) {
             return new ResponseEntity<>(
-                    new RegisterResponseDTO(defaultErrorResponse, validity.get(defaultMessageResponse)),
+                    new RegisterResponseDTO(DEFAULT_ERROR_RESPONSE, validity.get(DEFAULT_MESSAGE_RESPONSE)),
                     HttpStatus.valueOf(400));
         }
 
@@ -42,7 +42,7 @@ public class AdminRegistrationCommand extends RegistrationCommand {
 
             return new ResponseEntity<>(
                     new RegisterResponseDTO(
-                            defaultAcceptResponse,
+                            DEFAULT_ACCEPT_RESPONSE,
                             "Success register",
                             newUser.getUsername(),
                             UserRole.ADMIN.getValue()
@@ -50,7 +50,7 @@ public class AdminRegistrationCommand extends RegistrationCommand {
                     HttpStatus.valueOf(200));
         }
         catch (Exception e) {
-            return new ResponseEntity<>(new RegisterResponseDTO(defaultErrorResponse, e.getMessage()), HttpStatus.valueOf(401));
+            return new ResponseEntity<>(new RegisterResponseDTO(DEFAULT_ERROR_RESPONSE, e.getMessage()), HttpStatus.valueOf(401));
         }
     }
 }

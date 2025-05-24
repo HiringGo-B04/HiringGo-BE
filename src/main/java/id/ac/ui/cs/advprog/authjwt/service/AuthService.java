@@ -22,8 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static id.ac.ui.cs.advprog.authjwt.config.GeneralUtils.defaultAcceptResponse;
-import static id.ac.ui.cs.advprog.authjwt.config.GeneralUtils.defaultErrorResponse;
+import static id.ac.ui.cs.advprog.authjwt.config.GeneralUtils.*;
 
 @Service
 public class AuthService implements AuthenticationFacade {
@@ -48,13 +47,13 @@ public class AuthService implements AuthenticationFacade {
 
         if(exist_user == null) {
             return new ResponseEntity<>(
-                    new LoginResponseDTO(defaultErrorResponse, "User didn't exist"),
+                    new LoginResponseDTO(DEFAULT_ERROR_RESPONSE, "User didn't exist"),
                     HttpStatus.valueOf(400));
         }
 
         if (!encoder.matches(user.password(), exist_user.getPassword())) {
             return new ResponseEntity<>(
-                    new LoginResponseDTO(defaultErrorResponse, "Invalid Password"),
+                    new LoginResponseDTO(DEFAULT_ERROR_RESPONSE, "Invalid Password"),
                     HttpStatus.valueOf(400));
         }
 
@@ -64,7 +63,7 @@ public class AuthService implements AuthenticationFacade {
             tokenRepository.save(user_token);
 
             return new ResponseEntity<>(
-                    new LoginResponseDTO(defaultAcceptResponse, "Success login", jwt_token),
+                    new LoginResponseDTO(DEFAULT_ACCEPT_RESPONSE, "Success login", jwt_token),
                     HttpStatus.valueOf(200));
         }
         catch (Exception e) {
@@ -85,12 +84,12 @@ public class AuthService implements AuthenticationFacade {
 
             tokenRepository.deleteByToken(token.token());
             return new ResponseEntity<>(
-                    new LogoutResponseDTO(defaultAcceptResponse, "Succes to logout"),
+                    new LogoutResponseDTO(DEFAULT_ACCEPT_RESPONSE, "Succes to logout"),
                     HttpStatus.valueOf(200));
         }
         catch (Exception e) {
             return new ResponseEntity<>(
-                    new LogoutResponseDTO(defaultErrorResponse, e.getMessage()),
+                    new LogoutResponseDTO(DEFAULT_ERROR_RESPONSE, e.getMessage()),
                     HttpStatus.valueOf(400));
         }
     }
@@ -120,7 +119,7 @@ public class AuthService implements AuthenticationFacade {
         }
         catch (Exception e) {
             return new ResponseEntity<>(
-                    new RegisterResponseDTO(defaultErrorResponse,e.getMessage()),
+                    new RegisterResponseDTO(DEFAULT_ERROR_RESPONSE,e.getMessage()),
                     HttpStatus.valueOf(400));
         }
 
