@@ -36,7 +36,7 @@ public class AccountController {
 
     @GetMapping(USER)
     public ResponseEntity<GetAllUserDTO> get() throws ExecutionException, InterruptedException {
-        return accountService.getAllUser().get(); // waits on async task
+        return accountService.getAllUser().get();
     }
 
 }

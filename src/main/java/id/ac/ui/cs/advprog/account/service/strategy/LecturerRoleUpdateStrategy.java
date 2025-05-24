@@ -4,6 +4,7 @@ import id.ac.ui.cs.advprog.account.dto.update.ResponseUpdateDTO;
 import id.ac.ui.cs.advprog.account.dto.update.UserIntoLecturerDTO;
 import id.ac.ui.cs.advprog.account.dto.update.UserUpdateDTO;
 import id.ac.ui.cs.advprog.authjwt.model.User;
+import id.ac.ui.cs.advprog.authjwt.model.UserRole;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +32,7 @@ public class LecturerRoleUpdateStrategy implements RoleUpdateStrategy {
         user.setNip(userIntoLecturerDTO.nip);
         user.setFullName(userIntoLecturerDTO.fullName);
         user.setNim(null);
-        user.setRole("LECTURER");
+        user.setRole(UserRole.LECTURER.getValue());
 
         try{
             userRepository.save(user);

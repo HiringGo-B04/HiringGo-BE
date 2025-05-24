@@ -10,6 +10,7 @@ import id.ac.ui.cs.advprog.account.service.strategy.LecturerRoleUpdateStrategy;
 import id.ac.ui.cs.advprog.account.service.strategy.RoleUpdateStrategy;
 import id.ac.ui.cs.advprog.account.service.strategy.StudentRoleUpdateStrategy;
 import id.ac.ui.cs.advprog.authjwt.model.User;
+import id.ac.ui.cs.advprog.authjwt.model.UserRole;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
 
 import org.springframework.http.HttpStatus;
@@ -78,9 +79,9 @@ public class AccountService{
     @Async("taskExecutor")
     public CompletableFuture<ResponseEntity<GetAllUserDTO>> getAllUser() {
 
-        CompletableFuture<List<User>> studentFuture = asyncHelper.getUsersByRoleAsync("STUDENT");
-        CompletableFuture<List<User>> lecturerFuture = asyncHelper.getUsersByRoleAsync("LECTURER");
-        CompletableFuture<List<User>> adminFuture = asyncHelper.getUsersByRoleAsync("ADMIN");
+        CompletableFuture<List<User>> studentFuture = asyncHelper.getUsersByRoleAsync(UserRole.STUDENT.getValue());
+        CompletableFuture<List<User>> lecturerFuture = asyncHelper.getUsersByRoleAsync(UserRole.LECTURER.getValue());
+        CompletableFuture<List<User>> adminFuture = asyncHelper.getUsersByRoleAsync(UserRole.ADMIN.getValue());
         CompletableFuture<Integer> courseCountFuture = asyncHelper.getNumberOfCoursesAsync();
         CompletableFuture<Integer> vacancyCountFuture = asyncHelper.getNumberOfVacanciesAsync();
 
@@ -116,13 +117,13 @@ public class AccountService{
 
     private RoleUpdateStrategy getRoleUpdateStrategy(UserUpdateDTO userUpdateDTO) {
         RoleUpdateStrategy strategy;
-        if(userUpdateDTO.role.equals("ADMIN")){
+        if(userUpdateDTO.role.equals(UserRole.ADMIN.getValue())) {
             strategy = new AdminRoleUpdateStrategy(userRepository);
         }
-        else if(userUpdateDTO.role.equals("LECTURER")){
+        else if(userUpdateDTO.role.equals(UserRole.LECTURER.getValue())) {
             strategy = new LecturerRoleUpdateStrategy(userRepository);
         }
-        else if(userUpdateDTO.role.equals("STUDENT")){
+        else if(userUpdateDTO.role.equals(UserRole.STUDENT.getValue())) {
             strategy = new StudentRoleUpdateStrategy(userRepository);
         }
         else{
