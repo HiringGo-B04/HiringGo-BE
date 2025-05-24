@@ -1,5 +1,7 @@
 package id.ac.ui.cs.advprog.log.controller;
 
+import id.ac.ui.cs.advprog.authjwt.model.User;
+import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
 import id.ac.ui.cs.advprog.log.dto.LogDTO;
 import id.ac.ui.cs.advprog.log.enums.StatusLog;
 import id.ac.ui.cs.advprog.log.exception.BadRequestException;
@@ -24,6 +26,9 @@ public class LogController {
 
     @Autowired
     private LogService logService;
+
+    @Autowired
+    private UserRepository userRepository;
 
     // ========== Manajemen Log (Student) ==========
 
@@ -296,10 +301,13 @@ public class LogController {
         if (auth == null || auth.getName() == null) {
             throw new BadRequestException("User tidak terautentikasi");
         }
-        try {
-            return UUID.fromString(auth.getName());
-        } catch (IllegalArgumentException e) {
-            throw new BadRequestException("User ID tidak valid");
+
+        User user = userRepository.findByUsername(auth.getName());
+
+        if (user == null) {
+            throw new BadRequestException("User tidak ditemukan");
         }
+
+        return user.getUserId();
     }
 }
