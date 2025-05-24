@@ -3,6 +3,7 @@ package id.ac.ui.cs.advprog.authjwt.service.command;
 import id.ac.ui.cs.advprog.authjwt.dto.registration.AdminRegistrationDTO;
 import id.ac.ui.cs.advprog.authjwt.dto.registration.RegisterResponseDTO;
 import id.ac.ui.cs.advprog.authjwt.model.User;
+import id.ac.ui.cs.advprog.authjwt.model.UserRole;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,9 +24,9 @@ public class AdminRegistrationCommand extends RegistrationCommand {
     public ResponseEntity<RegisterResponseDTO> addUser() {
         Map<String, String> validity = check_invalid_input("admin");
 
-        if(!"valid".equals(validity.get("message"))) {
+        if(!"valid".equals(validity.get(defaultMessageResponse))) {
             return new ResponseEntity<>(
-                    new RegisterResponseDTO("error", validity.get("message")),
+                    new RegisterResponseDTO(defaultErrorResponse, validity.get(defaultMessageResponse)),
                     HttpStatus.valueOf(400));
         }
 
@@ -40,15 +41,15 @@ public class AdminRegistrationCommand extends RegistrationCommand {
 
             return new ResponseEntity<>(
                     new RegisterResponseDTO(
-                            "accept",
+                            defaultAcceptResponse,
                             "Success register",
                             newUser.getUsername(),
-                            "ADMIN"
+                            UserRole.ADMIN.getValue()
                     ),
                     HttpStatus.valueOf(200));
         }
         catch (Exception e) {
-            return new ResponseEntity<>(new RegisterResponseDTO("error", e.getMessage()), HttpStatus.valueOf(401));
+            return new ResponseEntity<>(new RegisterResponseDTO(defaultErrorResponse, e.getMessage()), HttpStatus.valueOf(401));
         }
     }
 }

@@ -3,6 +3,7 @@ package id.ac.ui.cs.advprog.authjwt.service.command;
 import id.ac.ui.cs.advprog.authjwt.dto.registration.RegisterResponseDTO;
 import id.ac.ui.cs.advprog.authjwt.dto.registration.StudentRegistrationDTO;
 import id.ac.ui.cs.advprog.authjwt.model.User;
+import id.ac.ui.cs.advprog.authjwt.model.UserRole;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,9 +23,9 @@ public class StudentRegistrationCommand extends RegistrationCommand {
     public ResponseEntity<RegisterResponseDTO> addUser() {
         Map<String, String> validity = check_invalid_input("student");
 
-        if(!"valid".equals(validity.get("message"))) {
+        if(!"valid".equals(validity.get(defaultMessageResponse))) {
             return new ResponseEntity<>(
-                    new RegisterResponseDTO("error", validity.get("message")),
+                    new RegisterResponseDTO(defaultErrorResponse, validity.get(defaultMessageResponse)),
                     HttpStatus.valueOf(400));
         }
 
@@ -32,7 +33,7 @@ public class StudentRegistrationCommand extends RegistrationCommand {
 
         if(userRepository.existsByNim(student.nim())) {
             return new ResponseEntity<>(
-                    new RegisterResponseDTO("error", "NIM Already Exist"),
+                    new RegisterResponseDTO(defaultErrorResponse, "NIM Already Exist"),
                     HttpStatus.valueOf(400));
         }
 
@@ -50,15 +51,15 @@ public class StudentRegistrationCommand extends RegistrationCommand {
 
             return new ResponseEntity<>(
                     new RegisterResponseDTO(
-                            "accept",
+                            defaultAcceptResponse,
                             "Success register",
                             newUser.getUsername(),
-                            "STUDENT"),
+                            UserRole.STUDENT.getValue()),
                     HttpStatus.valueOf(200));
         }
         catch (Exception e) {
             return new ResponseEntity<>(
-                    new RegisterResponseDTO("error", e.getMessage()),
+                    new RegisterResponseDTO(defaultErrorResponse, e.getMessage()),
                     HttpStatus.valueOf(400));
         }
     }

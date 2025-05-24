@@ -16,16 +16,20 @@ public abstract class RegistrationCommand {
     public PasswordEncoder passwordEncoder;
     public UserDTO user;
 
+    public final String defaultAcceptResponse = "accept";
+    public final String defaultErrorResponse = "error";
+    public final String defaultMessageResponse = "message";
+
     public Map<String, String> check_invalid_input(String status) {
         Map<String, String> response = new HashMap<>();
 
         if(!GeneralUtils.isValidEmail(user.username())) {
-            response.put("message", "Username must be a valid email address");
+            response.put(defaultMessageResponse, "Username must be a valid email address");
             return response;
         }
 
         if(userRepository.existsByUsername(user.username())) {
-            response.put("message", "Username already exists");
+            response.put(defaultMessageResponse, "Username already exists");
             return response;
         }
 
@@ -42,17 +46,17 @@ public abstract class RegistrationCommand {
             }
 
             if(!GeneralUtils.isValidString(fullName)) {
-                response.put("message", "Name must only contain letter character");
+                response.put(defaultMessageResponse, "Name must only contain letter character");
                 return response;
             }
 
             if (!GeneralUtils.isValidInt(idNumber)) {
-                response.put("message", "NIM/NIP must only contain number and maximal 12 digits long");
+                response.put(defaultMessageResponse, "NIM/NIP must only contain number and maximal 12 digits long");
                 return response;
             }
         }
 
-        response.put("message", "valid");
+        response.put(defaultMessageResponse, "valid");
         return response;
     }
 
