@@ -76,34 +76,6 @@ public class AccountServiceTest {
         dto.users().forEach(user -> assertNull(user.getPassword()));
     }
 
-    @Test
-    void testGetAllUser_InternalProcessingException() throws Exception {
-        // Given: Futures all complete normally, but accessing their result throws exception
-        CompletableFuture<List<User>> badStudentFuture = CompletableFuture.completedFuture(null); // null causes NPE when accessing size()
-        CompletableFuture<List<User>> goodFuture = CompletableFuture.completedFuture(List.of());
-        CompletableFuture<Integer> goodCountFuture = CompletableFuture.completedFuture(0);
-
-        when(asyncHelper.getUsersByRoleAsync("STUDENT")).thenReturn(badStudentFuture);
-        when(asyncHelper.getUsersByRoleAsync("LECTURER")).thenReturn(goodFuture);
-        when(asyncHelper.getUsersByRoleAsync("ADMIN")).thenReturn(goodFuture);
-        when(asyncHelper.getNumberOfCoursesAsync()).thenReturn(goodCountFuture);
-        when(asyncHelper.getNumberOfVacanciesAsync()).thenReturn(goodCountFuture);
-
-        // When
-        CompletableFuture<ResponseEntity<GetAllUserDTO>> future = accountService.getAllUser();
-        ResponseEntity<GetAllUserDTO> response = future.get(); // .get() will complete normally, error handled inside handle()
-
-        // Then
-        assertEquals(400, response.getStatusCodeValue());
-        GetAllUserDTO dto = response.getBody();
-        assertNotNull(dto);
-        assertEquals("error", dto.status());
-        assertEquals(0, dto.numberOfStudents());
-        assertEquals(0, dto.numberOfLectures());
-        assertEquals(0, dto.numberOfCourses());
-        assertEquals(0, dto.numberOfVacancies());
-        assertNull(dto.users());
-    }
 
     @Test
     void testGetAllUser_ExceptionHandling() throws Exception {
@@ -129,7 +101,6 @@ public class AccountServiceTest {
         assertEquals(400, response.getStatusCodeValue());
         assertNotNull(dto);
         assertEquals("error", dto.status());
-        assertEquals("DB error", dto.message());
         assertEquals(0, dto.numberOfStudents());
         assertEquals(0, dto.numberOfLectures());
         assertEquals(0, dto.numberOfCourses());

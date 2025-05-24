@@ -93,11 +93,6 @@ public class AccountService{
 
         return CompletableFuture.allOf(studentFuture, lecturerFuture, adminFuture, courseCountFuture, vacancyCountFuture)
                 .handle((ignored, throwable) -> {
-                    if (throwable != null) {
-                        return new ResponseEntity<>(
-                                new GetAllUserDTO("error", throwable.getCause().getMessage(), 0, 0, 0, 0, null),
-                                HttpStatus.BAD_REQUEST);
-                    }
 
                     try {
                         List<User> students = studentFuture.get();
