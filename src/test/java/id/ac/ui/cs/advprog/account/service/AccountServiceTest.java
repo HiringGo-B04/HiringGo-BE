@@ -5,6 +5,7 @@ import id.ac.ui.cs.advprog.account.dto.delete.DeleteResponseDTO;
 import id.ac.ui.cs.advprog.account.dto.get.GetAllUserDTO;
 import id.ac.ui.cs.advprog.account.dto.update.*;
 import id.ac.ui.cs.advprog.authjwt.model.User;
+import id.ac.ui.cs.advprog.authjwt.model.UserRole;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -14,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -29,6 +31,28 @@ public class AccountServiceTest {
         userRepository = mock(UserRepository.class);
         asyncHelper = mock(AsyncAccountHelper.class);
         accountService = new AccountService(userRepository,  asyncHelper);
+    }
+
+    @Test
+    void getAllUser_shouldHandleInterruptedExceptionFromStudentFuture() throws Exception {
+        // Arrange: only the student future throws InterruptedException
+        CompletableFuture<List<User>> interruptedFuture = new CompletableFuture<>();
+        interruptedFuture.completeExceptionally(new InterruptedException("Simulated interruption"));
+
+        when(asyncHelper.getUsersByRoleAsync(UserRole.STUDENT.getValue())).thenReturn(interruptedFuture);
+        when(asyncHelper.getUsersByRoleAsync(UserRole.LECTURER.getValue())).thenReturn(interruptedFuture);
+        when(asyncHelper.getUsersByRoleAsync(UserRole.ADMIN.getValue())).thenReturn(interruptedFuture);
+        when(asyncHelper.getNumberOfCoursesAsync()).thenReturn(CompletableFuture.completedFuture(0));
+        when(asyncHelper.getNumberOfVacanciesAsync()).thenReturn(CompletableFuture.completedFuture(0));
+
+        // Act
+        CompletableFuture<ResponseEntity<GetAllUserDTO>> futureResponse = accountService.getAllUser();
+        ResponseEntity<GetAllUserDTO> response = futureResponse.get(5, TimeUnit.SECONDS);
+
+        // Assert
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("Thread was interrupted", response.getBody().message());
     }
 
     @Test
