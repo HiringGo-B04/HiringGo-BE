@@ -3,6 +3,7 @@ package id.ac.ui.cs.advprog.authjwt.service.command;
 import id.ac.ui.cs.advprog.authjwt.dto.registration.RegisterResponseDTO;
 import id.ac.ui.cs.advprog.authjwt.dto.registration.StudentRegistrationDTO;
 import id.ac.ui.cs.advprog.authjwt.model.User;
+import id.ac.ui.cs.advprog.authjwt.model.UserRole;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
 import java.util.UUID;
+
+import static id.ac.ui.cs.advprog.authjwt.config.GeneralUtils.*;
 
 public class StudentRegistrationCommand extends RegistrationCommand {
     public StudentRegistrationCommand(UserRepository userRepository, PasswordEncoder passwordEncoder, StudentRegistrationDTO user) {
@@ -22,9 +25,9 @@ public class StudentRegistrationCommand extends RegistrationCommand {
     public ResponseEntity<RegisterResponseDTO> addUser() {
         Map<String, String> validity = check_invalid_input("student");
 
-        if(!"valid".equals(validity.get("message"))) {
+        if(!"valid".equals(validity.get(DEFAULT_MESSAGE_RESPONSE))) {
             return new ResponseEntity<>(
-                    new RegisterResponseDTO("error", validity.get("message")),
+                    new RegisterResponseDTO(DEFAULT_ERROR_RESPONSE, validity.get(DEFAULT_MESSAGE_RESPONSE)),
                     HttpStatus.valueOf(400));
         }
 
@@ -32,7 +35,7 @@ public class StudentRegistrationCommand extends RegistrationCommand {
 
         if(userRepository.existsByNim(student.nim())) {
             return new ResponseEntity<>(
-                    new RegisterResponseDTO("error", "NIM Already Exist"),
+                    new RegisterResponseDTO(DEFAULT_ERROR_RESPONSE, "NIM Already Exist"),
                     HttpStatus.valueOf(400));
         }
 
@@ -50,15 +53,15 @@ public class StudentRegistrationCommand extends RegistrationCommand {
 
             return new ResponseEntity<>(
                     new RegisterResponseDTO(
-                            "accept",
+                            DEFAULT_ACCEPT_RESPONSE,
                             "Success register",
                             newUser.getUsername(),
-                            "STUDENT"),
+                            UserRole.STUDENT.getValue()),
                     HttpStatus.valueOf(200));
         }
         catch (Exception e) {
             return new ResponseEntity<>(
-                    new RegisterResponseDTO("error", e.getMessage()),
+                    new RegisterResponseDTO(DEFAULT_ERROR_RESPONSE, e.getMessage()),
                     HttpStatus.valueOf(400));
         }
     }

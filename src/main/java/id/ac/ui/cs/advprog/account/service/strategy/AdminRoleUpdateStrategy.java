@@ -3,6 +3,7 @@ package id.ac.ui.cs.advprog.account.service.strategy;
 import id.ac.ui.cs.advprog.account.dto.update.ResponseUpdateDTO;
 import id.ac.ui.cs.advprog.account.dto.update.UserUpdateDTO;
 import id.ac.ui.cs.advprog.authjwt.model.User;
+import id.ac.ui.cs.advprog.authjwt.model.UserRole;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +25,7 @@ public class AdminRoleUpdateStrategy implements RoleUpdateStrategy {
         user.setNip(null);
         user.setFullName(null);
         user.setNim(null);
-        user.setRole("ADMIN");
+        user.setRole(UserRole.ADMIN.getValue());
 
         try{
             userRepository.save(user);

@@ -2,10 +2,12 @@ package id.ac.ui.cs.advprog;
 
 import org.junit.jupiter.api.Test;
 
-public class HiringGoApplicationTest {
+
+class HiringGoApplicationTest {
 
     @Test
     void contextLoads() {
-        // This will test if the Spring Application context can be loaded successfully.
+        HiringGoApplication.main(new String[]{});
     }
+
 }

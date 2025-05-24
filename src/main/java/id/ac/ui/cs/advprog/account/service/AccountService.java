@@ -10,28 +10,29 @@ import id.ac.ui.cs.advprog.account.service.strategy.LecturerRoleUpdateStrategy;
 import id.ac.ui.cs.advprog.account.service.strategy.RoleUpdateStrategy;
 import id.ac.ui.cs.advprog.account.service.strategy.StudentRoleUpdateStrategy;
 import id.ac.ui.cs.advprog.authjwt.model.User;
+import id.ac.ui.cs.advprog.authjwt.model.UserRole;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
 
-import id.ac.ui.cs.advprog.course.repository.MataKuliahRepository;
-import id.ac.ui.cs.advprog.manajemenlowongan.repository.LowonganRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.scheduling.annotation.Async;
+import java.util.concurrent.CompletableFuture;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static id.ac.ui.cs.advprog.authjwt.config.GeneralUtils.*;
+
 @Service
 public class AccountService{
     private final UserRepository userRepository;
-    private final LowonganRepository lowonganRepository;
-    private final MataKuliahRepository mataKuliahRepository;
+    private final AsyncAccountHelper asyncHelper;
 
-    public AccountService(UserRepository userRepository, LowonganRepository lowonganRepository, MataKuliahRepository mataKuliahRepository) {
+    public AccountService(UserRepository userRepository, AsyncAccountHelper asyncHelper) {
         this.userRepository = userRepository;
-        this.lowonganRepository = lowonganRepository;
-        this.mataKuliahRepository = mataKuliahRepository;
+        this.asyncHelper = asyncHelper;
     }
 
     @Transactional
@@ -45,13 +46,13 @@ public class AccountService{
             userRepository.deleteByUsername(user.getUsername());
 
             return new ResponseEntity<>(
-                    new DeleteResponseDTO("accept", "Succes delete user"),
+                    new DeleteResponseDTO(DEFAULT_ACCEPT_RESPONSE, "Succes delete user"),
                     HttpStatus.valueOf(200));
         }
 
         catch (Exception e) {
             return new ResponseEntity<>(
-                    new DeleteResponseDTO("error", e.getMessage()),
+                    new DeleteResponseDTO(DEFAULT_ERROR_RESPONSE, e.getMessage()),
                     HttpStatus.valueOf(400));
         }
     }
@@ -69,53 +70,68 @@ public class AccountService{
         }
         catch (Exception e) {
             return new ResponseEntity<>(
-                    new ResponseUpdateDTO("error", e.getMessage()),
+                    new ResponseUpdateDTO(DEFAULT_ERROR_RESPONSE, e.getMessage()),
 
                     HttpStatus.valueOf(400));
         }
     }
 
-    public ResponseEntity<GetAllUserDTO> getAllUser(){
-        try{
-            List<User> student = userRepository.findAllByRole("STUDENT");
-            List<User> lecturer = userRepository.findAllByRole("LECTURER");
-            List<User> admin = userRepository.findAllByRole("ADMIN");
+    @Async("taskExecutor")
+    public CompletableFuture<ResponseEntity<GetAllUserDTO>> getAllUser() {
 
-            List<User> users = new ArrayList<>();
-            users.addAll(student);
-            users.addAll(lecturer);
-            users.addAll(admin);
+        CompletableFuture<List<User>> studentFuture = asyncHelper.getUsersByRoleAsync(UserRole.STUDENT.getValue());
+        CompletableFuture<List<User>> lecturerFuture = asyncHelper.getUsersByRoleAsync(UserRole.LECTURER.getValue());
+        CompletableFuture<List<User>> adminFuture = asyncHelper.getUsersByRoleAsync(UserRole.ADMIN.getValue());
+        CompletableFuture<Integer> courseCountFuture = asyncHelper.getNumberOfCoursesAsync();
+        CompletableFuture<Integer> vacancyCountFuture = asyncHelper.getNumberOfVacanciesAsync();
 
-            int numberOfStudents = student.size();
-            int numberOfLecturers = lecturer.size();
-            int numberOfCourses = mataKuliahRepository.findAll().size();
-            int numberOfVacancies = lowonganRepository.findAll().size();
+        return CompletableFuture.allOf(studentFuture, lecturerFuture, adminFuture, courseCountFuture, vacancyCountFuture)
+                .handle((ignored, throwable) -> {
 
-            for (User user : users) {
-                user.setPassword(null);
-            }
+                    try {
+                        List<User> students = studentFuture.get();
+                        List<User> lecturers = lecturerFuture.get();
+                        List<User> admins = adminFuture.get();
+                        int numberOfCourses = courseCountFuture.get();
+                        int numberOfVacancies = vacancyCountFuture.get();
 
-            return new ResponseEntity<>(
-                    new GetAllUserDTO("accept", "test", numberOfLecturers, numberOfStudents, numberOfVacancies, numberOfCourses, users),
-                    HttpStatus.valueOf(200));
+                        List<User> users = new ArrayList<>();
+                        users.addAll(students);
+                        users.addAll(lecturers);
+                        users.addAll(admins);
 
-        }
-        catch (Exception e) {
-            return new ResponseEntity<>(
-                    new GetAllUserDTO("error", e.getMessage(), 0, 0, 0, 0,null),
-                    HttpStatus.valueOf(400));
-        }
+                        for (User user : users) {
+                            user.setPassword(null);
+                        }
+
+                        return new ResponseEntity<>(
+                                new GetAllUserDTO(DEFAULT_ACCEPT_RESPONSE, "test", lecturers.size(), students.size(), numberOfVacancies, numberOfCourses, users),
+                                HttpStatus.OK);
+                    }
+                    catch (Exception e) {
+                        if (e.getCause() instanceof InterruptedException) {
+                            Thread.currentThread().interrupt(); // Re-interrupt the thread
+                            return new ResponseEntity<>(
+                                    new GetAllUserDTO(DEFAULT_ERROR_RESPONSE, "Thread was interrupted", 0, 0, 0, 0, null),
+                                    HttpStatus.INTERNAL_SERVER_ERROR);
+                        }
+
+                        return new ResponseEntity<>(
+                                new GetAllUserDTO(DEFAULT_ERROR_RESPONSE, e.getMessage(), 0, 0, 0, 0, null),
+                                HttpStatus.BAD_REQUEST);
+                    }
+                });
     }
 
     private RoleUpdateStrategy getRoleUpdateStrategy(UserUpdateDTO userUpdateDTO) {
         RoleUpdateStrategy strategy;
-        if(userUpdateDTO.role.equals("ADMIN")){
+        if(userUpdateDTO.role.equals(UserRole.ADMIN.getValue())) {
             strategy = new AdminRoleUpdateStrategy(userRepository);
         }
-        else if(userUpdateDTO.role.equals("LECTURER")){
+        else if(userUpdateDTO.role.equals(UserRole.LECTURER.getValue())) {
             strategy = new LecturerRoleUpdateStrategy(userRepository);
         }
-        else if(userUpdateDTO.role.equals("STUDENT")){
+        else if(userUpdateDTO.role.equals(UserRole.STUDENT.getValue())) {
             strategy = new StudentRoleUpdateStrategy(userRepository);
         }
         else{

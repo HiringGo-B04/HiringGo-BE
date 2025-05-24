@@ -32,21 +32,20 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     FilterChain chain)
             throws ServletException, IOException {
 
-        String header = req.getHeader("Authorization");
-
         if ("OPTIONS".equalsIgnoreCase(req.getMethod())) {
             res.setStatus(HttpServletResponse.SC_OK);
             chain.doFilter(req, res);
             return;
         }
 
+        String header = req.getHeader("Authorization");
         if (header == null || !header.startsWith("Bearer ")) {
             chain.doFilter(req, res);
             return;
         }
 
         String token = header.substring(7);
-        if(!jwtUtil.validateJwtToken(token)) {
+        if (!jwtUtil.validateJwtToken(token)) {
             chain.doFilter(req, res);
             return;
         }
@@ -54,12 +53,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String username = jwtUtil.getUsernameFromToken(token);
         String role = jwtUtil.getRoleFromToken(token);
 
-        var authorities = List.of(new SimpleGrantedAuthority("ROLE_"+role));
-
         var auth = new UsernamePasswordAuthenticationToken(
                 username,
                 null,
-                authorities
+                List.of(new SimpleGrantedAuthority("ROLE_" + role))
         );
 
         SecurityContextHolder.getContext().setAuthentication(auth);

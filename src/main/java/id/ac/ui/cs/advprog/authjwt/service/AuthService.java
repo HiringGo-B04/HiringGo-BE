@@ -22,6 +22,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import static id.ac.ui.cs.advprog.authjwt.config.GeneralUtils.*;
+
 @Service
 public class AuthService implements AuthenticationFacade {
     @Autowired
@@ -37,6 +39,7 @@ public class AuthService implements AuthenticationFacade {
     JwtUtil jwtUtils;
     private PasswordEncoder passwordEncoder;
 
+
     @Override
     @Transactional
     public ResponseEntity<LoginResponseDTO> login(LoginRequestDTO user){
@@ -44,13 +47,13 @@ public class AuthService implements AuthenticationFacade {
 
         if(exist_user == null) {
             return new ResponseEntity<>(
-                    new LoginResponseDTO("error", "User didn't exist"),
+                    new LoginResponseDTO(DEFAULT_ERROR_RESPONSE, "User didn't exist"),
                     HttpStatus.valueOf(400));
         }
 
         if (!encoder.matches(user.password(), exist_user.getPassword())) {
             return new ResponseEntity<>(
-                    new LoginResponseDTO("error", "Invalid Password"),
+                    new LoginResponseDTO(DEFAULT_ERROR_RESPONSE, "Invalid Password"),
                     HttpStatus.valueOf(400));
         }
 
@@ -60,7 +63,7 @@ public class AuthService implements AuthenticationFacade {
             tokenRepository.save(user_token);
 
             return new ResponseEntity<>(
-                    new LoginResponseDTO("accept", "Success login", jwt_token),
+                    new LoginResponseDTO(DEFAULT_ACCEPT_RESPONSE, "Success login", jwt_token),
                     HttpStatus.valueOf(200));
         }
         catch (Exception e) {
@@ -76,17 +79,17 @@ public class AuthService implements AuthenticationFacade {
         try{
 
             if(tokenRepository.findByToken(token.token()) == null) {
-                throw new Exception("Token not found");
+                throw new IllegalArgumentException("Token not found");
             }
 
             tokenRepository.deleteByToken(token.token());
             return new ResponseEntity<>(
-                    new LogoutResponseDTO("accept", "Succes to logout"),
+                    new LogoutResponseDTO(DEFAULT_ACCEPT_RESPONSE, "Succes to logout"),
                     HttpStatus.valueOf(200));
         }
         catch (Exception e) {
             return new ResponseEntity<>(
-                    new LogoutResponseDTO("error", e.getMessage()),
+                    new LogoutResponseDTO(DEFAULT_ERROR_RESPONSE, e.getMessage()),
                     HttpStatus.valueOf(400));
         }
     }
@@ -116,7 +119,7 @@ public class AuthService implements AuthenticationFacade {
         }
         catch (Exception e) {
             return new ResponseEntity<>(
-                    new RegisterResponseDTO("error",e.getMessage()),
+                    new RegisterResponseDTO(DEFAULT_ERROR_RESPONSE,e.getMessage()),
                     HttpStatus.valueOf(400));
         }
 

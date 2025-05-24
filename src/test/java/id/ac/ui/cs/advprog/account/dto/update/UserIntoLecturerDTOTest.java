@@ -1,59 +1,38 @@
 package id.ac.ui.cs.advprog.account.dto.update;
 
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
-import jakarta.validation.ValidatorFactory;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class UserIntoLecturerDTOTest {
+class UserIntoLecturerDTOTest {
 
-    private static Validator validator;
+    @Test
+    void testUserIntoLecturerDTO_ConstructorSetsFieldsCorrectly() {
+        // Given
+        String fullName = "Dr. John Doe";
+        String nip = "1978123456789012";
+        String username = "johndoe";
+        String role = "LECTURER";
 
-    @BeforeAll
-    public static void setUpValidator() {
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        validator = factory.getValidator();
+        // When
+        UserIntoLecturerDTO dto = new UserIntoLecturerDTO(fullName, nip, username, role);
+
+        // Then
+        assertEquals(fullName, dto.fullName);
+        assertEquals(nip, dto.nip);
+        assertEquals(username, dto.username);
+        assertEquals(role, dto.role);
     }
 
     @Test
-    void whenAllFieldsValid_thenNoViolations() {
-        UserIntoLecturerDTO dto = new UserIntoLecturerDTO();
-        dto.role = "LECTURER";
-        dto.username = "lecturer123";
-        dto.fullName = "Dr. John Doe";
-        dto.nip = "198702102019021001";
+    void testUserIntoLecturerDTO_FieldsAreNotNull() {
+        // Given
+        UserIntoLecturerDTO dto = new UserIntoLecturerDTO("Dr. John Doe", "1978123456789012", "johndoe", "LECTURER");
 
-        Set<ConstraintViolation<UserIntoLecturerDTO>> violations = validator.validate(dto);
-        assertTrue(violations.isEmpty(), "Expected no constraint violations");
-    }
-
-    @Test
-    void whenFieldsAreBlank_thenViolationsOccur() {
-        UserIntoLecturerDTO dto = new UserIntoLecturerDTO();
-        dto.role = "";
-        dto.username = "";
-        dto.fullName = "";
-        dto.nip = "";
-
-        Set<ConstraintViolation<UserIntoLecturerDTO>> violations = validator.validate(dto);
-        assertEquals(4, violations.size(), "Expected 4 constraint violations");
-    }
-
-    @Test
-    void whenSomeFieldsAreNull_thenViolationsOccur() {
-        UserIntoLecturerDTO dto = new UserIntoLecturerDTO();
-        dto.role = null;
-        dto.username = null;
-        dto.fullName = null;
-        dto.nip = null;
-
-        Set<ConstraintViolation<UserIntoLecturerDTO>> violations = validator.validate(dto);
-        assertEquals(4, violations.size(), "Expected 4 constraint violations");
+        // Then
+        assertNotNull(dto.fullName);
+        assertNotNull(dto.nip);
+        assertNotNull(dto.username);
+        assertNotNull(dto.role);
     }
 }

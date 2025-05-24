@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import id.ac.ui.cs.advprog.account.dto.get.GetAllUserDTO;
 import id.ac.ui.cs.advprog.account.dto.update.*;
 import id.ac.ui.cs.advprog.authjwt.model.User;
-import id.ac.ui.cs.advprog.authjwt.testconfig.TestSecurityBeansConfig;
+import id.ac.ui.cs.advprog.authjwt.controller.TestSecurityBeansConfig;
 import id.ac.ui.cs.advprog.account.dto.delete.DeleteRequestDTO;
 import id.ac.ui.cs.advprog.account.dto.delete.DeleteResponseDTO;
 import id.ac.ui.cs.advprog.account.service.AccountService;
@@ -26,6 +26,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -74,8 +75,9 @@ public class AccountControllerTest {
 
         GetAllUserDTO responseDto = new GetAllUserDTO("accept", "test", 1, 1, 1, 1, List.of(user1, user2));
 
+        // Mock the CompletableFuture-returning service method
         when(accountService.getAllUser())
-                .thenReturn(new ResponseEntity<>(responseDto, HttpStatus.OK));
+                .thenReturn(CompletableFuture.completedFuture(new ResponseEntity<>(responseDto, HttpStatus.OK)));
 
         mockMvc.perform(MockMvcRequestBuilders.get(DELETE_ENDPOINT))
                 .andExpect(status().isOk())
@@ -86,11 +88,10 @@ public class AccountControllerTest {
                 .andExpect(jsonPath("$.users[1].username").value("student1"));
     }
 
-
     @Test
     @WithMockUser(roles = "ADMIN")
     void updateUserToLecturer_shouldReturn200() throws Exception {
-        UserIntoLecturerDTO request = new UserIntoLecturerDTO();
+        UserIntoLecturerDTO request = new UserIntoLecturerDTO("", "", "", "");
         request.username = "lecturer_user";
         request.role = "LECTURER";
         request.fullName = "Dr. Smith";
@@ -112,7 +113,7 @@ public class AccountControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void updateUserToStudent_shouldReturn200() throws Exception {
-        UserIntoStudentDTO request = new UserIntoStudentDTO();
+        UserIntoStudentDTO request = new UserIntoStudentDTO("", "", "", "");
         request.username = "student_user";
         request.role = "STUDENT";
         request.fullName = "Jane Student";
@@ -134,7 +135,7 @@ public class AccountControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void updateUser_shouldReturn200() throws Exception {
-        UserUpdateDTO request = new UserIntoAdminDTO();
+        UserUpdateDTO request = new UserIntoAdminDTO("", "");
         request.username = "johndoe";
         request.role = "ADMIN";
 
@@ -154,7 +155,7 @@ public class AccountControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void updateUser_userNotFound_shouldReturn400() throws Exception {
-        UserUpdateDTO request = new UserIntoAdminDTO();
+        UserUpdateDTO request = new UserIntoAdminDTO("", "");
         request.username = "unknownuser";
         request.role = "ADMIN";
 
