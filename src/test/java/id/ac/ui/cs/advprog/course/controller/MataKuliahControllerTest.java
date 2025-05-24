@@ -56,15 +56,16 @@ class MataKuliahControllerTest {
         dtoListFuture = CompletableFuture.completedFuture(dtoList);
     }
 
-    // ============== PUBLIC ENDPOINTS TEST ==============
+    // ============== ADMIN READ ENDPOINTS TEST ==============
 
     @Test
-    void testListPublic_Success() throws Exception {
+    @WithMockUser(roles = "ADMIN")
+    void testListAll_Success() throws Exception {
         // Given
         when(service.findAll()).thenReturn(dtoListFuture);
 
         // When & Then
-        mockMvc.perform(get("/api/course/public/matakuliah"))
+        mockMvc.perform(get("/api/course/admin/matakuliah"))
                 .andExpect(request().asyncStarted())
                 .andDo(result -> mockMvc.perform(asyncDispatch(result))
                         .andExpect(status().isOk())
@@ -80,13 +81,14 @@ class MataKuliahControllerTest {
     }
 
     @Test
-    void testListPublic_EmptyList() throws Exception {
+    @WithMockUser(roles = "ADMIN")
+    void testListAll_EmptyList() throws Exception {
         // Given
         CompletableFuture<List<MataKuliahDto>> emptyFuture = CompletableFuture.completedFuture(List.of());
         when(service.findAll()).thenReturn(emptyFuture);
 
         // When & Then
-        mockMvc.perform(get("/api/course/public/matakuliah"))
+        mockMvc.perform(get("/api/course/admin/matakuliah"))
                 .andExpect(request().asyncStarted())
                 .andDo(result -> mockMvc.perform(asyncDispatch(result))
                         .andExpect(status().isOk())
@@ -98,12 +100,13 @@ class MataKuliahControllerTest {
     }
 
     @Test
-    void testGetPublic_Success() throws Exception {
+    @WithMockUser(roles = "ADMIN")
+    void testGetByKode_Success() throws Exception {
         // Given
         when(service.findByKode(eq("CS101"))).thenReturn(dto1);
 
         // When & Then
-        mockMvc.perform(get("/api/course/public/matakuliah/CS101"))
+        mockMvc.perform(get("/api/course/admin/matakuliah/CS101"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.kode").value("CS101"))
@@ -115,18 +118,19 @@ class MataKuliahControllerTest {
     }
 
     @Test
-    void testGetPublic_NotFound() throws Exception {
+    @WithMockUser(roles = "ADMIN")
+    void testGetByKode_NotFound() throws Exception {
         // Given
         when(service.findByKode(eq("CS999"))).thenReturn(null);
 
         // When & Then
-        mockMvc.perform(get("/api/course/public/matakuliah/CS999"))
+        mockMvc.perform(get("/api/course/admin/matakuliah/CS999"))
                 .andExpect(status().isNotFound());
 
         verify(service, times(1)).findByKode(eq("CS999"));
     }
 
-    // ============== ADMIN ENDPOINTS TEST ==============
+    // ============== ADMIN CRUD ENDPOINTS TEST ==============
 
     @Test
     @WithMockUser(roles = "ADMIN")
@@ -264,8 +268,8 @@ class MataKuliahControllerTest {
                         .content(objectMapper.writeValueAsString(createDto)))
                 .andExpect(status().isCreated());
 
-        // When & Then - Read
-        mockMvc.perform(get("/api/course/public/matakuliah/CS999"))
+        // When & Then - Read (now using admin endpoint)
+        mockMvc.perform(get("/api/course/admin/matakuliah/CS999"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.kode").value("CS999"));
 

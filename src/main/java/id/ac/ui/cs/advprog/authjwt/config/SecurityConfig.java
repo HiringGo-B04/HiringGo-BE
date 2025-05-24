@@ -38,7 +38,7 @@ public class SecurityConfig {
                         /*
                          * Jika ingin melakukan testing tanpa adanya RBAC comment
                          */
-                        .requestMatchers("/api/auth/admin/**").hasRole(adminRole)
+//                        .requestMatchers("/api/auth/admin/**").hasRole(adminRole)
                         .requestMatchers("/api/auth/user/**").hasAnyRole(adminRole, studentRole, lecturerRole)
 
                         .requestMatchers("/api/account/admin/**").hasRole(adminRole)
