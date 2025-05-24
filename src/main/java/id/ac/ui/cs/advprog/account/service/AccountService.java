@@ -16,8 +16,12 @@ import id.ac.ui.cs.advprog.course.repository.MataKuliahRepository;
 import id.ac.ui.cs.advprog.manajemenlowongan.repository.LowonganRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.scheduling.annotation.Async;
+import java.util.concurrent.CompletableFuture;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,11 +31,14 @@ public class AccountService{
     private final UserRepository userRepository;
     private final LowonganRepository lowonganRepository;
     private final MataKuliahRepository mataKuliahRepository;
+    private final AsyncAccountHelper asyncHelper;
 
-    public AccountService(UserRepository userRepository, LowonganRepository lowonganRepository, MataKuliahRepository mataKuliahRepository) {
+
+    public AccountService(UserRepository userRepository, LowonganRepository lowonganRepository, MataKuliahRepository mataKuliahRepository, AsyncAccountHelper asyncHelper) {
         this.userRepository = userRepository;
         this.lowonganRepository = lowonganRepository;
         this.mataKuliahRepository = mataKuliahRepository;
+        this.asyncHelper = asyncHelper;
     }
 
     @Transactional
@@ -75,36 +82,48 @@ public class AccountService{
         }
     }
 
-    public ResponseEntity<GetAllUserDTO> getAllUser(){
-        try{
-            List<User> student = userRepository.findAllByRole("STUDENT");
-            List<User> lecturer = userRepository.findAllByRole("LECTURER");
-            List<User> admin = userRepository.findAllByRole("ADMIN");
+    @Async("taskExecutor")
+    public CompletableFuture<ResponseEntity<GetAllUserDTO>> getAllUser() {
 
-            List<User> users = new ArrayList<>();
-            users.addAll(student);
-            users.addAll(lecturer);
-            users.addAll(admin);
+        CompletableFuture<List<User>> studentFuture = asyncHelper.getUsersByRoleAsync("STUDENT");
+        CompletableFuture<List<User>> lecturerFuture = asyncHelper.getUsersByRoleAsync("LECTURER");
+        CompletableFuture<List<User>> adminFuture = asyncHelper.getUsersByRoleAsync("ADMIN");
+        CompletableFuture<Integer> courseCountFuture = asyncHelper.getNumberOfCoursesAsync();
+        CompletableFuture<Integer> vacancyCountFuture = asyncHelper.getNumberOfVacanciesAsync();
 
-            int numberOfStudents = student.size();
-            int numberOfLecturers = lecturer.size();
-            int numberOfCourses = mataKuliahRepository.findAll().size();
-            int numberOfVacancies = lowonganRepository.findAll().size();
+        return CompletableFuture.allOf(studentFuture, lecturerFuture, adminFuture, courseCountFuture, vacancyCountFuture)
+                .handle((ignored, throwable) -> {
+                    if (throwable != null) {
+                        return new ResponseEntity<>(
+                                new GetAllUserDTO("error", throwable.getCause().getMessage(), 0, 0, 0, 0, null),
+                                HttpStatus.BAD_REQUEST);
+                    }
 
-            for (User user : users) {
-                user.setPassword(null);
-            }
+                    try {
+                        List<User> students = studentFuture.get();
+                        List<User> lecturers = lecturerFuture.get();
+                        List<User> admins = adminFuture.get();
+                        int numberOfCourses = courseCountFuture.get();
+                        int numberOfVacancies = vacancyCountFuture.get();
 
-            return new ResponseEntity<>(
-                    new GetAllUserDTO("accept", "test", numberOfLecturers, numberOfStudents, numberOfVacancies, numberOfCourses, users),
-                    HttpStatus.valueOf(200));
+                        List<User> users = new ArrayList<>();
+                        users.addAll(students);
+                        users.addAll(lecturers);
+                        users.addAll(admins);
 
-        }
-        catch (Exception e) {
-            return new ResponseEntity<>(
-                    new GetAllUserDTO("error", e.getMessage(), 0, 0, 0, 0,null),
-                    HttpStatus.valueOf(400));
-        }
+                        for (User user : users) {
+                            user.setPassword(null);
+                        }
+
+                        return new ResponseEntity<>(
+                                new GetAllUserDTO("accept", "test", lecturers.size(), students.size(), numberOfVacancies, numberOfCourses, users),
+                                HttpStatus.OK);
+                    } catch (Exception e) {
+                        return new ResponseEntity<>(
+                                new GetAllUserDTO("error", e.getMessage(), 0, 0, 0, 0, null),
+                                HttpStatus.BAD_REQUEST);
+                    }
+                });
     }
 
     private RoleUpdateStrategy getRoleUpdateStrategy(UserUpdateDTO userUpdateDTO) {

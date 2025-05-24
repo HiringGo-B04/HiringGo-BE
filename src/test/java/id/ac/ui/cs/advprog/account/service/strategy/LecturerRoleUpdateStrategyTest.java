@@ -25,11 +25,7 @@ class LecturerRoleUpdateStrategyTest {
     @Test
     void testUpdateRole_Success() {
         // Given
-        UserIntoLecturerDTO dto = new UserIntoLecturerDTO();
-        dto.nip = "12345678";
-        dto.fullName = "John Doe";
-        dto.username = "johndoe";
-        dto.role = "LECTURER";
+        UserIntoLecturerDTO dto = new UserIntoLecturerDTO("John Doe", "12345678", "johndoe", "LECTURER");
 
         User user = new User();
         user.setUsername("johndoe");
@@ -54,11 +50,7 @@ class LecturerRoleUpdateStrategyTest {
     @Test
     void testUpdateRole_NipAlreadyExists() {
         // Given
-        UserIntoLecturerDTO dto = new UserIntoLecturerDTO();
-        dto.nip = "12345678";
-        dto.fullName = "Jane Doe";
-        dto.username = "janedoe";
-        dto.role = "LECTURER";
+        UserIntoLecturerDTO dto = new UserIntoLecturerDTO("John Doe", "12345678", "janedoe", "LECTURER");
 
         User user = new User();
         user.setUsername("janedoe");
@@ -80,7 +72,7 @@ class LecturerRoleUpdateStrategyTest {
     @Test
     void testUpdateRole_RepositoryThrowsException() {
         // Given
-        UserIntoLecturerDTO dto = new UserIntoLecturerDTO();
+        UserIntoLecturerDTO dto = new UserIntoLecturerDTO("John Doe", "12345678", "johndoe", "LECTURER");
         dto.nip = "999999";
         dto.fullName = "Jane Smith";
         dto.username = "janesmith";

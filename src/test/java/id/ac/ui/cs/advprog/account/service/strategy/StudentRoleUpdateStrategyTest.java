@@ -25,11 +25,7 @@ class StudentRoleUpdateStrategyTest {
     @Test
     void testUpdateRole_Success() {
         // Given
-        UserIntoStudentDTO dto = new UserIntoStudentDTO();
-        dto.nim = "12345678";
-        dto.fullName = "John Doe";
-        dto.username = "johndoe";
-        dto.role = "STUDENT";
+        UserIntoStudentDTO dto = new UserIntoStudentDTO("John Doe", "12345678", "johndoe", "STUDENT");
 
         User user = new User();
         user.setUsername("johndoe");
@@ -54,7 +50,7 @@ class StudentRoleUpdateStrategyTest {
     @Test
     void testUpdateRole_NimAlreadyExists() {
         // Given
-        UserIntoStudentDTO dto = new UserIntoStudentDTO();
+        UserIntoStudentDTO dto = new UserIntoStudentDTO("John Doe", "12345678", "johndoe", "STUDENT");
         dto.nim = "2106754321";
         dto.fullName = "Alice Smith";
         dto.username = "alicesmith";
@@ -80,7 +76,7 @@ class StudentRoleUpdateStrategyTest {
     @Test
     void testUpdateRole_RepositoryThrowsException() {
         // Given
-        UserIntoStudentDTO dto = new UserIntoStudentDTO();
+        UserIntoStudentDTO dto = new UserIntoStudentDTO("John Doe", "12345678", "johndoe", "STUDENT");
         dto.nim = "999999";
         dto.fullName = "Jane Smith";
         dto.username = "janesmith";
