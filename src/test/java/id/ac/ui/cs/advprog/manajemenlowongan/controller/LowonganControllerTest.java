@@ -1,12 +1,11 @@
 package id.ac.ui.cs.advprog.manajemenlowongan.controller;
 
-import id.ac.ui.cs.advprog.manajemenlowongan.controller.LowonganController;
+import id.ac.ui.cs.advprog.authjwt.config.SecurityConfig;
 import id.ac.ui.cs.advprog.manajemenlowongan.model.Lowongan;
 import id.ac.ui.cs.advprog.manajemenlowongan.service.LowonganService;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import id.ac.ui.cs.advprog.mendaftarlowongan.service.LamaranService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -24,15 +23,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.security.test.context.support.WithMockUser;
+import id.ac.ui.cs.advprog.authjwt.controller.TestSecurityBeansConfig;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-import java.util.Arrays;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -43,7 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
         "jwt.secret=fakeTestSecretKeyThatIsLongEnoughForHmacSha",
         "jwt.expiration=3600000"
 })
-@Import({ SecurityConfig.class, id.ac.ui.cs.advprog.authjwt.testconfig.TestSecurityBeansConfig.class })
+@Import({ SecurityConfig.class, TestSecurityBeansConfig.class })
 @WebMvcTest(LowonganController.class)
 class LowonganControllerTest {
 
