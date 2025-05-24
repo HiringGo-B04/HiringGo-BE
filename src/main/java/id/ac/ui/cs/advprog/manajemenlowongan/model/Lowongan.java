@@ -16,7 +16,9 @@ public class Lowongan {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    // Kode matkul
     private String matkul;
+
     private int tahun;
     private String term;
 

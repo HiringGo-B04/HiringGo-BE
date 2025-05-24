@@ -29,8 +29,8 @@ public class LowonganServiceImpl implements LowonganService {
 
     public boolean validateLowongan(Lowongan lowongan) {
         // Validasi data lowongan dasar
-        if (lowongan.getMatkul() == null || lowongan.getMatkul().isEmpty()) {
-            throw new IllegalArgumentException("Mata kuliah tidak boleh kosong");
+        if (lowongan.getMatkul() == null || lowongan.getMatkul().isEmpty() || !mataKuliahRepository.existsByKode(lowongan.getMatkul())) {
+            throw new IllegalArgumentException("Nama Mata Kuliah tidak valid");
         }
 
         if (lowongan.getTerm() == null || lowongan.getTerm().isEmpty()) {
