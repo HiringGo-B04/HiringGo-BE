@@ -153,6 +153,9 @@ public class AccountServiceTest {
         verify(userRepository, times(1)).save(user);
     }
 
+
+
+
     @Test
     void testUpdateUserRoleToLecturer_Success() {
         // Given
@@ -175,6 +178,53 @@ public class AccountServiceTest {
         assertEquals("accept", response.getBody().status());
         assertEquals("User updated to LECTURER", response.getBody().message());
     }
+
+    @Test
+    void testUpdateUserRoleToLecturer_FailNIM() {
+        // Given
+        String username = "adminuser";
+        UserIntoLecturerDTO dto = new UserIntoLecturerDTO(username, "abcd", username, "LECTURER");
+
+        User user = new User();
+        user.setUsername(username);
+        user.setRole("LECTURER");
+
+        when(userRepository.findByUsername(username)).thenReturn(user);
+        when(userRepository.save(user)).thenReturn(user);
+
+        // When
+        ResponseEntity<ResponseUpdateDTO> response = accountService.update(dto);
+
+        // Then
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("error", response.getBody().status());
+        assertEquals("NIM/NIP must only contain number and maximal 12 digits long", response.getBody().message());
+    }
+
+    @Test
+    void testUpdateUserRoleToLecturer_FailName() {
+        // Given
+        String username = "adminuser";
+        UserIntoLecturerDTO dto = new UserIntoLecturerDTO("admin#", "12300", username, "LECTURER");
+
+        User user = new User();
+        user.setUsername(username);
+        user.setRole("LECTURER");
+
+        when(userRepository.findByUsername(username)).thenReturn(user);
+        when(userRepository.save(user)).thenReturn(user);
+
+        // When
+        ResponseEntity<ResponseUpdateDTO> response = accountService.update(dto);
+
+        // Then
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("error", response.getBody().status());
+        assertEquals("Full name must only contain letters", response.getBody().message());
+    }
+
 
     @Test
     void testUpdateUserRoleToStudent_Success() {
@@ -202,6 +252,53 @@ public class AccountServiceTest {
         assertEquals("accept", response.getBody().status());
         assertEquals("User updated to STUDENT", response.getBody().message());
     }
+
+    @Test
+    void testUpdateUserRoleToStudent_FailNIM() {
+        // Given
+        String username = "adminuser";
+        UserIntoStudentDTO dto = new UserIntoStudentDTO(username, "abcd", username, "STUDENT");
+
+        User user = new User();
+        user.setUsername(username);
+        user.setRole("STUDENT");
+
+        when(userRepository.findByUsername(username)).thenReturn(user);
+        when(userRepository.save(user)).thenReturn(user);
+
+        // When
+        ResponseEntity<ResponseUpdateDTO> response = accountService.update(dto);
+
+        // Then
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("error", response.getBody().status());
+        assertEquals("NIM/NIP must only contain number and maximal 12 digits long", response.getBody().message());
+    }
+
+    @Test
+    void testUpdateUserRoleToStudent_FailName() {
+        // Given
+        String username = "adminuser";
+        UserIntoStudentDTO dto = new UserIntoStudentDTO("admin#", "12300", username, "STUDENT");
+
+        User user = new User();
+        user.setUsername(username);
+        user.setRole("STUDENT");
+
+        when(userRepository.findByUsername(username)).thenReturn(user);
+        when(userRepository.save(user)).thenReturn(user);
+
+        // When
+        ResponseEntity<ResponseUpdateDTO> response = accountService.update(dto);
+
+        // Then
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("error", response.getBody().status());
+        assertEquals("Full name must only contain letters", response.getBody().message());
+    }
+
 
     @Test
     void testUpdateUser_UserNotFound() {

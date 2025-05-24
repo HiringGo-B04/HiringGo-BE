@@ -3,6 +3,7 @@ package id.ac.ui.cs.advprog.account.service.strategy;
 import id.ac.ui.cs.advprog.account.dto.update.ResponseUpdateDTO;
 import id.ac.ui.cs.advprog.account.dto.update.UserIntoStudentDTO;
 import id.ac.ui.cs.advprog.account.dto.update.UserUpdateDTO;
+import id.ac.ui.cs.advprog.authjwt.config.GeneralUtils;
 import id.ac.ui.cs.advprog.authjwt.model.User;
 import id.ac.ui.cs.advprog.authjwt.model.UserRole;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
@@ -23,15 +24,23 @@ public class StudentRoleUpdateStrategy implements RoleUpdateStrategy {
     @Override
     @Transactional
     public ResponseEntity<ResponseUpdateDTO> updateRole(UserUpdateDTO updateData, User user) {
-        UserIntoStudentDTO userIntoLecturerDTO = (UserIntoStudentDTO) updateData;
+        UserIntoStudentDTO userIntoStudentDTO = (UserIntoStudentDTO) updateData;
 
-        if(userRepository.existsByNip(userIntoLecturerDTO.nim)){
+        if(userRepository.existsByNip(userIntoStudentDTO.nim)){
             throw new IllegalArgumentException("NIM with this student already exists");
         }
 
+        if(!GeneralUtils.isValidInt(userIntoStudentDTO.nim)){
+            throw new IllegalArgumentException("NIM/NIP must only contain number and maximal 12 digits long");
+        }
+
+        if(!GeneralUtils.isValidString(userIntoStudentDTO.fullName)){
+            throw new IllegalArgumentException("Full name must only contain letters");
+        }
+
         user.setNip(null);
-        user.setFullName(userIntoLecturerDTO.fullName);
-        user.setNim(userIntoLecturerDTO.nim);
+        user.setFullName(userIntoStudentDTO.fullName);
+        user.setNim(userIntoStudentDTO.nim);
         user.setRole(UserRole.STUDENT.getValue());
 
         try{

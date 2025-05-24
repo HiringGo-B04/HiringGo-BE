@@ -3,6 +3,7 @@ package id.ac.ui.cs.advprog.account.service.strategy;
 import id.ac.ui.cs.advprog.account.dto.update.ResponseUpdateDTO;
 import id.ac.ui.cs.advprog.account.dto.update.UserIntoLecturerDTO;
 import id.ac.ui.cs.advprog.account.dto.update.UserUpdateDTO;
+import id.ac.ui.cs.advprog.authjwt.config.GeneralUtils;
 import id.ac.ui.cs.advprog.authjwt.model.User;
 import id.ac.ui.cs.advprog.authjwt.model.UserRole;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
@@ -27,6 +28,14 @@ public class LecturerRoleUpdateStrategy implements RoleUpdateStrategy {
 
         if(userRepository.existsByNip(userIntoLecturerDTO.nip)){
             throw new IllegalArgumentException("NIP with this lecturer already exists");
+        }
+
+        if(!GeneralUtils.isValidInt(userIntoLecturerDTO.nip)){
+            throw new IllegalArgumentException("NIM/NIP must only contain number and maximal 12 digits long");
+        }
+
+        if(!GeneralUtils.isValidString(userIntoLecturerDTO.fullName)){
+            throw new IllegalArgumentException("Full name must only contain letters");
         }
 
         user.setNip(userIntoLecturerDTO.nip);

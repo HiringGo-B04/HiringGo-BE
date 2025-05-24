@@ -3,6 +3,7 @@ package id.ac.ui.cs.advprog.authjwt.service.command;
 import id.ac.ui.cs.advprog.authjwt.dto.registration.LecturerRegistrationDTO;
 import id.ac.ui.cs.advprog.authjwt.dto.registration.RegisterResponseDTO;
 import id.ac.ui.cs.advprog.authjwt.model.User;
+import id.ac.ui.cs.advprog.authjwt.model.UserFactory;
 import id.ac.ui.cs.advprog.authjwt.model.UserRole;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
 import org.springframework.http.HttpStatus;
@@ -39,12 +40,11 @@ public class LecturerRegistrationCommand extends RegistrationCommand {
         }
 
         try{
-            User newUser = new User(
+            User newUser = UserFactory.createLecturer(
                     UUID.randomUUID(),
                     user.username(),
                     passwordEncoder.encode(user.password()),
                     ((LecturerRegistrationDTO) user).fullName(),
-                    true,
                     ((LecturerRegistrationDTO) user).nip()
             );
 
