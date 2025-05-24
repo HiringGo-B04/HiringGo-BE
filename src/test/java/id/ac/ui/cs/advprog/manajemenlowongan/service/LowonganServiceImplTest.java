@@ -1,10 +1,46 @@
 package id.ac.ui.cs.advprog.manajemenlowongan.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import id.ac.ui.cs.advprog.account.dto.get.GetAllUserDTO;
+import id.ac.ui.cs.advprog.account.dto.update.*;
+import id.ac.ui.cs.advprog.authjwt.model.User;
+import id.ac.ui.cs.advprog.authjwt.controller.TestSecurityBeansConfig;
+import id.ac.ui.cs.advprog.account.dto.delete.DeleteRequestDTO;
+import id.ac.ui.cs.advprog.account.dto.delete.DeleteResponseDTO;
+import id.ac.ui.cs.advprog.account.service.AccountService;
+import id.ac.ui.cs.advprog.authjwt.config.SecurityConfig;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import id.ac.ui.cs.advprog.authjwt.model.User;
+import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
 import id.ac.ui.cs.advprog.manajemenlowongan.model.Lowongan;
 import id.ac.ui.cs.advprog.manajemenlowongan.repository.LowonganRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import java.util.*;
 
@@ -15,14 +51,16 @@ public class LowonganServiceImplTest {
 
     private LowonganRepository lowonganRepository;
     private LowonganServiceImpl lowonganService;
-
+    private UserRepository userRepository;
     private Lowongan dummyLowongan;
+
 
     @BeforeEach
     void setUp() {
         lowonganRepository = mock(LowonganRepository.class);
-        lowonganService = new LowonganServiceImpl(lowonganRepository);
+        userRepository = mock(UserRepository.class);
 
+        lowonganService = new LowonganServiceImpl(userRepository, lowonganRepository);
         dummyLowongan = new Lowongan.Builder()
                 .matkul("Adpro")
                 .year(2025)
@@ -34,13 +72,55 @@ public class LowonganServiceImplTest {
     }
 
     @Test
-    void testAddLowonganSuccess() {
-        when(lowonganRepository.save(any(Lowongan.class))).thenReturn(dummyLowongan);
+    void testGetLowonganByDosen_WithStats_Success() {
+        UUID dosenId = UUID.randomUUID();
 
-        Lowongan created = lowonganService.addLowongan(dummyLowongan);
+        // Mock user with role "LECTURER"
+        User dummyUser = new User();
+        dummyUser.setUserId(dosenId);
+        dummyUser.setRole("LECTURER");
 
-        assertEquals(dummyLowongan, created);
-        verify(lowonganRepository, times(1)).save(dummyLowongan);
+        // Mock lowongan list
+        Lowongan l1 = new Lowongan.Builder()
+                .totalAsdosNeeded(5)
+                .totalAsdosAccepted(2)
+                .build();
+
+        Lowongan l2 = new Lowongan.Builder()
+                .totalAsdosNeeded(4)
+                .totalAsdosAccepted(4)
+                .build();
+
+        List<Lowongan> lowongans = List.of(l1, l2);
+
+        when(userRepository.findByUserId(dosenId)).thenReturn(dummyUser);
+        when(lowonganRepository.findLowonganByIdDosen(dosenId)).thenReturn(lowongans);
+
+        ResponseEntity<Map<String, Object>> response = lowonganService.getLowonganByDosen(dosenId);
+
+        assertEquals(200, response.getStatusCodeValue());
+
+        Map<String, Object> body = response.getBody();
+        assertNotNull(body);
+        assertEquals("Success", body.get("message"));
+        assertEquals(2, body.get("lowongan"));
+        assertEquals(6, body.get("assistant")); // 2 + 4 accepted
+        assertEquals(3, body.get("vacan"));     // (5-2) + (4-4) = 3
+    }
+
+    @Test
+    void testGetLowonganByDosen_UserNotFoundOrNotLecturer() {
+        UUID dosenId = UUID.randomUUID();
+
+        when(userRepository.findByUserId(dosenId)).thenReturn(null); // or mock a user with non-LECTURER role
+
+        ResponseEntity<Map<String, Object>> response = lowonganService.getLowonganByDosen(dosenId);
+
+        assertEquals(400, response.getStatusCodeValue());
+        Map<String, Object> body = response.getBody();
+        assertNotNull(body);
+        assertTrue(((String) body.get("message")).startsWith("Gagal mengambil lowongan"));
+        assertEquals(new ArrayList<>(), body.get("data"));
     }
 
 //    @Test
