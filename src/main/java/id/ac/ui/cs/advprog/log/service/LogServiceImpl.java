@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -33,6 +34,7 @@ import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class LogServiceImpl implements LogService {
 
     @Autowired
@@ -62,11 +64,13 @@ public class LogServiceImpl implements LogService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Log> findAll() {
         return logRepository.findAll();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Log findById(UUID id) {
         return logRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Log tidak ditemukan dengan id: " + id));
@@ -75,7 +79,17 @@ public class LogServiceImpl implements LogService {
     @Override
     public Log update(UUID id, Log updatedLog) {
         Log existingLog = findById(id);
-        // Update logic here
+
+        // Update fields
+        existingLog.setJudul(updatedLog.getJudul());
+        existingLog.setKeterangan(updatedLog.getKeterangan());
+        existingLog.setKategori(updatedLog.getKategori());
+        existingLog.setTanggalLog(updatedLog.getTanggalLog());
+        existingLog.setWaktuMulai(updatedLog.getWaktuMulai());
+        existingLog.setWaktuSelesai(updatedLog.getWaktuSelesai());
+        existingLog.setPesanUntukDosen(updatedLog.getPesanUntukDosen());
+        existingLog.setStatus(updatedLog.getStatus());
+
         return logRepository.save(existingLog);
     }
 
@@ -195,18 +209,16 @@ public class LogServiceImpl implements LogService {
         }, taskExecutor);
     }
 
-    // NEW HELPER METHOD - reuse Lowongan object
     private List<UUID> getDosenIdsByLowonganWithLowongan(Lowongan lowongan) {
         String mataKuliahNama = lowongan.getMatkul();
 
-        // Find MataKuliah by nama
         List<MataKuliah> allMataKuliah = mataKuliahRepository.findAll();
         Optional<MataKuliah> mataKuliahOpt = allMataKuliah.stream()
                 .filter(mk -> mk.getNama().equals(mataKuliahNama))
                 .findFirst();
 
         if (mataKuliahOpt.isEmpty()) {
-            throw new ResourceNotFoundException("Mata kuliah tidak ditemukan: " + mataKuliahNama);
+            throw new ResourceNotFoundException("Mata kuliah tidak ditemukan dengan kode: " + mataKuliahNama);
         }
 
         MataKuliah mataKuliah = mataKuliahOpt.get();
@@ -228,22 +240,15 @@ public class LogServiceImpl implements LogService {
             throw new BadRequestException("Tanggal log tidak boleh di masa depan");
         }
 
-        Log updatedLog = new LogBuilder()
-                .id(log.getId())
-                .judul(logDTO.getJudul())
-                .keterangan(logDTO.getKeterangan())
-                .kategori(KategoriLog.valueOf(logDTO.getKategori()))
-                .tanggalLog(logDTO.getTanggalLog())
-                .waktuMulai(logDTO.getWaktuMulai())
-                .waktuSelesai(logDTO.getWaktuSelesai())
-                .pesanUntukDosen(logDTO.getPesanUntukDosen())
-                .status(log.getStatus())
-                .idLowongan(log.getIdLowongan())
-                .idMahasiswa(log.getIdMahasiswa())
-                .idDosen(log.getIdDosen())
-                .build();
+        log.setJudul(logDTO.getJudul());
+        log.setKeterangan(logDTO.getKeterangan());
+        log.setKategori(KategoriLog.valueOf(logDTO.getKategori()));
+        log.setTanggalLog(logDTO.getTanggalLog());
+        log.setWaktuMulai(logDTO.getWaktuMulai());
+        log.setWaktuSelesai(logDTO.getWaktuSelesai());
+        log.setPesanUntukDosen(logDTO.getPesanUntukDosen());
 
-        return logRepository.save(updatedLog);
+        return logRepository.save(log);
     }
 
     @Override
@@ -310,26 +315,16 @@ public class LogServiceImpl implements LogService {
     }
 
     // Periksa Log (Dosen)
-
     @Override
     public List<Log> findByDosen(UUID idDosen) {
         if (!validateDosen(idDosen)) {
             throw new ResourceNotFoundException("Dosen tidak ditemukan");
         }
 
-        // Get all logs where dosen is pengampu of the matakuliah
-        List<Log> allLogs = new ArrayList<>();
-
-        // Get all lowongan where this dosen is pengampu
-        List<Lowongan> allLowongan = lowonganRepository.findAll();
-        for (Lowongan lowongan : allLowongan) {
-            if (isDosenOwnsLowongan(lowongan.getId(), idDosen)) {
-                List<Log> logsForLowongan = logRepository.findByIdLowongan(lowongan.getId());
-                allLogs.addAll(logsForLowongan);
-            }
-        }
-
-        return allLogs;
+        // SIMPLIFIED: Just return all logs where idDosen matches
+        // This works because when creating log, we already set idDosen
+        // based on dosen pengampu of the mata kuliah
+        return logRepository.findByIdDosen(idDosen);
     }
 
     // Async version with parallel processing using custom executor
@@ -462,7 +457,6 @@ public class LogServiceImpl implements LogService {
 
     @Override
     public List<UUID> getDosenIdsByLowonganId(UUID idLowongan) {
-        // Tracing: Lowongan -> MataKuliah -> DosenPengampu
         Optional<Lowongan> lowonganOpt = lowonganRepository.findById(idLowongan);
         if (lowonganOpt.isEmpty()) {
             throw new ResourceNotFoundException("Lowongan tidak ditemukan");
@@ -471,14 +465,13 @@ public class LogServiceImpl implements LogService {
         Lowongan lowongan = lowonganOpt.get();
         String mataKuliahNama = lowongan.getMatkul();
 
-        // Find MataKuliah by nama
         List<MataKuliah> allMataKuliah = mataKuliahRepository.findAll();
         Optional<MataKuliah> mataKuliahOpt = allMataKuliah.stream()
                 .filter(mk -> mk.getNama().equals(mataKuliahNama))
                 .findFirst();
 
         if (mataKuliahOpt.isEmpty()) {
-            throw new ResourceNotFoundException("Mata kuliah tidak ditemukan: " + mataKuliahNama);
+            throw new ResourceNotFoundException("Mata kuliah tidak ditemukan dengan kode: " + mataKuliahNama);
         }
 
         MataKuliah mataKuliah = mataKuliahOpt.get();
@@ -508,6 +501,7 @@ public class LogServiceImpl implements LogService {
         }
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     private boolean isMahasiswaAcceptedForLowongan(UUID idMahasiswa, UUID idLowongan) {
         return lamaranRepository.findAll().stream()
                 .anyMatch(lamaran ->
