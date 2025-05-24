@@ -58,11 +58,10 @@ public class Log {
     }
 
     Log(LogBuilder builder) {
-        if (builder.getId() == null) {
-            this.id = UUID.randomUUID();
-        } else {
+        if (builder.getId() != null) {
             this.id = builder.getId();
         }
+
         this.judul = builder.getJudul();
         this.keterangan = builder.getKeterangan();
         this.kategori = builder.getKategori();

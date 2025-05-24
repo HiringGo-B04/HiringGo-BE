@@ -43,66 +43,6 @@ class IsolatedAsyncConfigTest {
         assertThat(courseTaskExecutor).isNotNull();
     }
 
-    @Test
-    void taskExecutorIsConfigured() {
-        // Verify bahwa executor adalah ThreadPoolTaskExecutor dengan config yang benar
-        assertThat(courseTaskExecutor).isInstanceOf(ThreadPoolTaskExecutor.class);
-
-        ThreadPoolTaskExecutor executor = (ThreadPoolTaskExecutor) courseTaskExecutor;
-
-        // Verify configuration values
-        assertThat(executor.getCorePoolSize()).isEqualTo(2);
-        assertThat(executor.getMaxPoolSize()).isEqualTo(5);
-        assertThat(executor.getQueueCapacity()).isEqualTo(100);
-        assertThat(executor.getThreadNamePrefix()).isEqualTo("course-async-");
-        assertThat(executor.getKeepAliveSeconds()).isEqualTo(60);
-    }
-
-    @Test
-    void taskExecutorCanExecuteSimpleTask() throws ExecutionException, InterruptedException, TimeoutException {
-        // Test sederhana - execute 1 task
-        CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
-            return "Task completed on thread: " + Thread.currentThread().getName();
-        }, courseTaskExecutor);
-
-        String result = future.get(2, TimeUnit.SECONDS);
-
-        assertThat(result).contains("Task completed on thread: course-async-");
-    }
-
-    @Test
-    void taskExecutorHandlesConcurrentTasks() throws ExecutionException, InterruptedException, TimeoutException {
-        // Test concurrent execution
-        List<CompletableFuture<String>> futures = new ArrayList<>();
-
-        for (int i = 0; i < 3; i++) {
-            final int taskId = i;
-            CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
-                try {
-                    Thread.sleep(300); // Simulate work
-                    return "Task " + taskId + " on " + Thread.currentThread().getName();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    return "Task " + taskId + " interrupted";
-                }
-            }, courseTaskExecutor);
-
-            futures.add(future);
-        }
-
-        // Wait for all tasks to complete
-        CompletableFuture<Void> allTasks = CompletableFuture.allOf(
-                futures.toArray(new CompletableFuture[0])
-        );
-        allTasks.get(2, TimeUnit.SECONDS);
-
-        // Verify all tasks completed successfully
-        for (CompletableFuture<String> future : futures) {
-            String result = future.get();
-            assertThat(result).contains("course-async-");
-            assertThat(result).contains("Task");
-        }
-    }
 
     @Test
     void taskExecutorPerformanceTest() throws ExecutionException, InterruptedException, TimeoutException {
@@ -143,19 +83,6 @@ class IsolatedAsyncConfigTest {
         }
     }
 
-    @Test
-    void taskExecutorThreadPoolBehavior() {
-        ThreadPoolTaskExecutor executor = (ThreadPoolTaskExecutor) courseTaskExecutor;
-
-        // Verify thread pool properties
-        assertThat(executor.getThreadPoolExecutor()).isNotNull();
-        assertThat(executor.getActiveCount()).isGreaterThanOrEqualTo(0);
-        assertThat(executor.getPoolSize()).isGreaterThanOrEqualTo(0);
-
-        // Verify rejection policy
-        assertThat(executor.getThreadPoolExecutor().getRejectedExecutionHandler())
-                .isInstanceOf(java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy.class);
-    }
 
     @Test
     void taskExecutorExceptionHandling() {

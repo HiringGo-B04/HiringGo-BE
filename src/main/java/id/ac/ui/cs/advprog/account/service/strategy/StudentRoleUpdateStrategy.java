@@ -1,10 +1,10 @@
 package id.ac.ui.cs.advprog.account.service.strategy;
 
 import id.ac.ui.cs.advprog.account.dto.update.ResponseUpdateDTO;
-import id.ac.ui.cs.advprog.account.dto.update.UserIntoLecturerDTO;
 import id.ac.ui.cs.advprog.account.dto.update.UserIntoStudentDTO;
 import id.ac.ui.cs.advprog.account.dto.update.UserUpdateDTO;
 import id.ac.ui.cs.advprog.authjwt.model.User;
+import id.ac.ui.cs.advprog.authjwt.model.UserRole;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,7 +32,7 @@ public class StudentRoleUpdateStrategy implements RoleUpdateStrategy {
         user.setNip(null);
         user.setFullName(userIntoLecturerDTO.fullName);
         user.setNim(userIntoLecturerDTO.nim);
-        user.setRole("STUDENT");
+        user.setRole(UserRole.STUDENT.getValue());
 
         try{
             userRepository.save(user);

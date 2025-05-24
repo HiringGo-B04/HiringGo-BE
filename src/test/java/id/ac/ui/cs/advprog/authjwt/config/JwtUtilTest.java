@@ -1,6 +1,5 @@
 package id.ac.ui.cs.advprog.authjwt.config;
 
-import id.ac.ui.cs.advprog.authjwt.config.JwtUtil;
 import id.ac.ui.cs.advprog.authjwt.model.Token;
 import id.ac.ui.cs.advprog.authjwt.repository.TokenRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,8 +10,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @Component
 public class JwtUtilTest {
@@ -36,11 +34,10 @@ public class JwtUtilTest {
     public void testGenerateTokenWithRoleAndUserId() {
         UUID uuid = UUID.randomUUID();
         String token = jwtUtil.generateToken("testuser", "STUDENT", uuid);
-        Token currentToken = new Token(token);
 
         assertNotNull(token);
 
-        when(tokenRespository.findByToken(token)).thenReturn(currentToken);
+        when(tokenRespository.existsByToken(token)).thenReturn(true);
 
         assertTrue(jwtUtil.validateJwtToken(token));
 
@@ -51,6 +48,21 @@ public class JwtUtilTest {
         assertEquals("testuser", username);
         assertEquals("STUDENT", role);
         assertEquals(UUID.fromString(userId), uuid);
+    }
+
+    @Test
+    void testValidateJwtToken_shouldReturnFalseIfTokenNotFoundInRepository() {
+        // Arrange
+        String token = jwtUtil.generateToken("user1", "STUDENT", UUID.randomUUID());
+
+        // TokenRepository returns null (simulate not found)
+        when(tokenRespository.findByToken(token)).thenReturn(null);
+
+        // Act
+        boolean isValid = jwtUtil.validateJwtToken(token);
+
+        // Assert
+        assertFalse(isValid);
     }
 
     @Test

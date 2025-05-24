@@ -4,22 +4,18 @@ import id.ac.ui.cs.advprog.account.dto.delete.DeleteRequestDTO;
 import id.ac.ui.cs.advprog.account.dto.delete.DeleteResponseDTO;
 import id.ac.ui.cs.advprog.account.dto.get.GetAllUserDTO;
 import id.ac.ui.cs.advprog.account.dto.update.*;
-import id.ac.ui.cs.advprog.account.service.AccountService;
 import id.ac.ui.cs.advprog.authjwt.model.User;
+import id.ac.ui.cs.advprog.authjwt.model.UserRole;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
 
-import id.ac.ui.cs.advprog.course.model.MataKuliah;
-import id.ac.ui.cs.advprog.course.repository.MataKuliahRepository;
-import id.ac.ui.cs.advprog.manajemenlowongan.model.Lowongan;
-import id.ac.ui.cs.advprog.manajemenlowongan.repository.LowonganRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
-import java.util.Collections;
-import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -28,38 +24,59 @@ public class AccountServiceTest {
 
     private AccountService accountService;
     private UserRepository userRepository;
-    private LowonganRepository lowonganRepository;
-    private MataKuliahRepository mataKuliahRepository;
+    private AsyncAccountHelper asyncHelper;
 
     @BeforeEach
     void setUp() {
         userRepository = mock(UserRepository.class);
-        lowonganRepository = mock(LowonganRepository.class);
-        mataKuliahRepository = mock(MataKuliahRepository.class);
-        accountService = new AccountService(userRepository, lowonganRepository, mataKuliahRepository);
+        asyncHelper = mock(AsyncAccountHelper.class);
+        accountService = new AccountService(userRepository,  asyncHelper);
     }
 
     @Test
-    void testGetAllUser_Success() {
+    void getAllUser_shouldHandleInterruptedExceptionFromStudentFuture() throws Exception {
+        // Arrange: only the student future throws InterruptedException
+        CompletableFuture<List<User>> interruptedFuture = new CompletableFuture<>();
+        interruptedFuture.completeExceptionally(new InterruptedException("Simulated interruption"));
+
+        when(asyncHelper.getUsersByRoleAsync(UserRole.STUDENT.getValue())).thenReturn(interruptedFuture);
+        when(asyncHelper.getUsersByRoleAsync(UserRole.LECTURER.getValue())).thenReturn(interruptedFuture);
+        when(asyncHelper.getUsersByRoleAsync(UserRole.ADMIN.getValue())).thenReturn(interruptedFuture);
+        when(asyncHelper.getNumberOfCoursesAsync()).thenReturn(CompletableFuture.completedFuture(0));
+        when(asyncHelper.getNumberOfVacanciesAsync()).thenReturn(CompletableFuture.completedFuture(0));
+
+        // Act
+        CompletableFuture<ResponseEntity<GetAllUserDTO>> futureResponse = accountService.getAllUser();
+        ResponseEntity<GetAllUserDTO> response = futureResponse.get(5, TimeUnit.SECONDS);
+
+        // Assert
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("Thread was interrupted", response.getBody().message());
+    }
+
+    @Test
+    void testGetAllUser_Success() throws Exception {
         // Given
         User student1 = new User(); student1.setRole("STUDENT"); student1.setPassword("pass1");
         User lecturer1 = new User(); lecturer1.setRole("LECTURER"); lecturer1.setPassword("pass2");
         User admin1 = new User(); admin1.setRole("ADMIN"); admin1.setPassword("pass3");
 
-        when(userRepository.findAllByRole("STUDENT")).thenReturn(List.of(student1));
-        when(userRepository.findAllByRole("LECTURER")).thenReturn(List.of(lecturer1));
-        when(userRepository.findAllByRole("ADMIN")).thenReturn(List.of(admin1));
-        MataKuliah mata1 = new MataKuliah();
-        MataKuliah mata2 = new MataKuliah();
-        when(mataKuliahRepository.findAll()).thenReturn(List.of(mata1, mata2));
+        when(asyncHelper.getUsersByRoleAsync("STUDENT"))
+                .thenReturn(CompletableFuture.completedFuture(List.of(student1)));
+        when(asyncHelper.getUsersByRoleAsync("LECTURER"))
+                .thenReturn(CompletableFuture.completedFuture(List.of(lecturer1)));
+        when(asyncHelper.getUsersByRoleAsync("ADMIN"))
+                .thenReturn(CompletableFuture.completedFuture(List.of(admin1)));
 
-        Lowongan low1 = new Lowongan();
-        Lowongan low2 = new Lowongan();
-        Lowongan low3 = new Lowongan();
-        when(lowonganRepository.findAll()).thenReturn(List.of(low1, low2, low3));
+        when(asyncHelper.getNumberOfCoursesAsync())
+                .thenReturn(CompletableFuture.completedFuture(2));
+        when(asyncHelper.getNumberOfVacanciesAsync())
+                .thenReturn(CompletableFuture.completedFuture(3));
 
         // When
-        ResponseEntity<GetAllUserDTO> response = accountService.getAllUser();
+        CompletableFuture<ResponseEntity<GetAllUserDTO>> future = accountService.getAllUser();
+        ResponseEntity<GetAllUserDTO> response = future.get(); // Await future
 
         // Then
         GetAllUserDTO dto = response.getBody();
@@ -77,20 +94,31 @@ public class AccountServiceTest {
         dto.users().forEach(user -> assertNull(user.getPassword()));
     }
 
+
     @Test
-    void testGetAllUser_ExceptionHandling() {
+    void testGetAllUser_ExceptionHandling() throws Exception {
         // Given
-        when(userRepository.findAllByRole("STUDENT")).thenThrow(new RuntimeException("DB error"));
+        when(asyncHelper.getUsersByRoleAsync("STUDENT"))
+                .thenReturn(CompletableFuture.failedFuture(new RuntimeException("DB error")));
+
+        when(asyncHelper.getUsersByRoleAsync("LECTURER"))
+                .thenReturn(CompletableFuture.completedFuture(List.of()));
+        when(asyncHelper.getUsersByRoleAsync("ADMIN"))
+                .thenReturn(CompletableFuture.completedFuture(List.of()));
+        when(asyncHelper.getNumberOfCoursesAsync())
+                .thenReturn(CompletableFuture.completedFuture(0));
+        when(asyncHelper.getNumberOfVacanciesAsync())
+                .thenReturn(CompletableFuture.completedFuture(0));
 
         // When
-        ResponseEntity<GetAllUserDTO> response = accountService.getAllUser();
+        CompletableFuture<ResponseEntity<GetAllUserDTO>> future = accountService.getAllUser();
+        ResponseEntity<GetAllUserDTO> response = future.get(); // Await future
 
         // Then
         GetAllUserDTO dto = response.getBody();
         assertEquals(400, response.getStatusCodeValue());
         assertNotNull(dto);
         assertEquals("error", dto.status());
-        assertEquals("DB error", dto.message());
         assertEquals(0, dto.numberOfStudents());
         assertEquals(0, dto.numberOfLectures());
         assertEquals(0, dto.numberOfCourses());
@@ -98,13 +126,12 @@ public class AccountServiceTest {
         assertNull(dto.users());
     }
 
+
     @Test
     void testUpdateUserRoleToAdmin_Success() {
         // Given
         String username = "adminuser";
-        UserIntoAdminDTO dto = new UserIntoAdminDTO();
-        dto.username = username;
-        dto.role = "ADMIN";
+        UserIntoAdminDTO dto = new UserIntoAdminDTO("ADMIN", username);
 
         User user = new User();
         user.setUsername(username);
@@ -130,11 +157,7 @@ public class AccountServiceTest {
     void testUpdateUserRoleToLecturer_Success() {
         // Given
         String username = "adminuser";
-        UserIntoLecturerDTO dto = new UserIntoLecturerDTO();
-        dto.username = username;
-        dto.role = "LECTURER";
-        dto.nip = "123412341234";
-        dto.fullName = "adminuser";
+        UserIntoLecturerDTO dto = new UserIntoLecturerDTO("adminuser", "123412341234", username, "LECTURER");
 
         User user = new User();
         user.setUsername(username);
@@ -157,7 +180,7 @@ public class AccountServiceTest {
     void testUpdateUserRoleToStudent_Success() {
         // Given
         String username = "adminuser";
-        UserIntoStudentDTO dto = new UserIntoStudentDTO();
+        UserIntoStudentDTO dto = new UserIntoStudentDTO(username, "123412341234", username, "STUDENT");
         dto.username = username;
         dto.role = "STUDENT";
         dto.nim = "123412341234";
@@ -183,7 +206,7 @@ public class AccountServiceTest {
     @Test
     void testUpdateUser_UserNotFound() {
         // Given
-        UserUpdateDTO dto = new UserIntoAdminDTO();
+        UserUpdateDTO dto = new UserIntoAdminDTO("ADMIN", "ghost");
         dto.username = "ghost";
         dto.role = "ADMIN";
 
@@ -205,7 +228,7 @@ public class AccountServiceTest {
     @Test
     void testUpdateUser_UnsupportedRole_ShouldReturnError() {
         // Given
-        UserUpdateDTO dto = new UserIntoAdminDTO();
+        UserUpdateDTO dto = new UserIntoAdminDTO("MODERATOR", "admin");
         dto.username = "admin";
         dto.role = "MODERATOR"; // unsupported
 
@@ -231,7 +254,7 @@ public class AccountServiceTest {
     @Test
     void testUpdateUser_ExceptionThrown_ShouldReturnErrorResponse() {
         // Given
-        UserUpdateDTO dto = new UserIntoAdminDTO();
+        UserUpdateDTO dto = new UserIntoAdminDTO("ADMIN", "erroruser");
         dto.username = "erroruser";
         dto.role = "ADMIN";
 

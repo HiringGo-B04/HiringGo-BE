@@ -11,6 +11,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.HashMap;
 import java.util.Map;
 
+import static id.ac.ui.cs.advprog.authjwt.config.GeneralUtils.DEFAULT_MESSAGE_RESPONSE;
+
 public abstract class RegistrationCommand {
     public UserRepository userRepository;
     public PasswordEncoder passwordEncoder;
@@ -20,12 +22,12 @@ public abstract class RegistrationCommand {
         Map<String, String> response = new HashMap<>();
 
         if(!GeneralUtils.isValidEmail(user.username())) {
-            response.put("message", "Username must be a valid email address");
+            response.put(DEFAULT_MESSAGE_RESPONSE, "Username must be a valid email address");
             return response;
         }
 
         if(userRepository.existsByUsername(user.username())) {
-            response.put("message", "Username already exists");
+            response.put(DEFAULT_MESSAGE_RESPONSE, "Username already exists");
             return response;
         }
 
@@ -42,17 +44,17 @@ public abstract class RegistrationCommand {
             }
 
             if(!GeneralUtils.isValidString(fullName)) {
-                response.put("message", "Name must only contain letter character");
+                response.put(DEFAULT_MESSAGE_RESPONSE, "Name must only contain letter character");
                 return response;
             }
 
             if (!GeneralUtils.isValidInt(idNumber)) {
-                response.put("message", "NIM/NIP must only contain number and maximal 12 digits long");
+                response.put(DEFAULT_MESSAGE_RESPONSE, "NIM/NIP must only contain number and maximal 12 digits long");
                 return response;
             }
         }
 
-        response.put("message", "valid");
+        response.put(DEFAULT_MESSAGE_RESPONSE, "valid");
         return response;
     }
 

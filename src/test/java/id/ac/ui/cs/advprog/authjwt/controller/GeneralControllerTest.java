@@ -1,6 +1,5 @@
 package id.ac.ui.cs.advprog.authjwt.controller;
 
-import id.ac.ui.cs.advprog.authjwt.testconfig.TestSecurityBeansConfig;
 import id.ac.ui.cs.advprog.authjwt.config.SecurityConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

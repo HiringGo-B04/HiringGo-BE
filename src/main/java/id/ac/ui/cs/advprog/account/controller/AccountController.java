@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.concurrent.ExecutionException;
+
 @RestController
 @RequestMapping("/api/account")
 public class AccountController {
@@ -31,8 +33,10 @@ public class AccountController {
         return accountService.update(data);
     }
 
+
     @GetMapping(USER)
-    public ResponseEntity<GetAllUserDTO> get() {
-        return accountService.getAllUser();
+    public ResponseEntity<GetAllUserDTO> get() throws ExecutionException, InterruptedException {
+        return accountService.getAllUser().get();
     }
+
 }

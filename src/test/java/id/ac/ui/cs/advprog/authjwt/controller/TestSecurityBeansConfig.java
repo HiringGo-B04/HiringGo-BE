@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.authjwt.testconfig;
+package id.ac.ui.cs.advprog.authjwt.controller;
 
 import id.ac.ui.cs.advprog.authjwt.config.JwtAuthFilter;
 import id.ac.ui.cs.advprog.authjwt.config.JwtUtil;
