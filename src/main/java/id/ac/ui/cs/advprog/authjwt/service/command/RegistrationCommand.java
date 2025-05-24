@@ -20,6 +20,7 @@ public abstract class RegistrationCommand {
     public final String defaultErrorResponse = "error";
     public final String defaultMessageResponse = "message";
 
+
     public Map<String, String> check_invalid_input(String status) {
         Map<String, String> response = new HashMap<>();
 

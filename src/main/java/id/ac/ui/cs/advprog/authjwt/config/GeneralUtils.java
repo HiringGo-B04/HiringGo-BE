@@ -11,6 +11,9 @@ public class GeneralUtils {
     private static final Pattern INT_PATTERN = Pattern.compile(INT_MAX_12_REGEX);
     private static final Pattern STRING_PATTERN = Pattern.compile(STRING_REGEX);
 
+    private GeneralUtils() {
+    }
+
     public static boolean isValidEmail(String email) {
         if (email == null) return false;
         Matcher matcher = EMAIL_PATTERN.matcher(email);
