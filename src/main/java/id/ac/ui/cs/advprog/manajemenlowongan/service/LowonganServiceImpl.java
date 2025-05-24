@@ -1,18 +1,27 @@
 package id.ac.ui.cs.advprog.manajemenlowongan.service;
 
+import id.ac.ui.cs.advprog.authjwt.model.User;
+import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
 import id.ac.ui.cs.advprog.manajemenlowongan.model.Lowongan;
 import id.ac.ui.cs.advprog.manajemenlowongan.repository.LowonganRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+
+import static java.lang.Math.max;
 
 @Service
 public class LowonganServiceImpl implements LowonganService {
 
-    @Autowired
     private LowonganRepository lowonganRepository;
+    private UserRepository userRepository;
+
+    public LowonganServiceImpl(UserRepository userRepository, LowonganRepository lowonganRepository) {
+        this.userRepository = userRepository;
+        this.lowonganRepository = lowonganRepository;
+    }
 
     public boolean validateLowongan(Lowongan lowongan) {
         // Validasi data lowongan dasar
@@ -51,10 +60,6 @@ public class LowonganServiceImpl implements LowonganService {
         }
 
         return true;
-    }
-
-    public LowonganServiceImpl(LowonganRepository lowonganRepository) {
-        this.lowonganRepository = lowonganRepository;
     }
 
     @Override
@@ -97,6 +102,37 @@ public class LowonganServiceImpl implements LowonganService {
 
     public void deleteLowongan(UUID id) {
         lowonganRepository.deleteById(id);
+    }
+
+    public ResponseEntity<Map<String, Object>> getLowonganByDosen(UUID id){
+        try {
+            User user = userRepository.findByUserId(id);
+            if (user == null || !user.getRole().equals("LECTURER")) {
+                throw new IllegalArgumentException("Tidak ada dosen dengan id " + id);
+            }
+
+            List<Lowongan> lowongans = lowonganRepository.findLowonganByIdDosen(id);
+            int teachingAssitant =  0;
+            int needTeachingAssitant = 0;
+            for (Lowongan lowongan : lowongans) {
+                teachingAssitant += lowongan.getTotalAsdosAccepted();
+                needTeachingAssitant += max(lowongan.getTotalAsdosNeeded() - lowongan.getTotalAsdosAccepted(), 0);
+            }
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Success");
+            response.put("lowongan", lowongans.size());
+            response.put("assistant", teachingAssitant);
+            response.put("vacan", needTeachingAssitant);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", "Gagal mengambil lowongan: " + e.getMessage());
+            errorResponse.put("data", new ArrayList<>());
+
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
     }
 
     @Override
