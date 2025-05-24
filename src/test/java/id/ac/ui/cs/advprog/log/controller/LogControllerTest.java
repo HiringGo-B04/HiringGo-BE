@@ -2,9 +2,12 @@ package id.ac.ui.cs.advprog.log.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import id.ac.ui.cs.advprog.authjwt.model.User;
+import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
 import id.ac.ui.cs.advprog.log.dto.LogDTO;
 import id.ac.ui.cs.advprog.log.enums.KategoriLog;
 import id.ac.ui.cs.advprog.log.enums.StatusLog;
+import id.ac.ui.cs.advprog.log.exception.ForbiddenException;
 import id.ac.ui.cs.advprog.log.model.Log;
 import id.ac.ui.cs.advprog.log.model.LogBuilder;
 import id.ac.ui.cs.advprog.log.service.LogService;
@@ -25,7 +28,9 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -43,6 +48,9 @@ public class LogControllerTest {
     @Mock
     private LogService logService;
 
+    @Mock
+    private UserRepository userRepository;
+
     @InjectMocks
     private LogController logController;
 
@@ -58,6 +66,8 @@ public class LogControllerTest {
     private UUID logId;
     private Log sampleLog;
     private LogDTO logDTO;
+    private User mockMahasiswaUser;
+    private User mockDosenUser;
 
     @BeforeEach
     void setUp() {
@@ -95,16 +105,27 @@ public class LogControllerTest {
         logDTO.setWaktuSelesai(LocalTime.of(11, 0));
         logDTO.setIdLowongan(lowonganId);
 
+        mockMahasiswaUser = new User();
+        mockMahasiswaUser.setUserId(mahasiswaId);
+        mockMahasiswaUser.setUsername("mahasiswa@example.com");
+        mockMahasiswaUser.setRole("STUDENT");
+
+        mockDosenUser = new User();
+        mockDosenUser.setUserId(dosenId);
+        mockDosenUser.setUsername("dosen@example.com");
+        mockDosenUser.setRole("LECTURER");
+
         MockitoAnnotations.openMocks(this);
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
     }
 
-    //API Mahasiswa
+    // ========== Mahasiswa API Tests ==========
 
     @Test
     void testGetStudentLogs_Success() throws Exception {
-        when(authentication.getName()).thenReturn(mahasiswaId.toString());
+        when(authentication.getName()).thenReturn("mahasiswa@example.com");
+        when(userRepository.findByUsername("mahasiswa@example.com")).thenReturn(mockMahasiswaUser);
         List<Log> logs = Arrays.asList(sampleLog);
         when(logService.findByMahasiswaAndLowongan(mahasiswaId, lowonganId)).thenReturn(logs);
 
@@ -117,47 +138,37 @@ public class LogControllerTest {
 
     @Test
     void testGetStudentLog_Success() throws Exception {
-        when(authentication.getName()).thenReturn(mahasiswaId.toString());
-        when(logService.findById(logId)).thenReturn(sampleLog);
+        when(authentication.getName()).thenReturn("mahasiswa@example.com");
+        when(userRepository.findByUsername("mahasiswa@example.com")).thenReturn(mockMahasiswaUser);
+        when(logService.findByIdForMahasiswa(logId, mahasiswaId)).thenReturn(sampleLog);
 
         mockMvc.perform(get("/api/log/student/{logId}", logId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.judul").value("Asistensi"));
 
-        verify(logService).findById(logId);
-    }
-
-    @Test
-    void testGetStudentLog_Forbidden() throws Exception {
-        UUID differentMahasiswaId = UUID.randomUUID();
-        when(authentication.getName()).thenReturn(differentMahasiswaId.toString());
-        when(logService.findById(logId)).thenReturn(sampleLog);
-
-        mockMvc.perform(get("/api/log/student/{logId}", logId))
-                .andExpect(status().isForbidden());
-
-        verify(logService).findById(logId);
+        verify(logService).findByIdForMahasiswa(logId, mahasiswaId);
     }
 
     @Test
     void testCreateStudentLog_Success() throws Exception {
-        when(authentication.getName()).thenReturn(mahasiswaId.toString());
-        when(logService.createLogForMahasiswa(any(LogDTO.class), eq(mahasiswaId), eq(dosenId)))
+        when(authentication.getName()).thenReturn("mahasiswa@example.com");
+        when(userRepository.findByUsername("mahasiswa@example.com")).thenReturn(mockMahasiswaUser);
+        when(logService.createLogForMahasiswa(any(LogDTO.class), eq(mahasiswaId)))
                 .thenReturn(sampleLog);
 
         mockMvc.perform(post("/api/log/student")
-                        .param("dosenId", dosenId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(logDTO)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.judul").value("Asistensi"));
 
-        verify(logService).createLogForMahasiswa(any(LogDTO.class), eq(mahasiswaId), eq(dosenId));
+        verify(logService).createLogForMahasiswa(any(LogDTO.class), eq(mahasiswaId));
     }
 
     @Test
     void testUpdateStudentLog_Success() throws Exception {
-        when(authentication.getName()).thenReturn(mahasiswaId.toString());
+        when(authentication.getName()).thenReturn("mahasiswa@example.com");
+        when(userRepository.findByUsername("mahasiswa@example.com")).thenReturn(mockMahasiswaUser);
         when(logService.updateLogForMahasiswa(eq(logId), any(LogDTO.class), eq(mahasiswaId)))
                 .thenReturn(sampleLog);
 
@@ -172,7 +183,8 @@ public class LogControllerTest {
 
     @Test
     void testDeleteStudentLog_Success() throws Exception {
-        when(authentication.getName()).thenReturn(mahasiswaId.toString());
+        when(authentication.getName()).thenReturn("mahasiswa@example.com");
+        when(userRepository.findByUsername("mahasiswa@example.com")).thenReturn(mockMahasiswaUser);
         doNothing().when(logService).deleteLogForMahasiswa(logId, mahasiswaId);
 
         mockMvc.perform(delete("/api/log/student/{logId}", logId))
@@ -184,29 +196,37 @@ public class LogControllerTest {
 
     @Test
     void testGetStudentHonor_Success() throws Exception {
-        when(authentication.getName()).thenReturn(mahasiswaId.toString());
+        when(authentication.getName()).thenReturn("mahasiswa@example.com");
+        when(userRepository.findByUsername("mahasiswa@example.com")).thenReturn(mockMahasiswaUser);
         int tahun = 2025;
         int bulan = 5;
-        double honor = 137500.0;
 
-        when(logService.calculateHonor(mahasiswaId, lowonganId, tahun, bulan)).thenReturn(honor);
+        Map<String, Object> honorData = new HashMap<>();
+        honorData.put("bulan", bulan);
+        honorData.put("tahun", tahun);
+        honorData.put("lowonganId", lowonganId);
+        honorData.put("honor", 137500.0);
+        honorData.put("formattedHonor", "Rp 137,500.00");
+
+        when(logService.calculateHonorData(mahasiswaId, lowonganId, tahun, bulan)).thenReturn(honorData);
 
         mockMvc.perform(get("/api/log/student/honor")
                         .param("lowonganId", lowonganId.toString())
                         .param("tahun", String.valueOf(tahun))
                         .param("bulan", String.valueOf(bulan)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.honor").value(honor))
-                .andExpect(jsonPath("$.formattedHonor").exists());
+                .andExpect(jsonPath("$.honor").value(137500.0))
+                .andExpect(jsonPath("$.formattedHonor").value("Rp 137,500.00"));
 
-        verify(logService).calculateHonor(mahasiswaId, lowonganId, tahun, bulan);
+        verify(logService).calculateHonorData(mahasiswaId, lowonganId, tahun, bulan);
     }
 
-    // API Dosen
+    // ========== Dosen API Tests ==========
 
     @Test
     void testGetLecturerLogs_Success() throws Exception {
-        when(authentication.getName()).thenReturn(dosenId.toString());
+        when(authentication.getName()).thenReturn("dosen@example.com");
+        when(userRepository.findByUsername("dosen@example.com")).thenReturn(mockDosenUser);
         List<Log> logs = Arrays.asList(sampleLog);
         when(logService.findByDosen(dosenId)).thenReturn(logs);
 
@@ -219,7 +239,8 @@ public class LogControllerTest {
 
     @Test
     void testGetLecturerLogsByLowongan_Success() throws Exception {
-        when(authentication.getName()).thenReturn(dosenId.toString());
+        when(authentication.getName()).thenReturn("dosen@example.com");
+        when(userRepository.findByUsername("dosen@example.com")).thenReturn(mockDosenUser);
         List<Log> logs = Arrays.asList(sampleLog);
         when(logService.findByLowonganAndDosen(lowonganId, dosenId)).thenReturn(logs);
 
@@ -232,23 +253,26 @@ public class LogControllerTest {
 
     @Test
     void testUpdateLogStatus_Success() throws Exception {
-        when(authentication.getName()).thenReturn(dosenId.toString());
-        sampleLog.setStatus(StatusLog.DITERIMA);
+        when(authentication.getName()).thenReturn("dosen@example.com");
+        when(userRepository.findByUsername("dosen@example.com")).thenReturn(mockDosenUser);
 
+        sampleLog.setStatus(StatusLog.DITERIMA);
         when(logService.verifyLog(eq(logId), eq(StatusLog.DITERIMA), eq(dosenId)))
                 .thenReturn(sampleLog);
 
         mockMvc.perform(patch("/api/log/lecturer/{logId}/status", logId)
                         .param("status", "DITERIMA"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("DITERIMA"));
+                .andExpect(jsonPath("$.message").value("Log berhasil diterima"))
+                .andExpect(jsonPath("$.log.status").value("DITERIMA"));
 
         verify(logService).verifyLog(eq(logId), eq(StatusLog.DITERIMA), eq(dosenId));
     }
 
     @Test
     void testUpdateLogStatus_InvalidStatus() throws Exception {
-        when(authentication.getName()).thenReturn(dosenId.toString());
+        when(authentication.getName()).thenReturn("dosen@example.com");
+        when(userRepository.findByUsername("dosen@example.com")).thenReturn(mockDosenUser);
 
         mockMvc.perform(patch("/api/log/lecturer/{logId}/status", logId)
                         .param("status", "INVALID_STATUS"))
