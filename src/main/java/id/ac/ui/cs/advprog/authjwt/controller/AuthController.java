@@ -27,7 +27,7 @@ public class AuthController {
     private AuthenticationFacade authFacade;
 
     @PostMapping(LOGIN)
-    public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO user) {
+    public ResponseEntity<LoginResponseDTO> loginUser(@Valid @RequestBody LoginRequestDTO user) {
         return authFacade.login(user);
     }
 
@@ -47,7 +47,7 @@ public class AuthController {
     }
 
     @PostMapping(LOGOUT)
-    public ResponseEntity<LogoutResponseDTO> logout(@Valid @RequestBody LogoutRequestDTO token) {
+    public ResponseEntity<LogoutResponseDTO> logoutUser(@Valid @RequestBody LogoutRequestDTO token) {
         return authFacade.logout(token);
     }
 }
