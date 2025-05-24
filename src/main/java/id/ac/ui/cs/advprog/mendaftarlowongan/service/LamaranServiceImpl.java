@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.mendaftarlowongan.service;
 
+import id.ac.ui.cs.advprog.manajemenlowongan.repository.LowonganRepository;
 import id.ac.ui.cs.advprog.mendaftarlowongan.dto.LamaranDTO;
 import id.ac.ui.cs.advprog.mendaftarlowongan.enums.StatusLamaran;
 import id.ac.ui.cs.advprog.mendaftarlowongan.model.Lamaran;
@@ -22,11 +23,15 @@ public class LamaranServiceImpl implements LamaranService {
     private LamaranRepository lamaranRepository;
 
     @Autowired
+    private LowonganRepository lowonganRepository;
+
+    @Autowired
     @Qualifier("taskExecutor")
     private Executor executor;
 
     // Default constructor for Spring
-    public LamaranServiceImpl() {}
+    public LamaranServiceImpl() {
+    }
 
     // Constructor for testing purposes
     public LamaranServiceImpl(LamaranRepository lamaranRepository) {
@@ -143,11 +148,18 @@ public class LamaranServiceImpl implements LamaranService {
                         lamaran.setStatus(StatusLamaran.DITERIMA);
                         return CompletableFuture.supplyAsync(() -> {
                             lamaranRepository.save(lamaran);
+                            lowonganRepository.findById(lamaran.getIdLowongan())
+                                    .ifPresent(lowongan -> {
+                                        lowongan.setTotalAsdosAccepted(lowongan.getTotalAsdosAccepted() + 1);
+                                        lowonganRepository.save(lowongan);
+                                    });
                             return null;
                         }, executor);
                     }
                     return CompletableFuture.completedFuture(null);
                 });
+
+
     }
 
     @Override
