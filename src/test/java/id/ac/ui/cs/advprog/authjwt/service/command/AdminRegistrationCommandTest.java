@@ -24,9 +24,6 @@ public class AdminRegistrationCommandTest {
     @Mock
     private PasswordEncoder passwordEncoder;
 
-    @InjectMocks
-    private AdminRegistrationCommand adminRegistrationCommand;
-
     private User validUser;
 
     @BeforeEach
