@@ -25,9 +25,9 @@ public class StudentRegistrationCommand extends RegistrationCommand {
     public ResponseEntity<RegisterResponseDTO> addUser() {
         Map<String, String> validity = check_invalid_input("student");
 
-        if(!"valid".equals(validity.get(defaultMessageResponse))) {
+        if(!"valid".equals(validity.get(DEFAULT_MESSAGE_RESPONSE))) {
             return new ResponseEntity<>(
-                    new RegisterResponseDTO(defaultErrorResponse, validity.get(defaultMessageResponse)),
+                    new RegisterResponseDTO(DEFAULT_ERROR_RESPONSE, validity.get(DEFAULT_MESSAGE_RESPONSE)),
                     HttpStatus.valueOf(400));
         }
 
@@ -35,7 +35,7 @@ public class StudentRegistrationCommand extends RegistrationCommand {
 
         if(userRepository.existsByNim(student.nim())) {
             return new ResponseEntity<>(
-                    new RegisterResponseDTO(defaultErrorResponse, "NIM Already Exist"),
+                    new RegisterResponseDTO(DEFAULT_ERROR_RESPONSE, "NIM Already Exist"),
                     HttpStatus.valueOf(400));
         }
 
@@ -53,7 +53,7 @@ public class StudentRegistrationCommand extends RegistrationCommand {
 
             return new ResponseEntity<>(
                     new RegisterResponseDTO(
-                            defaultAcceptResponse,
+                            DEFAULT_ACCEPT_RESPONSE,
                             "Success register",
                             newUser.getUsername(),
                             UserRole.STUDENT.getValue()),
@@ -61,7 +61,7 @@ public class StudentRegistrationCommand extends RegistrationCommand {
         }
         catch (Exception e) {
             return new ResponseEntity<>(
-                    new RegisterResponseDTO(defaultErrorResponse, e.getMessage()),
+                    new RegisterResponseDTO(DEFAULT_ERROR_RESPONSE, e.getMessage()),
                     HttpStatus.valueOf(400));
         }
     }
