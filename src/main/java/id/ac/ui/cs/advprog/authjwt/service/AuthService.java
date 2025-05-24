@@ -22,6 +22,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import static id.ac.ui.cs.advprog.authjwt.config.GeneralUtils.defaultAcceptResponse;
+import static id.ac.ui.cs.advprog.authjwt.config.GeneralUtils.defaultErrorResponse;
+
 @Service
 public class AuthService implements AuthenticationFacade {
     @Autowired
@@ -37,8 +40,6 @@ public class AuthService implements AuthenticationFacade {
     JwtUtil jwtUtils;
     private PasswordEncoder passwordEncoder;
 
-    private final String defaultAcceptResponse = "accept";
-    private final String defaultErrorResponse = "error";
 
     @Override
     @Transactional

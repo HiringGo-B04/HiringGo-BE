@@ -11,15 +11,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.HashMap;
 import java.util.Map;
 
+import static id.ac.ui.cs.advprog.authjwt.config.GeneralUtils.defaultMessageResponse;
+
 public abstract class RegistrationCommand {
     public UserRepository userRepository;
     public PasswordEncoder passwordEncoder;
     public UserDTO user;
-
-    public final String defaultAcceptResponse = "accept";
-    public final String defaultErrorResponse = "error";
-    public final String defaultMessageResponse = "message";
-
 
     public Map<String, String> check_invalid_input(String status) {
         Map<String, String> response = new HashMap<>();
