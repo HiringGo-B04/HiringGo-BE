@@ -143,8 +143,11 @@ public class LogBuilder {
             throw new IllegalArgumentException("Waktu selesai tidak boleh kosong");
         }
 
-        if (this.waktuSelesai.isBefore(this.waktuMulai)) {
-            throw new IllegalArgumentException("Waktu selesai harus setelah waktu mulai");
+        // Only validate time order for new logs (when not updating)
+        if (this.waktuMulai != null && this.waktuSelesai != null) {
+            if (this.waktuSelesai.isBefore(this.waktuMulai)) {
+                throw new IllegalArgumentException("Waktu selesai harus setelah waktu mulai");
+            }
         }
 
         if (this.idLowongan == null) {
