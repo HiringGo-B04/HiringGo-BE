@@ -7,8 +7,6 @@ import id.ac.ui.cs.advprog.account.dto.update.*;
 import id.ac.ui.cs.advprog.authjwt.model.User;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
 
-import id.ac.ui.cs.advprog.course.repository.MataKuliahRepository;
-import id.ac.ui.cs.advprog.manajemenlowongan.repository.LowonganRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -24,17 +22,13 @@ public class AccountServiceTest {
 
     private AccountService accountService;
     private UserRepository userRepository;
-    private LowonganRepository lowonganRepository;
-    private MataKuliahRepository mataKuliahRepository;
     private AsyncAccountHelper asyncHelper;
 
     @BeforeEach
     void setUp() {
         userRepository = mock(UserRepository.class);
-        lowonganRepository = mock(LowonganRepository.class);
-        mataKuliahRepository = mock(MataKuliahRepository.class);
         asyncHelper = mock(AsyncAccountHelper.class);
-        accountService = new AccountService(userRepository, lowonganRepository, mataKuliahRepository, asyncHelper);
+        accountService = new AccountService(userRepository,  asyncHelper);
     }
 
     @Test
