@@ -134,7 +134,7 @@ tasks.jacocoTestReport {
     }
     classDirectories.setFrom(
         fileTree(layout.buildDirectory.dir("classes/java/main")) {
-            exclude( "**/config/SecurityConfig.class",) // example
+            exclude( "**/config/**",) // example
         }
     )
     sourceDirectories.setFrom(files("src/main/java"))
