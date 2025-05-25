@@ -142,6 +142,7 @@ sonarqube {
         property("sonar.projectKey", "HiringGo-B04_HiringGo-BE")
         property("sonar.organization", "hiringgo-b04")
         property("sonar.host.url", "https://sonarcloud.io")
+        property("sonar.login", System.getenv("SONAR_TOKEN"))
 
         // Link JaCoCo report
         property("sonar.coverage.jacoco.xmlReportPaths", "${buildDir}/reports/jacoco/test/jacocoTestReport.xml")
