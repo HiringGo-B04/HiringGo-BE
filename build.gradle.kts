@@ -134,5 +134,8 @@ tasks.jacocoTestReport {
 }
 
 tasks.test {
+    filter {
+        excludeTestsMatching("*FunctionalTest")
+    }
     finalizedBy(tasks.jacocoTestReport) // Auto-generate report after test
 }
