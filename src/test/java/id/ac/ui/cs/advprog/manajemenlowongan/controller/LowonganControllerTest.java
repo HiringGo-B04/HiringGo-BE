@@ -26,8 +26,7 @@ import java.util.concurrent.CompletableFuture;
 import static id.ac.ui.cs.advprog.manajemenlowongan.controller.LowonganController.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -88,6 +87,65 @@ class LowonganControllerTest {
                 .andExpect(jsonPath("$.assistant").value(5))
                 .andExpect(jsonPath("$.vacan").value(2));
     }
+
+
+    @Test
+    void updateLowongan_success() throws Exception {
+        // Given
+        UUID dosenId = UUID.randomUUID();
+        UUID lowonganId = UUID.randomUUID();
+
+        Lowongan lowongan = new Lowongan();
+        lowongan.setId(lowonganId);
+        lowongan.setTerm(lowongan.getTerm());
+        lowongan.setTahun(lowongan.getTahun());
+        lowongan.setTotalAsdosNeeded(10);
+        lowongan.setTotalAsdosAccepted(10);
+        lowongan.setTotalAsdosRegistered(10);
+
+        String token = "dummy-token";
+        String authHeader = "Bearer " + token;
+
+        Map<String, Object> successResponse = new HashMap<>();
+        successResponse.put("message", "Lowongan berhasil diperbarui");
+
+        // When
+        when(jwtUtil.getUserIdFromToken(token)).thenReturn(dosenId.toString());
+        when(lowonganService.updateLowongan(eq(lowonganId), any(Lowongan.class), eq(dosenId)))
+                .thenReturn(ResponseEntity.ok(successResponse));
+
+        // Then
+        mockMvc.perform(patch(ENDPOINT_LOWONGAN+LOWONGAN_DOSEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", authHeader)
+                        .content(objectMapper.writeValueAsString(lowongan)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Lowongan berhasil diperbarui"));
+    }
+
+    @Test
+    void updateLowongan_missingId_returnsBadRequest() throws Exception {
+        // Given
+        Lowongan lowongan = new Lowongan(); // no ID set
+        lowongan.setTerm("Ganjil");
+
+        String token = "dummy-token";
+        String authHeader = "Bearer " + token;
+        UUID dosenId = UUID.randomUUID();
+
+        when(jwtUtil.getUserIdFromToken(token)).thenReturn(dosenId.toString());
+
+        // When + Then
+        mockMvc.perform(patch(ENDPOINT_LOWONGAN + LOWONGAN_DOSEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", authHeader)
+                        .content(objectMapper.writeValueAsString(lowongan)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Lowongan id tidak boleh kosong"));
+
+        verify(lowonganService, never()).updateLowongan(any(), any(), any());
+    }
+
 
     @Test
     void testAddLowongan() throws Exception {
