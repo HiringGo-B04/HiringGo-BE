@@ -260,7 +260,7 @@ public class LowonganServiceImplTest {
         when(userRepository.existsById(any())).thenReturn(true);
 
         dummyLowongan.setTotalAsdosNeeded(15);
-        ResponseEntity<Map<String, Object>> response = lowonganService.updateLowongan(dummyLowongan.getId(), dummyLowongan, dosenId);
+        ResponseEntity<Map<String, Object>> response = lowonganService.updateLowongan(dummyLowongan.getId(), dummyLowongan);
         System.out.println(response.getBody());
 
         assertEquals(200, response.getStatusCodeValue());
@@ -272,27 +272,13 @@ public class LowonganServiceImplTest {
     }
 
     @Test
-    void testUpdateLowonganWithWrongDosenId_ThrowsForbidden() {
-        UUID dosenId = UUID.randomUUID();
-        UUID wrongDosenId = UUID.randomUUID();
-        dummyLowongan.setIdDosen(dosenId);
-
-        when(lowonganRepository.findById(dummyLowongan.getId())).thenReturn(Optional.of(dummyLowongan));
-
-        ResponseEntity<Map<String, Object>> response = lowonganService.updateLowongan(dummyLowongan.getId(), dummyLowongan, wrongDosenId);
-
-        assertEquals(403, response.getStatusCodeValue());
-        assertEquals("ID Dosen tidak sesuai dengan lowongan ini", response.getBody().get("message"));
-    }
-
-    @Test
     void testUpdateLowonganNotFound_ReturnsNotFound() {
         UUID id = UUID.randomUUID();
         UUID dosenId = UUID.randomUUID();
 
         when(lowonganRepository.findById(id)).thenReturn(Optional.empty());
 
-        ResponseEntity<Map<String, Object>> response = lowonganService.updateLowongan(id, dummyLowongan, dosenId);
+        ResponseEntity<Map<String, Object>> response = lowonganService.updateLowongan(id, dummyLowongan);
 
         assertEquals(404, response.getStatusCodeValue());
         assertEquals("Lowongan dengan ID tersebut tidak ditemukan", response.getBody().get("message"));
@@ -306,7 +292,7 @@ public class LowonganServiceImplTest {
         when(lowonganRepository.findById(dummyLowongan.getId())).thenReturn(Optional.of(dummyLowongan));
         doThrow(new RuntimeException("Unexpected error")).when(lowonganRepository).save(any(Lowongan.class));
 
-        ResponseEntity<Map<String, Object>> response = lowonganService.updateLowongan(dummyLowongan.getId(), dummyLowongan, dosenId);
+        ResponseEntity<Map<String, Object>> response = lowonganService.updateLowongan(dummyLowongan.getId(), dummyLowongan);
 
         assertEquals(400, response.getStatusCodeValue());
         assertEquals("Nama Mata Kuliah tidak valid", response.getBody().get("error"));
