@@ -35,7 +35,7 @@ public class MataKuliah {
     @Column(nullable = false)
     private int sks;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "mata_kuliah_lecturer",
             joinColumns = @JoinColumn(name = "matkul_kode", referencedColumnName = "kode"),
