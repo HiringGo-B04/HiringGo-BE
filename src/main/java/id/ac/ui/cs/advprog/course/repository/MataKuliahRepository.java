@@ -15,6 +15,5 @@ public interface MataKuliahRepository {
     List<MataKuliah> findAll();
     Optional<MataKuliah> findByKode(String kode);
     void deleteByKode(String kode);
-    List<MataKuliah> findByDosenPengampuContaining(User dosen);
-    boolean existsByKode(String kode);
+
 }

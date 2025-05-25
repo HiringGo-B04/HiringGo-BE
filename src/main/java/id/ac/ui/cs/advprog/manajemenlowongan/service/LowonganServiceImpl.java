@@ -3,6 +3,7 @@ package id.ac.ui.cs.advprog.manajemenlowongan.service;
 import id.ac.ui.cs.advprog.authjwt.model.User;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
 import id.ac.ui.cs.advprog.course.model.MataKuliah;
+import id.ac.ui.cs.advprog.course.repository.JpaMataKuliahRepository;
 import id.ac.ui.cs.advprog.course.repository.MataKuliahRepository;
 import id.ac.ui.cs.advprog.manajemenlowongan.model.Lowongan;
 import id.ac.ui.cs.advprog.manajemenlowongan.repository.LowonganRepository;
@@ -19,9 +20,9 @@ public class LowonganServiceImpl implements LowonganService {
 
     private LowonganRepository lowonganRepository;
     private UserRepository userRepository;
-    private MataKuliahRepository mataKuliahRepository;
+    private JpaMataKuliahRepository mataKuliahRepository;
 
-    public LowonganServiceImpl(UserRepository userRepository, LowonganRepository lowonganRepository, MataKuliahRepository mataKuliahRepository) {
+    public LowonganServiceImpl(UserRepository userRepository, LowonganRepository lowonganRepository, JpaMataKuliahRepository mataKuliahRepository) {
         this.userRepository = userRepository;
         this.lowonganRepository = lowonganRepository;
         this.mataKuliahRepository = mataKuliahRepository;
@@ -125,7 +126,10 @@ public class LowonganServiceImpl implements LowonganService {
                 }
             }
 
-            int totalCourse = mataKuliahRepository.findByDosenPengampuContaining(user).size();
+            long totalCourse = mataKuliahRepository.findAll().stream()
+                    .filter(mk -> mk.getDosenPengampu().stream()
+                            .anyMatch(dosen -> dosen.getUserId().equals(id)))
+                    .count();
 
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Success");

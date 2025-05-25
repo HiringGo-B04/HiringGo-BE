@@ -21,8 +21,9 @@ import java.util.UUID;
 public class LowonganController {
 
     public static final String ENDPOINT_LOWONGAN = "/api/lowongan";
-    public static final String LOWONGAN = "/lecturer/lowongan";
+    public static final String LOWONGAN = "/user/lowongan";
     public static final String DASHBOARD_LECTURER = "/lecturer/dashboard";
+    public static final String LOWONGAN_DOSEN = "/lecturer/lowongan";
 
     private final LowonganService lowonganService;
     private final JwtUtil jwtUtil;
@@ -32,7 +33,7 @@ public class LowonganController {
         this.jwtUtil = jwtUtil;
     }
 
-    @PostMapping(LOWONGAN)
+    @PostMapping(LOWONGAN_DOSEN)
     public ResponseEntity<Lowongan> addLowongan(@RequestBody Lowongan lowongan) {
         Lowongan createdLowongan = lowonganService.addLowongan(lowongan);
         return ResponseEntity.ok(createdLowongan);
@@ -49,7 +50,7 @@ public class LowonganController {
         }
     }
 
-    @GetMapping(LOWONGAN+"{id}")
+    @GetMapping(LOWONGAN+"/{id}")
     public ResponseEntity<Lowongan> getLowonganById(@PathVariable UUID id) {
         try {
             Lowongan lowongan = lowonganService.getLowonganById(id);
