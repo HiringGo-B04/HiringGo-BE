@@ -144,6 +144,7 @@ sonarqube {
         property("sonar.host.url", "https://sonarcloud.io")
         property("sonar.login", System.getenv("SONAR_TOKEN"))
 
+        property("sonar.junit.reportPaths", "$buildDir/test-results/test")
         // Link JaCoCo report
         property("sonar.coverage.jacoco.xmlReportPaths", "${buildDir}/reports/jacoco/test/jacocoTestReport.xml")
     }
