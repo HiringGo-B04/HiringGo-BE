@@ -23,8 +23,6 @@ public abstract class MataKuliahMapper {
     @Autowired
     protected UserRepository userRepository;
 
-    /* ---------- Mapping utama ---------- */
-
     @Mapping(source = "dosenPengampu", target = "dosenPengampu")
     public abstract MataKuliahDto toDto(MataKuliah entity);
 
@@ -34,9 +32,6 @@ public abstract class MataKuliahMapper {
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     public abstract void patch(MataKuliahPatch patch, @MappingTarget MataKuliah entity);
 
-    /* ---------- Custom converters ---------- */
-
-    /** Entity → DTO : Set<User> → List<UUID>. */
     protected List<UUID> map(Set<User> users) {
         if (users == null || users.isEmpty()) {
             return List.of();
@@ -46,12 +41,10 @@ public abstract class MataKuliahMapper {
                 .collect(Collectors.toList());
     }
 
-    /** DTO → Entity : List<UUID> → Set<User>. */
     protected Set<User> map(List<UUID> ids) {
         if (ids == null || ids.isEmpty()) {
             return Collections.emptySet();
         }
-        // UserRepository#findAllById mengembalikan Iterable<User>
         Iterable<User> fetched = userRepository.findAllById(ids);
         Set<User> result = new HashSet<>();
         fetched.forEach(result::add);
