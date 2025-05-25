@@ -77,7 +77,6 @@ public class LowonganServiceImplTest {
         mataKuliah1.addDosenPengampu(dummyUser);
 
         when(userRepository.findByUserId(dosenId)).thenReturn(dummyUser);
-        when(lowonganRepository.findLowonganByIdDosen(dosenId)).thenReturn(lowongans);
         when(mataKuliahRepository.findAll()).thenReturn(List.of(mataKuliah1, mataKuliah)); // Correct mock
 
         ResponseEntity<Map<String, Object>> response = lowonganService.getLowonganByDosen(dosenId);
