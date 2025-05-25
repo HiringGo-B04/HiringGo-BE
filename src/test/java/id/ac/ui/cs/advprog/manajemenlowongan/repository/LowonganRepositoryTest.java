@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -46,11 +47,14 @@ public class LowonganRepositoryTest {
 
     @Test
     void testFindById() {
-        when(lowonganRepository.findById(lowonganId)).thenReturn(Optional.of(lowongan1));
+        UUID id = lowongan1.getId();
+        when(lowonganRepository.findById(id)).thenReturn(Optional.of(lowongan1));
 
-        Optional<Lowongan> result = lowonganRepository.findById(lowonganId);
-        assertTrue(result.isPresent());
-        assertEquals("Pemrograman Lanjut", result.get().getMatkul());
+        Optional<Lowongan> result = lowonganRepository.findById(id);
+
+        assertThat(result).isPresent();
+        assertThat(result.get().getMatkul()).isEqualTo("Pemrograman Lanjut");
+        verify(lowonganRepository, times(1)).findById(id);
     }
 
     @Test
@@ -64,16 +68,15 @@ public class LowonganRepositoryTest {
 
     @Test
     void testSaveLowongan() {
-        when(lowonganRepository.save(any(Lowongan.class))).thenReturn(lowongan1);
+        when(lowonganRepository.save(lowongan1)).thenReturn(lowongan1);
 
         Lowongan saved = lowonganRepository.save(lowongan1);
-        assertNotNull(saved);
-        assertEquals("Pemrograman Lanjut", saved.getMatkul());
+        assertThat(saved).isEqualTo(lowongan1);
+        verify(lowonganRepository, times(1)).save(lowongan1);
     }
 
     @Test
     void testDeleteLowongan() {
-        doNothing().when(lowonganRepository).delete(lowongan1);
         lowonganRepository.delete(lowongan1);
         verify(lowonganRepository, times(1)).delete(lowongan1);
     }

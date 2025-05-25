@@ -1,34 +1,82 @@
 package id.ac.ui.cs.advprog.manajemenlowongan.controller;
 
+import id.ac.ui.cs.advprog.authjwt.config.JwtUtil;
 import id.ac.ui.cs.advprog.manajemenlowongan.model.Lowongan;
 import id.ac.ui.cs.advprog.manajemenlowongan.service.LowonganService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/lowongan")
 public class LowonganController {
 
-    private final LowonganService lowonganService;
+    public static final String ENDPOINT_LOWONGAN = "/api/lowongan";
+    public static final String LOWONGAN = "/user/lowongan";
+    public static final String DASHBOARD_LECTURER = "/lecturer/dashboard";
+    public static final String LOWONGAN_DOSEN = "/lecturer/lowongan";
 
-    public LowonganController(LowonganService lowonganService) {
+    private final LowonganService lowonganService;
+    private final JwtUtil jwtUtil;
+
+    public LowonganController(LowonganService lowonganService, JwtUtil jwtUtil) {
         this.lowonganService = lowonganService;
+        this.jwtUtil = jwtUtil;
     }
 
-    @PostMapping("/user/add")
+    @PostMapping(LOWONGAN_DOSEN)
     public ResponseEntity<Lowongan> addLowongan(@RequestBody Lowongan lowongan) {
         Lowongan createdLowongan = lowonganService.addLowongan(lowongan);
         return ResponseEntity.ok(createdLowongan);
     }
 
-    @GetMapping("/user/get")
-    public ResponseEntity<List<Lowongan>> getLowongan() {
+    @PatchMapping(LOWONGAN_DOSEN)
+    public ResponseEntity<Map<String, Object>> updateLowongan(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody Lowongan lowongan) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            // Extract userId from token
+            String token = authHeader.substring(7); // Remove "Bearer "
+            String userIdStr = jwtUtil.getUserIdFromToken(token);
+            UUID dosenId = UUID.fromString(userIdStr);
+
+            // Validate input
+            if (lowongan.getId() == null) {
+                throw new IllegalArgumentException("Lowongan id tidak boleh kosong");
+            }
+
+            return lowonganService.updateLowongan(lowongan.getId(), lowongan, dosenId);
+        }
+        catch (Exception e) {
+            response.put("message", e.getMessage());
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @DeleteMapping(LOWONGAN_DOSEN)
+    public ResponseEntity<String> deleteLowongan(@RequestBody UUID id) {
+        try{
+            lowonganService.deleteLowongan(id);
+            return ResponseEntity.ok().body("Berhasil menghapus lowongan dengan id " + id);
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body("Tidak berhasil menghapus lowongan dengan id " + id);
+        }
+    }
+
+    @GetMapping(LOWONGAN)
+    public ResponseEntity<List<Lowongan>> getAllLowongan() {
         try {
             List<Lowongan> lowongans = lowonganService.getLowongan();
             return ResponseEntity.ok(lowongans);
@@ -38,7 +86,7 @@ public class LowonganController {
         }
     }
 
-    @GetMapping("/user/get/{id}")
+    @GetMapping(LOWONGAN+"/{id}")
     public ResponseEntity<Lowongan> getLowonganById(@PathVariable UUID id) {
         try {
             Lowongan lowongan = lowonganService.getLowonganById(id);
@@ -46,6 +94,22 @@ public class LowonganController {
         } catch (RuntimeException e) {
             // Menangkap exception dan melemparnya kembali untuk ditangani oleh @ExceptionHandler
             throw new LowonganNotFoundException("Lowongan dengan ID " + id + " tidak ditemukan");
+        }
+    }
+
+    @GetMapping(DASHBOARD_LECTURER)
+    public ResponseEntity<Map<String, Object>> getLecturerDataById(@RequestHeader("Authorization") String authHeader) {
+        try {
+            String token = authHeader.substring(7); // Remove "Bearer "
+            String userIdStr = jwtUtil.getUserIdFromToken(token);
+            UUID userId = UUID.fromString(userIdStr);
+
+            return lowonganService.getLowonganByDosen(userId);
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+
+            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
         }
     }
 

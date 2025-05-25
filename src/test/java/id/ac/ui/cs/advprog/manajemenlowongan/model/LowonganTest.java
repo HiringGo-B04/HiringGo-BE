@@ -18,6 +18,7 @@ class LowonganTest {
                 .totalAsdosNeeded(3)
                 .totalAsdosRegistered(25)
                 .totalAsdosAccepted(2)
+                .idDosen(id)
                 .build();
 
         assertNotNull(lowongan.getId());
@@ -27,5 +28,6 @@ class LowonganTest {
         assertEquals(3, lowongan.getTotalAsdosNeeded());
         assertEquals(25, lowongan.getTotalAsdosRegistered());
         assertEquals(2, lowongan.getTotalAsdosAccepted());
+        assertEquals(id, lowongan.getIdDosen());
     }
 }
