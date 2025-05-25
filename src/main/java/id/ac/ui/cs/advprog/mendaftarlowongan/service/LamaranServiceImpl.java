@@ -35,11 +35,7 @@ public class LamaranServiceImpl implements LamaranService {
     // Default constructor for Spring
     public LamaranServiceImpl() {
     }
-
-    // Constructor for testing purposes
-    public LamaranServiceImpl(LamaranRepository lamaranRepository) {
-        this.lamaranRepository = lamaranRepository;
-    }
+    // Constructor for dependency injection
 
     public LamaranServiceImpl(LamaranRepository lamaranRepository, LowonganRepository lowonganRepository) {
         this.lamaranRepository = lamaranRepository;
@@ -127,7 +123,8 @@ public class LamaranServiceImpl implements LamaranService {
     @Async("taskExecutor")
     public CompletableFuture<Boolean> isLamaranExists(Lamaran lamaran) {
         return CompletableFuture.supplyAsync(() -> lamaranRepository.findAll().stream()
-                .anyMatch(l -> l.getIdMahasiswa().equals(lamaran.getIdMahasiswa())
+                .anyMatch(l ->
+                        l.getIdMahasiswa().equals(lamaran.getIdMahasiswa())
                         && l.getIdLowongan().equals(lamaran.getIdLowongan())), executor);
     }
 
