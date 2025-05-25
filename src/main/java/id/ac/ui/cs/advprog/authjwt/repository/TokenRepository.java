@@ -10,3 +10,4 @@ public interface TokenRepository extends JpaRepository<Token, String> {
     void deleteByToken(String token);
     boolean existsByToken(String token);
 }
+
