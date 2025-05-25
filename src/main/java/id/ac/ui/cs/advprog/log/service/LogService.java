@@ -19,31 +19,31 @@ public interface LogService {
 
     // Manajemen Log (Mahasiswa) - Add async versions for heavy operations
     List<Log> findByMahasiswaAndLowongan(UUID idMahasiswa, UUID idLowongan);
-    CompletableFuture<List<Log>> findByMahasiswaAndLowonganAsync(UUID idMahasiswa, UUID idLowongan);
+    //CompletableFuture<List<Log>> findByMahasiswaAndLowonganAsync(UUID idMahasiswa, UUID idLowongan);
 
     Log findByIdForMahasiswa(UUID logId, UUID idMahasiswa);
 
     Log createLogForMahasiswa(LogDTO logDTO, UUID idMahasiswa);
-    CompletableFuture<Log> createLogForMahasiswaAsync(LogDTO logDTO, UUID idMahasiswa);
+    //CompletableFuture<Log> createLogForMahasiswaAsync(LogDTO logDTO, UUID idMahasiswa);
 
     Log updateLogForMahasiswa(UUID id, LogDTO logDTO, UUID idMahasiswa);
     void deleteLogForMahasiswa(UUID id, UUID idMahasiswa);
 
     double calculateHonor(UUID idMahasiswa, UUID idLowongan, int tahun, int bulan);
-    CompletableFuture<Double> calculateHonorAsync(UUID idMahasiswa, UUID idLowongan, int tahun, int bulan);
+    //CompletableFuture<Double> calculateHonorAsync(UUID idMahasiswa, UUID idLowongan, int tahun, int bulan);
 
     Map<String, Object> calculateHonorData(UUID idMahasiswa, UUID idLowongan, int tahun, int bulan);
-    CompletableFuture<Map<String, Object>> calculateHonorDataAsync(UUID idMahasiswa, UUID idLowongan, int tahun, int bulan);
+    //CompletableFuture<Map<String, Object>> calculateHonorDataAsync(UUID idMahasiswa, UUID idLowongan, int tahun, int bulan);
 
     // Periksa Log (Dosen) - Add async versions
     List<Log> findByDosen(UUID idDosen);
-    CompletableFuture<List<Log>> findByDosenAsync(UUID idDosen);
+    //CompletableFuture<List<Log>> findByDosenAsync(UUID idDosen);
 
     Log verifyLog(UUID logId, StatusLog status, UUID idDosen);
-    CompletableFuture<Log> verifyLogAsync(UUID logId, StatusLog status, UUID idDosen);
+    //CompletableFuture<Log> verifyLogAsync(UUID logId, StatusLog status, UUID idDosen);
 
     List<Log> findByLowonganAndDosen(UUID idLowongan, UUID idDosen);
-    CompletableFuture<List<Log>> findByLowonganAndDosenAsync(UUID idLowongan, UUID idDosen);
+    //CompletableFuture<List<Log>> findByLowonganAndDosenAsync(UUID idLowongan, UUID idDosen);
 
     // Validasi - Keep synchronous for quick validation
     boolean validateLowongan(UUID idLowongan);
@@ -53,7 +53,7 @@ public interface LogService {
     List<UUID> getDosenIdsByLowonganId(UUID idLowongan);
 
     // Async validation for heavy operations
-    CompletableFuture<Boolean> validateLowonganAsync(UUID idLowongan);
-    CompletableFuture<Boolean> validateMahasiswaAsync(UUID idMahasiswa);
-    CompletableFuture<Boolean> validateDosenAsync(UUID idDosen);
+//    CompletableFuture<Boolean> validateLowonganAsync(UUID idLowongan);
+//    CompletableFuture<Boolean> validateMahasiswaAsync(UUID idMahasiswa);
+//    CompletableFuture<Boolean> validateDosenAsync(UUID idDosen);
 }
