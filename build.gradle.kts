@@ -136,15 +136,3 @@ tasks.jacocoTestReport {
 tasks.test {
     finalizedBy(tasks.jacocoTestReport) // Auto-generate report after test
 }
-
-sonarqube {
-    properties {
-        property("sonar.projectKey", "HiringGo-B04_HiringGo-BE")
-        property("sonar.organization", "hiringgo-b04")
-        property("sonar.host.url", "https://sonarcloud.io")
-
-        property("sonar.junit.reportPaths", "$buildDir/test-results/test")
-        // Link JaCoCo report
-        property("sonar.coverage.jacoco.xmlReportPaths", "${buildDir}/reports/jacoco/test/jacocoTestReport.xml")
-    }
-}
