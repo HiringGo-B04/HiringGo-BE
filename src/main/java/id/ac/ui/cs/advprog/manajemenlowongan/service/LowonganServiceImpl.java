@@ -132,15 +132,15 @@ public class LowonganServiceImpl implements LowonganService {
                 throw new IllegalArgumentException("Tidak ada dosen dengan id " + id);
             }
 
-            List<Lowongan> lowongans = lowonganRepository.findLowonganByIdDosen(id);
+//            List<Lowongan> lowongans = lowonganRepository.findLowonganByIdDosen(id);
             int teachingAssitant =  0;
             int needTeachingAssitant = 0;
-            for (Lowongan lowongan : lowongans) {
-                teachingAssitant += lowongan.getTotalAsdosAccepted();
-                if(lowongan.getTotalAsdosNeeded() > lowongan.getTotalAsdosAccepted()){
-                    needTeachingAssitant += 1;
-                }
-            }
+//            for (Lowongan lowongan : lowongans) {
+//                teachingAssitant += lowongan.getTotalAsdosAccepted();
+//                if(lowongan.getTotalAsdosNeeded() > lowongan.getTotalAsdosAccepted()){
+//                    needTeachingAssitant += 1;
+//                }
+//            }
 
             long totalCourse = mataKuliahRepository.findAll().stream()
                     .filter(mk -> mk.getDosenPengampu().stream()
