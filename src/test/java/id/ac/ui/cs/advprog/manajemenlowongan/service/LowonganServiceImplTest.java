@@ -137,18 +137,6 @@ public class LowonganServiceImplTest {
         assertNull(result);
     }
 
-    @Test
-    void testUpdateLowongan() {
-        when(mataKuliahRepository.existsByKode(any())).thenReturn(true);
-        when(lowonganRepository.findById(dummyLowongan.getId())).thenReturn(Optional.ofNullable(dummyLowongan));
-        when(lowonganRepository.save(any(Lowongan.class))).thenAnswer(i -> i.getArgument(0));
-
-        dummyLowongan.setTotalAsdosNeeded(15);
-        Lowongan updated = lowonganService.updateLowongan(dummyLowongan.getId(), dummyLowongan);
-
-        assertEquals(15, updated.getTotalAsdosNeeded());
-        verify(lowonganRepository).save(dummyLowongan);
-    }
 
     @Test
     void testDeleteLowongan() {
@@ -169,6 +157,10 @@ public class LowonganServiceImplTest {
     @Test
     void testAddLowonganWithInvalidYear() {
         dummyLowongan.setTahun(2024); // invalid year
+        when(mataKuliahRepository.existsByKode("Adpro")).thenReturn(true);
+        when(lowonganRepository.findAll()).thenReturn(List.of());
+        when(lowonganRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+        when(userRepository.existsById(any())).thenReturn(true);
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             lowonganService.addLowongan(dummyLowongan);
@@ -182,7 +174,7 @@ public class LowonganServiceImplTest {
         when(mataKuliahRepository.existsByKode("Adpro")).thenReturn(true);
         when(lowonganRepository.findAll()).thenReturn(List.of());
         when(lowonganRepository.save(any())).thenAnswer(i -> i.getArgument(0));
-
+        when(userRepository.existsById(any())).thenReturn(true);
         Lowongan saved = lowonganService.addLowongan(dummyLowongan);
 
         assertEquals(dummyLowongan, saved);
@@ -205,6 +197,7 @@ public class LowonganServiceImplTest {
     void testValidateLowonganFailsWithInvalidSemester() {
         dummyLowongan.setTerm("Spring"); // invalid
         when(mataKuliahRepository.existsByKode("Adpro")).thenReturn(true);
+        when(userRepository.existsById(any())).thenReturn(true);
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             lowonganService.validateLowongan(dummyLowongan);
@@ -216,7 +209,7 @@ public class LowonganServiceImplTest {
     @Test
     void testValidateLowonganFailsWithDuplicate() {
         when(mataKuliahRepository.existsByKode("Adpro")).thenReturn(true);
-
+        when(userRepository.existsById(any())).thenReturn(true);
         Lowongan existing = new Lowongan.Builder()
                 .matkul("Adpro")
                 .year(2025)
@@ -257,15 +250,67 @@ public class LowonganServiceImplTest {
     }
 
     @Test
-    void testUpdateLowonganNotFoundThrowsException() {
+    void testUpdateLowonganWithDosenId_Success() {
+        UUID dosenId = UUID.randomUUID();
+        dummyLowongan.setIdDosen(dosenId);
+
+        when(mataKuliahRepository.existsByKode(any())).thenReturn(true);
+        when(lowonganRepository.findById(dummyLowongan.getId())).thenReturn(Optional.of(dummyLowongan));
+        when(lowonganRepository.save(any(Lowongan.class))).thenAnswer(i -> i.getArgument(0));
+        when(userRepository.existsById(any())).thenReturn(true);
+
+        dummyLowongan.setTotalAsdosNeeded(15);
+        ResponseEntity<Map<String, Object>> response = lowonganService.updateLowongan(dummyLowongan.getId(), dummyLowongan, dosenId);
+        System.out.println(response.getBody());
+
+        assertEquals(200, response.getStatusCodeValue());
+        Map<String, Object> body = response.getBody();
+        assertNotNull(body);
+        assertEquals("Lowongan berhasil diperbarui", body.get("message"));
+        Lowongan updated = (Lowongan) body.get("data");
+        assertEquals(15, updated.getTotalAsdosNeeded());
+    }
+
+    @Test
+    void testUpdateLowonganWithWrongDosenId_ThrowsForbidden() {
+        UUID dosenId = UUID.randomUUID();
+        UUID wrongDosenId = UUID.randomUUID();
+        dummyLowongan.setIdDosen(dosenId);
+
+        when(lowonganRepository.findById(dummyLowongan.getId())).thenReturn(Optional.of(dummyLowongan));
+
+        ResponseEntity<Map<String, Object>> response = lowonganService.updateLowongan(dummyLowongan.getId(), dummyLowongan, wrongDosenId);
+
+        assertEquals(403, response.getStatusCodeValue());
+        assertEquals("ID Dosen tidak sesuai dengan lowongan ini", response.getBody().get("message"));
+    }
+
+    @Test
+    void testUpdateLowonganNotFound_ReturnsNotFound() {
         UUID id = UUID.randomUUID();
+        UUID dosenId = UUID.randomUUID();
+
         when(lowonganRepository.findById(id)).thenReturn(Optional.empty());
 
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            lowonganService.updateLowongan(id, dummyLowongan);
-        });
+        ResponseEntity<Map<String, Object>> response = lowonganService.updateLowongan(id, dummyLowongan, dosenId);
 
-        assertEquals("Lowongan dengan ID tersebut tidak ditemukan", exception.getMessage());
+        assertEquals(404, response.getStatusCodeValue());
+        assertEquals("Lowongan dengan ID tersebut tidak ditemukan", response.getBody().get("message"));
     }
+
+    @Test
+    void testUpdateLowonganThrowsException_ReturnsBadRequest() {
+        UUID dosenId = UUID.randomUUID();
+        dummyLowongan.setIdDosen(dosenId);
+
+        when(lowonganRepository.findById(dummyLowongan.getId())).thenReturn(Optional.of(dummyLowongan));
+        doThrow(new RuntimeException("Unexpected error")).when(lowonganRepository).save(any(Lowongan.class));
+
+        ResponseEntity<Map<String, Object>> response = lowonganService.updateLowongan(dummyLowongan.getId(), dummyLowongan, dosenId);
+
+        assertEquals(400, response.getStatusCodeValue());
+        assertEquals("Nama Mata Kuliah tidak valid", response.getBody().get("error"));
+    }
+
 
 }
