@@ -50,7 +50,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/log/lecturer/**").hasRole(lecturerRole)
 
                         // for debugging purpose
-//                        .requestMatchers("/api/lowongan/user/**").hasAnyRole(adminRole, studentRole, lecturerRole)
+                        .requestMatchers("/api/lowongan/user/**").hasAnyRole(adminRole, studentRole, lecturerRole)
                         .requestMatchers("/api/lowongan/lecturer/**").hasRole(lecturerRole)
                         /*
                          * Hingga sini yang permitAll bawah ngga usah itu kayak namanya nge permit semuanya
@@ -67,7 +67,7 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        return new BCryptPasswordEncoder(8);
     }
 
     @Bean

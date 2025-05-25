@@ -28,7 +28,7 @@ public class User {
     @Column(unique = true)
     private String nip;
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true)
     private String nim;
 
     private String fullName;
