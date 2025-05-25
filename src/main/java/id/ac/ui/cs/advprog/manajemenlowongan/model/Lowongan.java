@@ -22,9 +22,6 @@ public class Lowongan {
     private int tahun;
     private String term;
 
-    @Column(name = "id_dosen", nullable = false)
-    private UUID idDosen;
-
     @Column(name = "total_asdos_needed", nullable = false)
     private int totalAsdosNeeded;
 

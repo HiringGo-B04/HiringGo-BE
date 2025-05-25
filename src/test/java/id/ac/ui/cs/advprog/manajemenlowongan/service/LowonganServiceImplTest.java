@@ -252,7 +252,6 @@ public class LowonganServiceImplTest {
     @Test
     void testUpdateLowonganWithDosenId_Success() {
         UUID dosenId = UUID.randomUUID();
-        dummyLowongan.setIdDosen(dosenId);
 
         when(mataKuliahRepository.existsByKode(any())).thenReturn(true);
         when(lowonganRepository.findById(dummyLowongan.getId())).thenReturn(Optional.of(dummyLowongan));
@@ -287,7 +286,6 @@ public class LowonganServiceImplTest {
     @Test
     void testUpdateLowonganThrowsException_ReturnsBadRequest() {
         UUID dosenId = UUID.randomUUID();
-        dummyLowongan.setIdDosen(dosenId);
 
         when(lowonganRepository.findById(dummyLowongan.getId())).thenReturn(Optional.of(dummyLowongan));
         doThrow(new RuntimeException("Unexpected error")).when(lowonganRepository).save(any(Lowongan.class));
