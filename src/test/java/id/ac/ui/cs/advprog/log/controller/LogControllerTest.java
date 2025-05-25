@@ -122,7 +122,6 @@ public class LogControllerTest {
         SecurityContextHolder.setContext(securityContext);
     }
 
-
     @Test
     void testGetStudentLogs_Success() throws Exception {
         when(authentication.getName()).thenReturn("mahasiswa@example.com");
