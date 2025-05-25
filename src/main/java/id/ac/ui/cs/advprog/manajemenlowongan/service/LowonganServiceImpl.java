@@ -79,11 +79,6 @@ public class LowonganServiceImpl implements LowonganService {
     }
 
     @Override
-    public List<Lowongan> getLowongan2() {
-        return lowonganRepository.findAll();
-    }
-
-    @Override
     public Lowongan getLowonganById(UUID id) {
         return lowonganRepository.findById(id).orElse(null);
     }
