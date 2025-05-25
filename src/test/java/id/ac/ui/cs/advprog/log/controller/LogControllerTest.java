@@ -7,7 +7,9 @@ import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
 import id.ac.ui.cs.advprog.log.dto.LogDTO;
 import id.ac.ui.cs.advprog.log.enums.KategoriLog;
 import id.ac.ui.cs.advprog.log.enums.StatusLog;
+import id.ac.ui.cs.advprog.log.exception.BadRequestException;
 import id.ac.ui.cs.advprog.log.exception.ForbiddenException;
+import id.ac.ui.cs.advprog.log.exception.ResourceNotFoundException;
 import id.ac.ui.cs.advprog.log.model.Log;
 import id.ac.ui.cs.advprog.log.model.LogBuilder;
 import id.ac.ui.cs.advprog.log.service.LogService;
@@ -120,7 +122,6 @@ public class LogControllerTest {
         SecurityContextHolder.setContext(securityContext);
     }
 
-    // ========== Mahasiswa API Tests ==========
 
     @Test
     void testGetStudentLogs_Success() throws Exception {
@@ -221,7 +222,271 @@ public class LogControllerTest {
         verify(logService).calculateHonorData(mahasiswaId, lowonganId, tahun, bulan);
     }
 
-    // ========== Dosen API Tests ==========
+    @Test
+    void testGetStudentLogs_ResourceNotFound() throws Exception {
+        when(authentication.getName()).thenReturn("mahasiswa@example.com");
+        when(userRepository.findByUsername("mahasiswa@example.com")).thenReturn(mockMahasiswaUser);
+        when(logService.findByMahasiswaAndLowongan(mahasiswaId, lowonganId))
+                .thenThrow(new ResourceNotFoundException("Mahasiswa tidak ditemukan"));
+
+        mockMvc.perform(get("/api/log/student/lowongan/{lowonganId}", lowonganId))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Mahasiswa tidak ditemukan"));
+    }
+
+    @Test
+    void testGetStudentLogs_Forbidden() throws Exception {
+        when(authentication.getName()).thenReturn("mahasiswa@example.com");
+        when(userRepository.findByUsername("mahasiswa@example.com")).thenReturn(mockMahasiswaUser);
+        when(logService.findByMahasiswaAndLowongan(mahasiswaId, lowonganId))
+                .thenThrow(new ForbiddenException("Anda belum diterima pada lowongan ini"));
+
+        mockMvc.perform(get("/api/log/student/lowongan/{lowonganId}", lowonganId))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value("Anda belum diterima pada lowongan ini"));
+    }
+
+    @Test
+    void testGetStudentLogs_InternalServerError() throws Exception {
+        when(authentication.getName()).thenReturn("mahasiswa@example.com");
+        when(userRepository.findByUsername("mahasiswa@example.com")).thenReturn(mockMahasiswaUser);
+        when(logService.findByMahasiswaAndLowongan(mahasiswaId, lowonganId))
+                .thenThrow(new RuntimeException("Database error"));
+
+        mockMvc.perform(get("/api/log/student/lowongan/{lowonganId}", lowonganId))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.error").value("Terjadi kesalahan: Database error"));
+    }
+
+    @Test
+    void testGetStudentLog_ResourceNotFound() throws Exception {
+        when(authentication.getName()).thenReturn("mahasiswa@example.com");
+        when(userRepository.findByUsername("mahasiswa@example.com")).thenReturn(mockMahasiswaUser);
+        when(logService.findByIdForMahasiswa(logId, mahasiswaId))
+                .thenThrow(new ResourceNotFoundException("Log tidak ditemukan"));
+
+        mockMvc.perform(get("/api/log/student/{logId}", logId))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Log tidak ditemukan"));
+    }
+
+    @Test
+    void testGetStudentLog_Forbidden() throws Exception {
+        when(authentication.getName()).thenReturn("mahasiswa@example.com");
+        when(userRepository.findByUsername("mahasiswa@example.com")).thenReturn(mockMahasiswaUser);
+        when(logService.findByIdForMahasiswa(logId, mahasiswaId))
+                .thenThrow(new ForbiddenException("Anda tidak dapat mengakses log milik mahasiswa lain"));
+
+        mockMvc.perform(get("/api/log/student/{logId}", logId))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value("Anda tidak dapat mengakses log milik mahasiswa lain"));
+    }
+
+    @Test
+    void testGetStudentLog_InternalServerError() throws Exception {
+        when(authentication.getName()).thenReturn("mahasiswa@example.com");
+        when(userRepository.findByUsername("mahasiswa@example.com")).thenReturn(mockMahasiswaUser);
+        when(logService.findByIdForMahasiswa(logId, mahasiswaId))
+                .thenThrow(new RuntimeException("Database error"));
+
+        mockMvc.perform(get("/api/log/student/{logId}", logId))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.error").value("Terjadi kesalahan: Database error"));
+    }
+
+    @Test
+    void testCreateStudentLog_ResourceNotFound() throws Exception {
+        when(authentication.getName()).thenReturn("mahasiswa@example.com");
+        when(userRepository.findByUsername("mahasiswa@example.com")).thenReturn(mockMahasiswaUser);
+        when(logService.createLogForMahasiswa(any(LogDTO.class), eq(mahasiswaId)))
+                .thenThrow(new ResourceNotFoundException("Lowongan tidak ditemukan"));
+
+        mockMvc.perform(post("/api/log/student")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(logDTO)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Lowongan tidak ditemukan"));
+    }
+
+    @Test
+    void testCreateStudentLog_BadRequest() throws Exception {
+        when(authentication.getName()).thenReturn("mahasiswa@example.com");
+        when(userRepository.findByUsername("mahasiswa@example.com")).thenReturn(mockMahasiswaUser);
+        when(logService.createLogForMahasiswa(any(LogDTO.class), eq(mahasiswaId)))
+                .thenThrow(new BadRequestException("Tanggal log tidak boleh di masa depan"));
+
+        mockMvc.perform(post("/api/log/student")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(logDTO)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Tanggal log tidak boleh di masa depan"));
+    }
+
+    @Test
+    void testCreateStudentLog_IllegalArgument() throws Exception {
+        when(authentication.getName()).thenReturn("mahasiswa@example.com");
+        when(userRepository.findByUsername("mahasiswa@example.com")).thenReturn(mockMahasiswaUser);
+        when(logService.createLogForMahasiswa(any(LogDTO.class), eq(mahasiswaId)))
+                .thenThrow(new IllegalArgumentException("Invalid enum value"));
+
+        mockMvc.perform(post("/api/log/student")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(logDTO)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Invalid enum value"));
+    }
+
+    @Test
+    void testCreateStudentLog_InternalServerError() throws Exception {
+        when(authentication.getName()).thenReturn("mahasiswa@example.com");
+        when(userRepository.findByUsername("mahasiswa@example.com")).thenReturn(mockMahasiswaUser);
+        when(logService.createLogForMahasiswa(any(LogDTO.class), eq(mahasiswaId)))
+                .thenThrow(new RuntimeException("Database error"));
+
+        mockMvc.perform(post("/api/log/student")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(logDTO)))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.error").value("Terjadi kesalahan: Database error"));
+    }
+
+
+    @Test
+    void testUpdateStudentLog_ResourceNotFound() throws Exception {
+        when(authentication.getName()).thenReturn("mahasiswa@example.com");
+        when(userRepository.findByUsername("mahasiswa@example.com")).thenReturn(mockMahasiswaUser);
+        when(logService.updateLogForMahasiswa(eq(logId), any(LogDTO.class), eq(mahasiswaId)))
+                .thenThrow(new ResourceNotFoundException("Log tidak ditemukan"));
+
+        mockMvc.perform(put("/api/log/student/{logId}", logId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(logDTO)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Log tidak ditemukan"));
+    }
+
+    @Test
+    void testUpdateStudentLog_Forbidden() throws Exception {
+        when(authentication.getName()).thenReturn("mahasiswa@example.com");
+        when(userRepository.findByUsername("mahasiswa@example.com")).thenReturn(mockMahasiswaUser);
+        when(logService.updateLogForMahasiswa(eq(logId), any(LogDTO.class), eq(mahasiswaId)))
+                .thenThrow(new ForbiddenException("Anda tidak dapat mengubah log milik mahasiswa lain"));
+
+        mockMvc.perform(put("/api/log/student/{logId}", logId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(logDTO)))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value("Anda tidak dapat mengubah log milik mahasiswa lain"));
+    }
+
+    @Test
+    void testUpdateStudentLog_BadRequest() throws Exception {
+        when(authentication.getName()).thenReturn("mahasiswa@example.com");
+        when(userRepository.findByUsername("mahasiswa@example.com")).thenReturn(mockMahasiswaUser);
+        when(logService.updateLogForMahasiswa(eq(logId), any(LogDTO.class), eq(mahasiswaId)))
+                .thenThrow(new BadRequestException("Tidak dapat mengubah log yang sudah diverifikasi"));
+
+        mockMvc.perform(put("/api/log/student/{logId}", logId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(logDTO)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Tidak dapat mengubah log yang sudah diverifikasi"));
+    }
+
+    @Test
+    void testUpdateStudentLog_InternalServerError() throws Exception {
+        when(authentication.getName()).thenReturn("mahasiswa@example.com");
+        when(userRepository.findByUsername("mahasiswa@example.com")).thenReturn(mockMahasiswaUser);
+        when(logService.updateLogForMahasiswa(eq(logId), any(LogDTO.class), eq(mahasiswaId)))
+                .thenThrow(new RuntimeException("Database error"));
+
+        mockMvc.perform(put("/api/log/student/{logId}", logId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(logDTO)))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.error").value("Terjadi kesalahan: Database error"));
+    }
+
+    @Test
+    void testDeleteStudentLog_ResourceNotFound() throws Exception {
+        when(authentication.getName()).thenReturn("mahasiswa@example.com");
+        when(userRepository.findByUsername("mahasiswa@example.com")).thenReturn(mockMahasiswaUser);
+        doThrow(new ResourceNotFoundException("Log tidak ditemukan"))
+                .when(logService).deleteLogForMahasiswa(logId, mahasiswaId);
+
+        mockMvc.perform(delete("/api/log/student/{logId}", logId))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Log tidak ditemukan"));
+    }
+
+    @Test
+    void testDeleteStudentLog_BadRequest() throws Exception {
+        when(authentication.getName()).thenReturn("mahasiswa@example.com");
+        when(userRepository.findByUsername("mahasiswa@example.com")).thenReturn(mockMahasiswaUser);
+        doThrow(new BadRequestException("Tidak dapat menghapus log yang sudah diverifikasi"))
+                .when(logService).deleteLogForMahasiswa(logId, mahasiswaId);
+
+        mockMvc.perform(delete("/api/log/student/{logId}", logId))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Tidak dapat menghapus log yang sudah diverifikasi"));
+    }
+
+    @Test
+    void testDeleteStudentLog_Forbidden() throws Exception {
+        when(authentication.getName()).thenReturn("mahasiswa@example.com");
+        when(userRepository.findByUsername("mahasiswa@example.com")).thenReturn(mockMahasiswaUser);
+        doThrow(new ForbiddenException("Anda tidak dapat menghapus log milik mahasiswa lain"))
+                .when(logService).deleteLogForMahasiswa(logId, mahasiswaId);
+
+        mockMvc.perform(delete("/api/log/student/{logId}", logId))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value("Anda tidak dapat menghapus log milik mahasiswa lain"));
+    }
+
+    @Test
+    void testDeleteStudentLog_InternalServerError() throws Exception {
+        when(authentication.getName()).thenReturn("mahasiswa@example.com");
+        when(userRepository.findByUsername("mahasiswa@example.com")).thenReturn(mockMahasiswaUser);
+        doThrow(new RuntimeException("Database error"))
+                .when(logService).deleteLogForMahasiswa(logId, mahasiswaId);
+
+        mockMvc.perform(delete("/api/log/student/{logId}", logId))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.error").value("Terjadi kesalahan: Database error"));
+    }
+
+
+    @Test
+    void testGetStudentHonor_ResourceNotFound() throws Exception {
+        when(authentication.getName()).thenReturn("mahasiswa@example.com");
+        when(userRepository.findByUsername("mahasiswa@example.com")).thenReturn(mockMahasiswaUser);
+        when(logService.calculateHonorData(mahasiswaId, lowonganId, 2025, 5))
+                .thenThrow(new ResourceNotFoundException("Lowongan tidak ditemukan"));
+
+        mockMvc.perform(get("/api/log/student/honor")
+                        .param("lowonganId", lowonganId.toString())
+                        .param("tahun", "2025")
+                        .param("bulan", "5"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Lowongan tidak ditemukan"));
+    }
+
+    @Test
+    void testGetStudentHonor_InternalServerError() throws Exception {
+        when(authentication.getName()).thenReturn("mahasiswa@example.com");
+        when(userRepository.findByUsername("mahasiswa@example.com")).thenReturn(mockMahasiswaUser);
+        when(logService.calculateHonorData(mahasiswaId, lowonganId, 2025, 5))
+                .thenThrow(new RuntimeException("Database error"));
+
+        mockMvc.perform(get("/api/log/student/honor")
+                        .param("lowonganId", lowonganId.toString())
+                        .param("tahun", "2025")
+                        .param("bulan", "5"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.error").value("Terjadi kesalahan: Database error"));
+    }
+
+    // ========== Lecturer API Tests - Success Cases ==========
 
     @Test
     void testGetLecturerLogs_Success() throws Exception {
@@ -270,6 +535,97 @@ public class LogControllerTest {
     }
 
     @Test
+    void testUpdateLogStatus_Reject_Success() throws Exception {
+        when(authentication.getName()).thenReturn("dosen@example.com");
+        when(userRepository.findByUsername("dosen@example.com")).thenReturn(mockDosenUser);
+
+        sampleLog.setStatus(StatusLog.DITOLAK);
+        when(logService.verifyLog(eq(logId), eq(StatusLog.DITOLAK), eq(dosenId)))
+                .thenReturn(sampleLog);
+
+        mockMvc.perform(patch("/api/log/lecturer/{logId}/status", logId)
+                        .param("status", "DITOLAK"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Log berhasil ditolak"))
+                .andExpect(jsonPath("$.log.status").value("DITOLAK"));
+
+        verify(logService).verifyLog(eq(logId), eq(StatusLog.DITOLAK), eq(dosenId));
+    }
+
+
+    @Test
+    void testGetLecturerLogs_ResourceNotFound() throws Exception {
+        when(authentication.getName()).thenReturn("dosen@example.com");
+        when(userRepository.findByUsername("dosen@example.com")).thenReturn(mockDosenUser);
+        when(logService.findByDosen(dosenId))
+                .thenThrow(new ResourceNotFoundException("Dosen tidak ditemukan"));
+
+        mockMvc.perform(get("/api/log/lecturer"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Dosen tidak ditemukan"));
+    }
+
+    @Test
+    void testGetLecturerLogs_InternalServerError() throws Exception {
+        when(authentication.getName()).thenReturn("dosen@example.com");
+        when(userRepository.findByUsername("dosen@example.com")).thenReturn(mockDosenUser);
+        when(logService.findByDosen(dosenId))
+                .thenThrow(new RuntimeException("Database error"));
+
+        mockMvc.perform(get("/api/log/lecturer"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.error").value("Terjadi kesalahan: Database error"));
+    }
+
+    @Test
+    void testGetLecturerLogsByLowongan_ResourceNotFound() throws Exception {
+        when(authentication.getName()).thenReturn("dosen@example.com");
+        when(userRepository.findByUsername("dosen@example.com")).thenReturn(mockDosenUser);
+        when(logService.findByLowonganAndDosen(lowonganId, dosenId))
+                .thenThrow(new ResourceNotFoundException("Lowongan tidak ditemukan"));
+
+        mockMvc.perform(get("/api/log/lecturer/lowongan/{lowonganId}", lowonganId))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Lowongan tidak ditemukan"));
+    }
+
+    @Test
+    void testGetLecturerLogsByLowongan_BadRequest() throws Exception {
+        when(authentication.getName()).thenReturn("dosen@example.com");
+        when(userRepository.findByUsername("dosen@example.com")).thenReturn(mockDosenUser);
+        when(logService.findByLowonganAndDosen(lowonganId, dosenId))
+                .thenThrow(new BadRequestException("Invalid request"));
+
+        mockMvc.perform(get("/api/log/lecturer/lowongan/{lowonganId}", lowonganId))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Invalid request"));
+    }
+
+    @Test
+    void testGetLecturerLogsByLowongan_Forbidden() throws Exception {
+        when(authentication.getName()).thenReturn("dosen@example.com");
+        when(userRepository.findByUsername("dosen@example.com")).thenReturn(mockDosenUser);
+        when(logService.findByLowonganAndDosen(lowonganId, dosenId))
+                .thenThrow(new ForbiddenException("Dosen tidak dapat mengakses log untuk lowongan ini"));
+
+        mockMvc.perform(get("/api/log/lecturer/lowongan/{lowonganId}", lowonganId))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value("Dosen tidak dapat mengakses log untuk lowongan ini"));
+    }
+
+    @Test
+    void testGetLecturerLogsByLowongan_InternalServerError() throws Exception {
+        when(authentication.getName()).thenReturn("dosen@example.com");
+        when(userRepository.findByUsername("dosen@example.com")).thenReturn(mockDosenUser);
+        when(logService.findByLowonganAndDosen(lowonganId, dosenId))
+                .thenThrow(new RuntimeException("Database error"));
+
+        mockMvc.perform(get("/api/log/lecturer/lowongan/{lowonganId}", lowonganId))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.error").value("Terjadi kesalahan: Database error"));
+    }
+
+    @Test
     void testUpdateLogStatus_InvalidStatus() throws Exception {
         when(authentication.getName()).thenReturn("dosen@example.com");
         when(userRepository.findByUsername("dosen@example.com")).thenReturn(mockDosenUser);
@@ -280,5 +636,83 @@ public class LogControllerTest {
                 .andExpect(jsonPath("$.error").value("Status tidak valid. Gunakan DITERIMA atau DITOLAK"));
 
         verify(logService, never()).verifyLog(any(), any(), any());
+    }
+
+    @Test
+    void testUpdateLogStatus_EmptyStatus() throws Exception {
+        when(authentication.getName()).thenReturn("dosen@example.com");
+        when(userRepository.findByUsername("dosen@example.com")).thenReturn(mockDosenUser);
+
+        mockMvc.perform(patch("/api/log/lecturer/{logId}/status", logId)
+                        .param("status", ""))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Status tidak boleh kosong"));
+
+        verify(logService, never()).verifyLog(any(), any(), any());
+    }
+
+    @Test
+    void testUpdateLogStatus_MenungguStatus() throws Exception {
+        when(authentication.getName()).thenReturn("dosen@example.com");
+        when(userRepository.findByUsername("dosen@example.com")).thenReturn(mockDosenUser);
+
+        mockMvc.perform(patch("/api/log/lecturer/{logId}/status", logId)
+                        .param("status", "MENUNGGU"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Status tidak valid. Gunakan DITERIMA atau DITOLAK"));
+
+        verify(logService, never()).verifyLog(any(), any(), any());
+    }
+
+    @Test
+    void testUpdateLogStatus_ResourceNotFound() throws Exception {
+        when(authentication.getName()).thenReturn("dosen@example.com");
+        when(userRepository.findByUsername("dosen@example.com")).thenReturn(mockDosenUser);
+        when(logService.verifyLog(eq(logId), eq(StatusLog.DITERIMA), eq(dosenId)))
+                .thenThrow(new ResourceNotFoundException("Log tidak ditemukan"));
+
+        mockMvc.perform(patch("/api/log/lecturer/{logId}/status", logId)
+                        .param("status", "DITERIMA"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Log tidak ditemukan"));
+    }
+
+    @Test
+    void testUpdateLogStatus_BadRequest() throws Exception {
+        when(authentication.getName()).thenReturn("dosen@example.com");
+        when(userRepository.findByUsername("dosen@example.com")).thenReturn(mockDosenUser);
+        when(logService.verifyLog(eq(logId), eq(StatusLog.DITERIMA), eq(dosenId)))
+                .thenThrow(new BadRequestException("Log ini sudah diverifikasi sebelumnya"));
+
+        mockMvc.perform(patch("/api/log/lecturer/{logId}/status", logId)
+                        .param("status", "DITERIMA"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Log ini sudah diverifikasi sebelumnya"));
+    }
+
+    @Test
+    void testUpdateLogStatus_Forbidden() throws Exception {
+        when(authentication.getName()).thenReturn("dosen@example.com");
+        when(userRepository.findByUsername("dosen@example.com")).thenReturn(mockDosenUser);
+        when(logService.verifyLog(eq(logId), eq(StatusLog.DITERIMA), eq(dosenId)))
+                .thenThrow(new ForbiddenException("Anda tidak dapat memverifikasi log untuk lowongan ini"));
+
+        mockMvc.perform(patch("/api/log/lecturer/{logId}/status", logId)
+                        .param("status", "DITERIMA"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value("Anda tidak dapat memverifikasi log untuk lowongan ini"));
+    }
+
+    @Test
+    void testUpdateLogStatus_InternalServerError() throws Exception {
+        when(authentication.getName()).thenReturn("dosen@example.com");
+        when(userRepository.findByUsername("dosen@example.com")).thenReturn(mockDosenUser);
+        when(logService.verifyLog(eq(logId), eq(StatusLog.DITERIMA), eq(dosenId)))
+                .thenThrow(new RuntimeException("Database error"));
+
+        mockMvc.perform(patch("/api/log/lecturer/{logId}/status", logId)
+                        .param("status", "DITERIMA"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.error").value("Terjadi kesalahan: Database error"));
     }
 }
