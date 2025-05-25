@@ -56,7 +56,6 @@ class LowonganControllerTest {
                 .matkul("Pemrograman Lanjut")
                 .year(2025)
                 .term("Genap")
-                .idDosen(sampleUUID)
                 .totalAsdosNeeded(3)
                 .build();
     }
@@ -111,7 +110,7 @@ class LowonganControllerTest {
 
         // When
         when(jwtUtil.getUserIdFromToken(token)).thenReturn(dosenId.toString());
-        when(lowonganService.updateLowongan(eq(lowonganId), any(Lowongan.class), eq(dosenId)))
+        when(lowonganService.updateLowongan(eq(lowonganId), any(Lowongan.class)))
                 .thenReturn(ResponseEntity.ok(successResponse));
 
         // Then
@@ -143,7 +142,7 @@ class LowonganControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Lowongan id tidak boleh kosong"));
 
-        verify(lowonganService, never()).updateLowongan(any(), any(), any());
+        verify(lowonganService, never()).updateLowongan(any(), any());
     }
 
 

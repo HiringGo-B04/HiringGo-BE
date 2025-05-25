@@ -42,7 +42,6 @@ public class Lowongan {
         this.totalAsdosNeeded = builder.totalAsdosNeeded;
         this.totalAsdosRegistered = builder.totalAsdosRegistered;
         this.totalAsdosAccepted = builder.totalAsdosAccepted;
-        this.idDosen = builder.idDosen;
     }
 
     public Lowongan() {
@@ -56,7 +55,6 @@ public class Lowongan {
         private int totalAsdosNeeded;
         private int totalAsdosRegistered = 0;
         private int totalAsdosAccepted = 0;
-        private UUID idDosen;
 
         public Builder matkul(String matkul) {
             this.matkul = matkul;
@@ -70,11 +68,6 @@ public class Lowongan {
 
         public Builder term(String term) {
             this.term = term;
-            return this;
-        }
-
-        public Builder idDosen(UUID idDosen) {
-            this.idDosen = idDosen;
             return this;
         }
 
