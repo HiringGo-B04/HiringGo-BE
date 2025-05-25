@@ -9,6 +9,7 @@ import java.util.UUID;
 
 public interface LowonganService {
     List<Lowongan> getLowongan();
+    List<Lowongan> getLowongan2();
     Lowongan getLowonganById(UUID id);
     Lowongan addLowongan(Lowongan lowongan);
     ResponseEntity<Map<String, Object>>  updateLowongan(UUID id, Lowongan lowongan);
