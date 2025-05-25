@@ -132,11 +132,11 @@ tasks.jacocoTestReport {
         html.required.set(true)
         csv.required.set(false)
     }
-//    classDirectories.setFrom(
-//        fileTree(layout.buildDirectory.dir("classes/java/main")) {
-//            exclude("**/dto/**", "**/config/**", "**/exception/**") // example
-//        }
-//    )
+    classDirectories.setFrom(
+        fileTree(layout.buildDirectory.dir("classes/java/main")) {
+            exclude( "**/config/SecurityConfig.java",) // example
+        }
+    )
     sourceDirectories.setFrom(files("src/main/java"))
     executionData.setFrom(fileTree(buildDir).include("/jacoco/test.exec"))
 }
