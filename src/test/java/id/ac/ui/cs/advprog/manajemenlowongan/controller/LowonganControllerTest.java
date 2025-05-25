@@ -223,4 +223,46 @@ class LowonganControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Invalid token"));
     }
+
+    @Test
+    void testDeleteLowongan_Success() throws Exception {
+        UUID lowonganId = UUID.randomUUID();
+
+        doNothing().when(lowonganService).deleteLowongan(lowonganId);
+
+        mockMvc.perform(delete(ENDPOINT_LOWONGAN + LOWONGAN_DOSEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(lowonganId)))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Berhasil menghapus lowongan dengan id " + lowonganId));
+
+        verify(lowonganService, times(1)).deleteLowongan(lowonganId);
+    }
+
+    @Test
+    void testDeleteLowongan_ServiceThrowsException_ReturnsBadRequest() throws Exception {
+        UUID lowonganId = UUID.randomUUID();
+
+        doThrow(new RuntimeException("Database error")).when(lowonganService).deleteLowongan(lowonganId);
+
+        mockMvc.perform(delete(ENDPOINT_LOWONGAN + LOWONGAN_DOSEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(lowonganId)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Tidak berhasil menghapus lowongan dengan id " + lowonganId));
+
+        verify(lowonganService, times(1)).deleteLowongan(lowonganId);
+    }
+
+    @Test
+    void testDeleteLowongan_InvalidUUID_ReturnsBadRequest() throws Exception {
+        String invalidJson = "\"invalid-uuid-format\"";
+
+        mockMvc.perform(delete(ENDPOINT_LOWONGAN + LOWONGAN_DOSEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(invalidJson))
+                .andExpect(status().isBadRequest());
+
+        verify(lowonganService, never()).deleteLowongan(any(UUID.class));
+    }
 }
