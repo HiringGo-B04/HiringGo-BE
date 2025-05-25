@@ -36,10 +36,6 @@ public class LowonganServiceImpl implements LowonganService {
             throw new IllegalArgumentException("Nama Mata Kuliah tidak valid");
         }
 
-        if(!userRepository.existsById(lowongan.getIdDosen())){
-            throw new IllegalArgumentException("Id Dosen tidak valid");
-        }
-
         if (lowongan.getTerm() == null || lowongan.getTerm().isEmpty()) {
             throw new IllegalArgumentException("Semester tidak boleh kosong");
         }
@@ -95,18 +91,13 @@ public class LowonganServiceImpl implements LowonganService {
 
     @Transactional
     @Override
-    public ResponseEntity<Map<String, Object>> updateLowongan(UUID id, Lowongan lowongan, UUID idDosen) {
+    public ResponseEntity<Map<String, Object>> updateLowongan(UUID id, Lowongan lowongan) {
         Map<String, Object> response = new HashMap<>();
         try {
             Lowongan existingLowongan = getLowonganById(id);
             if (existingLowongan == null) {
                 response.put("message", "Lowongan dengan ID tersebut tidak ditemukan");
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-            }
-
-            if (!existingLowongan.getIdDosen().equals(idDosen)) {
-                response.put("message", "ID Dosen tidak sesuai dengan lowongan ini");
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
             }
 
             // Update fields

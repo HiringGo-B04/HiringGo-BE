@@ -57,7 +57,7 @@ public class LowonganController {
                 throw new IllegalArgumentException("Lowongan id tidak boleh kosong");
             }
 
-            return lowonganService.updateLowongan(lowongan.getId(), lowongan, dosenId);
+            return lowonganService.updateLowongan(lowongan.getId(), lowongan);
         }
         catch (Exception e) {
             response.put("message", e.getMessage());
