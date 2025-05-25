@@ -256,6 +256,11 @@ class JpaMataKuliahRepositoryTest {
 
         private MataKuliah storedEntity;
 
+        @Override
+        public boolean existsByKode(String kode) {
+            return storedEntity != null && storedEntity.getKode().equals(kode);
+        }
+
         // Simulate JpaRepository.save()
         @Override
         public <S extends MataKuliah> S save(S entity) {
