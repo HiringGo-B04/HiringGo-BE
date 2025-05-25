@@ -93,7 +93,7 @@ class LowonganControllerTest {
     void testAddLowongan() throws Exception {
         when(lowonganService.addLowongan(any(Lowongan.class))).thenReturn(sampleLowongan);
 
-        mockMvc.perform(post(ENDPOINT_LOWONGAN+LOWONGAN)
+        mockMvc.perform(post(ENDPOINT_LOWONGAN+LOWONGAN_DOSEN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(sampleLowongan)))
                 .andExpect(status().isOk())
@@ -113,7 +113,7 @@ class LowonganControllerTest {
     void testGetLowonganById() throws Exception {
         when(lowonganService.getLowonganById(sampleUUID)).thenReturn(sampleLowongan);
 
-        mockMvc.perform(get(ENDPOINT_LOWONGAN+LOWONGAN+ sampleUUID))
+        mockMvc.perform(get(ENDPOINT_LOWONGAN+LOWONGAN+ "/"+sampleUUID))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.matkul").value("Pemrograman Lanjut"));
     }
@@ -122,7 +122,7 @@ class LowonganControllerTest {
     void testGetLowonganById_NotFound() throws Exception {
         when(lowonganService.getLowonganById(any(UUID.class))).thenThrow(new LowonganController.LowonganNotFoundException("Lowongan dengan ID tidak ditemukan"));
 
-        mockMvc.perform(get(ENDPOINT_LOWONGAN+LOWONGAN + UUID.randomUUID()))
+        mockMvc.perform(get(ENDPOINT_LOWONGAN+LOWONGAN + "/" + UUID.randomUUID()))
                 .andExpect(status().isInternalServerError());
     }
 

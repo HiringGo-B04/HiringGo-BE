@@ -2,6 +2,7 @@ package id.ac.ui.cs.advprog.manajemenlowongan.service;
 
 import id.ac.ui.cs.advprog.authjwt.model.User;
 import id.ac.ui.cs.advprog.course.model.MataKuliah;
+import id.ac.ui.cs.advprog.course.repository.JpaMataKuliahRepository;
 import id.ac.ui.cs.advprog.course.repository.MataKuliahRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;
@@ -27,13 +28,13 @@ public class LowonganServiceImplTest {
     private LowonganRepository lowonganRepository;
     private LowonganServiceImpl lowonganService;
     private UserRepository userRepository;
-    private MataKuliahRepository mataKuliahRepository;
+    private JpaMataKuliahRepository mataKuliahRepository;
     private Lowongan dummyLowongan;
 
 
     @BeforeEach
     void setUp() {
-        mataKuliahRepository = mock(MataKuliahRepository.class);
+        mataKuliahRepository = mock(JpaMataKuliahRepository.class);
         lowonganRepository = mock(LowonganRepository.class);
         userRepository = mock(UserRepository.class);
 
@@ -71,11 +72,13 @@ public class LowonganServiceImplTest {
         List<Lowongan> lowongans = List.of(l1, l2);
 
         MataKuliah mataKuliah = new MataKuliah();
+        mataKuliah.addDosenPengampu(dummyUser);
         MataKuliah mataKuliah1 = new MataKuliah();
+        mataKuliah1.addDosenPengampu(dummyUser);
 
         when(userRepository.findByUserId(dosenId)).thenReturn(dummyUser);
         when(lowonganRepository.findLowonganByIdDosen(dosenId)).thenReturn(lowongans);
-        when(mataKuliahRepository.findByDosenPengampuContaining(dummyUser)).thenReturn(List.of(mataKuliah1, mataKuliah));
+        when(mataKuliahRepository.findAll()).thenReturn(List.of(mataKuliah1, mataKuliah)); // Correct mock
 
         ResponseEntity<Map<String, Object>> response = lowonganService.getLowonganByDosen(dosenId);
 
@@ -84,7 +87,7 @@ public class LowonganServiceImplTest {
         Map<String, Object> body = response.getBody();
         assertNotNull(body);
         assertEquals("Success", body.get("message"));
-        assertEquals(2, body.get("course"));
+        assertEquals(2L, body.get("course"));
         assertEquals(6, body.get("assistant")); // 2 + 4 accepted
         assertEquals(1, body.get("vacan"));     // (5-2) + (4-4) = 3
     }
