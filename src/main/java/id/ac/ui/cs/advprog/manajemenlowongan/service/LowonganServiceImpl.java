@@ -1,23 +1,39 @@
 package id.ac.ui.cs.advprog.manajemenlowongan.service;
 
+import id.ac.ui.cs.advprog.authjwt.model.User;
+import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
+import id.ac.ui.cs.advprog.course.model.MataKuliah;
+import id.ac.ui.cs.advprog.course.repository.JpaMataKuliahRepository;
+import id.ac.ui.cs.advprog.course.repository.MataKuliahRepository;
 import id.ac.ui.cs.advprog.manajemenlowongan.model.Lowongan;
 import id.ac.ui.cs.advprog.manajemenlowongan.repository.LowonganRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+
+import static java.lang.Math.max;
 
 @Service
 public class LowonganServiceImpl implements LowonganService {
 
-    @Autowired
     private LowonganRepository lowonganRepository;
+    private UserRepository userRepository;
+    private JpaMataKuliahRepository mataKuliahRepository;
+
+    public LowonganServiceImpl(UserRepository userRepository, LowonganRepository lowonganRepository, JpaMataKuliahRepository mataKuliahRepository) {
+        this.userRepository = userRepository;
+        this.lowonganRepository = lowonganRepository;
+        this.mataKuliahRepository = mataKuliahRepository;
+    }
 
     public boolean validateLowongan(Lowongan lowongan) {
         // Validasi data lowongan dasar
-        if (lowongan.getMatkul() == null || lowongan.getMatkul().isEmpty()) {
-            throw new IllegalArgumentException("Mata kuliah tidak boleh kosong");
+        if (lowongan.getMatkul() == null || lowongan.getMatkul().isEmpty() || !mataKuliahRepository.existsByKode(lowongan.getMatkul())) {
+            throw new IllegalArgumentException("Nama Mata Kuliah tidak valid");
         }
 
         if (lowongan.getTerm() == null || lowongan.getTerm().isEmpty()) {
@@ -37,6 +53,10 @@ public class LowonganServiceImpl implements LowonganService {
             throw new IllegalArgumentException("Jumlah asisten dosen yang dibutuhkan harus lebih dari 0");
         }
 
+        if (lowongan.getTahun() < 2025) {
+            throw new IllegalArgumentException("Tahun ajaran harus lebih dari atau sama dengan 2025");
+        }
+
         // Validasi kombinasi matakuliah, semester, dan tahun ajaran harus unik
         // Pemeriksaan ini sebaiknya dilakukan juga di isLowonganExists
         List<Lowongan> existingLowongan = lowonganRepository.findAll();
@@ -53,10 +73,6 @@ public class LowonganServiceImpl implements LowonganService {
         return true;
     }
 
-    public LowonganServiceImpl(LowonganRepository lowonganRepository) {
-        this.lowonganRepository = lowonganRepository;
-    }
-
     @Override
     public List<Lowongan> getLowongan() {
         return lowonganRepository.findAll();
@@ -69,31 +85,82 @@ public class LowonganServiceImpl implements LowonganService {
 
     @Override
     public Lowongan addLowongan(Lowongan lowongan) {
-        if (lowongan.getTahun() < 2025) {
-            throw new IllegalArgumentException("Tahun ajaran harus lebih dari atau sama dengan 2025");
-        }
         validateLowongan(lowongan);
         return lowonganRepository.save(lowongan);
     }
 
+    @Transactional
     @Override
-    public Lowongan updateLowongan(UUID id, Lowongan lowongan) {
-        Lowongan existingLowongan = lowonganRepository.findById(id).orElse(null);
-        if (existingLowongan == null) {
-            throw new IllegalArgumentException("Lowongan dengan ID tersebut tidak ditemukan");
+    public ResponseEntity<Map<String, Object>> updateLowongan(UUID id, Lowongan lowongan) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            Lowongan existingLowongan = getLowonganById(id);
+            if (existingLowongan == null) {
+                response.put("message", "Lowongan dengan ID tersebut tidak ditemukan");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+
+            // Update fields
+            existingLowongan.setTerm(lowongan.getTerm());
+            existingLowongan.setTahun(lowongan.getTahun());
+            existingLowongan.setTotalAsdosNeeded(lowongan.getTotalAsdosNeeded());
+            existingLowongan.setTotalAsdosAccepted(lowongan.getTotalAsdosAccepted());
+            existingLowongan.setTotalAsdosRegistered(lowongan.getTotalAsdosRegistered());
+
+            validateLowongan(existingLowongan);
+
+            Lowongan updated = lowonganRepository.save(existingLowongan);
+
+            response.put("message", "Lowongan berhasil diperbarui");
+            response.put("data", updated);
+            return ResponseEntity.ok(response);
+
+        }  catch (Exception e) {
+            response.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
-
-        // Pastikan ID lowongan yang diupdate sama dengan ID yang diminta
-        lowongan.setId(id);
-
-        // validateLowongan sekarang melempar exception langsung dengan pesan spesifik
-        validateLowongan(lowongan);
-
-        return lowonganRepository.save(lowongan);
     }
 
     public void deleteLowongan(UUID id) {
         lowonganRepository.deleteById(id);
+    }
+
+    public ResponseEntity<Map<String, Object>> getLowonganByDosen(UUID id){
+        try {
+            User user = userRepository.findByUserId(id);
+            if (user == null || !user.getRole().equals("LECTURER")) {
+                throw new IllegalArgumentException("Tidak ada dosen dengan id " + id);
+            }
+
+//            List<Lowongan> lowongans = lowonganRepository.findLowonganByIdDosen(id);
+            int teachingAssitant =  0;
+            int needTeachingAssitant = 0;
+//            for (Lowongan lowongan : lowongans) {
+//                teachingAssitant += lowongan.getTotalAsdosAccepted();
+//                if(lowongan.getTotalAsdosNeeded() > lowongan.getTotalAsdosAccepted()){
+//                    needTeachingAssitant += 1;
+//                }
+//            }
+
+            long totalCourse = mataKuliahRepository.findAll().stream()
+                    .filter(mk -> mk.getDosenPengampu().stream()
+                            .anyMatch(dosen -> dosen.getUserId().equals(id)))
+                    .count();
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Success");
+            response.put("course", totalCourse);
+            response.put("assistant", teachingAssitant);
+            response.put("vacan", needTeachingAssitant);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", "Gagal mengambil lowongan: " + e.getMessage());
+            errorResponse.put("data", new ArrayList<>());
+
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
     }
 
     @Override
@@ -113,16 +180,5 @@ public class LowonganServiceImpl implements LowonganService {
         return a.getMatkul().equals(b.getMatkul()) &&
                 a.getTahun() == b.getTahun() &&
                 a.getTerm().equals(b.getTerm());
-    }
-
-    @Override
-    public boolean isLowonganClosed(Lowongan lowongan) {
-        // Lowongan dianggap tutup jika jumlah asisten dosen yang diterima
-        // sudah sama dengan atau melebihi jumlah yang dibutuhkan
-        if (lowongan.getTotalAsdosAccepted() >= lowongan.getTotalAsdosNeeded()) {
-            return true;
-        }
-
-        return false;
     }
 }
