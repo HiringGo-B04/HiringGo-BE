@@ -8,8 +8,10 @@ import id.ac.ui.cs.advprog.course.repository.MataKuliahRepository;
 import id.ac.ui.cs.advprog.manajemenlowongan.model.Lowongan;
 import id.ac.ui.cs.advprog.manajemenlowongan.repository.LowonganRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
@@ -34,6 +36,10 @@ public class LowonganServiceImpl implements LowonganService {
             throw new IllegalArgumentException("Nama Mata Kuliah tidak valid");
         }
 
+        if(!userRepository.existsById(lowongan.getIdDosen())){
+            throw new IllegalArgumentException("Id Dosen tidak valid");
+        }
+
         if (lowongan.getTerm() == null || lowongan.getTerm().isEmpty()) {
             throw new IllegalArgumentException("Semester tidak boleh kosong");
         }
@@ -49,6 +55,10 @@ public class LowonganServiceImpl implements LowonganService {
 
         if (lowongan.getTotalAsdosNeeded() <= 0) {
             throw new IllegalArgumentException("Jumlah asisten dosen yang dibutuhkan harus lebih dari 0");
+        }
+
+        if (lowongan.getTahun() < 2025) {
+            throw new IllegalArgumentException("Tahun ajaran harus lebih dari atau sama dengan 2025");
         }
 
         // Validasi kombinasi matakuliah, semester, dan tahun ajaran harus unik
@@ -79,30 +89,45 @@ public class LowonganServiceImpl implements LowonganService {
 
     @Override
     public Lowongan addLowongan(Lowongan lowongan) {
-        if (lowongan.getTahun() < 2025) {
-            throw new IllegalArgumentException("Tahun ajaran harus lebih dari atau sama dengan 2025");
-        }
         validateLowongan(lowongan);
         return lowonganRepository.save(lowongan);
     }
 
+    @Transactional
     @Override
-    public Lowongan updateLowongan(UUID id, Lowongan lowongan) {
-        Lowongan existingLowongan = getLowonganById(id);
-        if (existingLowongan == null) {
-            throw new IllegalArgumentException("Lowongan dengan ID tersebut tidak ditemukan");
+    public ResponseEntity<Map<String, Object>> updateLowongan(UUID id, Lowongan lowongan, UUID idDosen) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            Lowongan existingLowongan = getLowonganById(id);
+            if (existingLowongan == null) {
+                response.put("message", "Lowongan dengan ID tersebut tidak ditemukan");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+
+            if (!existingLowongan.getIdDosen().equals(idDosen)) {
+                response.put("message", "ID Dosen tidak sesuai dengan lowongan ini");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+            }
+
+            // Update fields
+            existingLowongan.setTerm(lowongan.getTerm());
+            existingLowongan.setTahun(lowongan.getTahun());
+            existingLowongan.setTotalAsdosNeeded(lowongan.getTotalAsdosNeeded());
+            existingLowongan.setTotalAsdosAccepted(lowongan.getTotalAsdosAccepted());
+            existingLowongan.setTotalAsdosRegistered(lowongan.getTotalAsdosRegistered());
+
+            validateLowongan(existingLowongan);
+
+            Lowongan updated = lowonganRepository.save(existingLowongan);
+
+            response.put("message", "Lowongan berhasil diperbarui");
+            response.put("data", updated);
+            return ResponseEntity.ok(response);
+
+        }  catch (Exception e) {
+            response.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
-
-        // Pastikan ID lowongan yang diupdate sama dengan ID yang diminta
-        lowongan.setId(id);
-        lowongan.setMatkul(lowongan.getMatkul());
-        lowongan.setTerm(lowongan.getTerm());
-        lowongan.setTahun(lowongan.getTahun());
-
-        // validateLowongan sekarang melempar exception langsung dengan pesan spesifik
-        validateLowongan(lowongan);
-
-        return lowonganRepository.save(lowongan);
     }
 
     public void deleteLowongan(UUID id) {

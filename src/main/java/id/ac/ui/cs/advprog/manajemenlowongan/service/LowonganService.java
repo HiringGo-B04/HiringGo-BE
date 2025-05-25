@@ -11,7 +11,7 @@ public interface LowonganService {
     List<Lowongan> getLowongan();
     Lowongan getLowonganById(UUID id);
     Lowongan addLowongan(Lowongan lowongan);
-    Lowongan updateLowongan(UUID id, Lowongan lowongan);
+    ResponseEntity<Map<String, Object>>  updateLowongan(UUID id, Lowongan lowongan, UUID idDosen);
     void deleteLowongan(UUID id);
     boolean isLowonganExists(Lowongan lowongan);
     ResponseEntity<Map<String, Object>> getLowonganByDosen(UUID id);
