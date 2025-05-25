@@ -137,3 +137,7 @@ Raihan Akbar - 2306152506
 Mendapatkan Tugas Bagian: Manajemen Akun dan Dashboard Mahasiswa
 
 Jika diagram kurang jelas, bisa dilihat di draw.io kami [disini](https://drive.google.com/file/d/15BBQb-VU09JhqOzyiTkONZZ7gJOJ9bdL/view?usp=sharing) 
+
+# PROFILLING ALYSSA
+![profilling](/images/profilling.jpg)
+Berdasarkan hasil profiling aplikasi, terlihat bahwa sistem mengalami bottleneck utama pada fitur getStudentLogs di LogController yang membutuhkan waktu eksekusi cukup lama karena melakukan 39 pemanggilan ke database dan library lainnya. Masalah performance juga terjadi pada proses authentication JWT yang harus memvalidasi token di setiap request, serta manajemen thread yang tidak optimal dengan 1,117 library calls. Untuk memperbaiki performance, perlu dilakukan optimisasi database dengan menambahkan indexing dan pagination pada query pencarian log mahasiswa, implementasi caching untuk token JWT agar tidak perlu validasi berulang, serta penyesuaian konfigurasi thread pool untuk mengurangi overhead. Selain itu, penambahan response caching pada endpoint yang sering diakses dan optimisasi query dengan lazy loading akan membantu mengurangi waktu response secara keseluruhan dan membuat aplikasi lebih responsif bagi pengguna.
