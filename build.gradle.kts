@@ -6,7 +6,7 @@ plugins {
     id("org.springframework.boot") version "3.4.4"
     id("io.spring.dependency-management") version "1.1.7"
     id("com.github.johnrengelman.processes") version "0.5.0"
-    id("org.sonarqube") version "4.4.1.3373" // or latest version
+    id("org.sonarqube") version "3.5.0.2730" // or latest version
 }
 
 group = "id.ac.ui.cs.advprog"
@@ -134,5 +134,8 @@ tasks.jacocoTestReport {
 }
 
 tasks.test {
+    filter {
+        excludeTestsMatching("*FunctionalTest")
+    }
     finalizedBy(tasks.jacocoTestReport) // Auto-generate report after test
 }

@@ -1,0 +1,109 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+
+jobs:
+  test:
+    name: Run tests
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Check out the Git repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java toolchain
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "21"
+          cache: "gradle"
+
+      - name: Grant execute permission to Gradle wrapper
+        run: chmod +x gradlew
+
+      - name: Run unit tests
+        run: ./gradlew test
+
+  build-and-deploy:
+    name: Build and Deploy to Production
+    runs-on: ubuntu-latest
+    needs: test  # 👈 This makes the deploy job run only if test job passes
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          push: true
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/${{ secrets.DOCKER_HUB_REPO_NAME }}:latest
+
+      - name: Releasing New Version with Rollback
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            IMAGE=${{ secrets.DOCKER_HUB_USERNAME }}/${{ secrets.DOCKER_HUB_REPO_NAME }}:latest
+
+            echo "Logging in and pulling latest image..."
+            docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} -p ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+            docker pull $IMAGE
+
+            echo "Stopping any previous backup container..."
+            docker rm -f web_server_old || true
+
+            if docker ps -a --format '{{.Names}}' | grep -Eq '^web_server$'; then
+              echo "Renaming current container to web_server_old for rollback backup..."
+              docker rename web_server web_server_old
+            fi
+
+            echo "Starting new container..."
+            docker run -d \
+              --name=web_server \
+              --network=host \
+              -p 8080:8080 \
+              -e DB_HOST=${{ secrets.PROD_DB_HOST }} \
+              -e DB_PORT=${{ secrets.PROD_DB_PORT }} \
+              -e DB_NAME=${{ secrets.PROD_DB_NAME }} \
+              -e DB_USERNAME=${{ secrets.PROD_DB_USERNAME }} \
+              -e DB_PASSWORD=${{ secrets.PROD_DB_PASSWORD }} \
+              -e JWT_SECRET=${{ secrets.PROD_JWT_SECRET }} \
+              $IMAGE
+
+            echo "Waiting for new container to stabilize..."
+            sleep 10
+
+            echo "Checking if new container is running..."
+            if [ "$(docker inspect -f '{{.State.Running}}' web_server)" != "true" ]; then
+              echo "New container failed to start. Rolling back..."
+              docker rm -f web_server
+              if docker ps -a --format '{{.Names}}' | grep -Eq '^web_server_old$'; then
+                docker rename web_server_old web_server
+                docker start web_server
+              fi
+              exit 1
+            fi
+
+            echo "New container is running successfully."
+
+            echo "Cleaning up old backup container..."
+            docker rm -f web_server_old || true
+
+            echo "Cleaning up dangling images..."
+            docker image prune -f
+
+            echo "Restarting monitoring containers..."
+            cd ~/monitoring
+            docker compose up -d
