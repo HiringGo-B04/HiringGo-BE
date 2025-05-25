@@ -65,16 +65,6 @@ public class LowonganController {
         }
     }
 
-    @DeleteMapping(LOWONGAN_DOSEN)
-    public ResponseEntity<String> deleteLowongan(@RequestBody UUID id) {
-        try{
-            lowonganService.deleteLowongan(id);
-            return ResponseEntity.ok().body("Berhasil menghapus lowongan dengan id " + id);
-        }catch (Exception e){
-            return ResponseEntity.badRequest().body("Tidak berhasil menghapus lowongan dengan id " + id);
-        }
-    }
-
     @GetMapping(LOWONGAN)
     public ResponseEntity<List<Lowongan>> getAllLowongan() {
         try {
