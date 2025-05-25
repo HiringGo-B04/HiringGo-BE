@@ -10,5 +10,4 @@ import java.util.List;
 
 @Repository
 public interface LowonganRepository extends JpaRepository<Lowongan, UUID> {
-    List<Lowongan> findLowonganByIdDosen(@NotBlank UUID idDosen);
 }
