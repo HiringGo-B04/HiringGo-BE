@@ -15,12 +15,14 @@ import id.ac.ui.cs.advprog.authjwt.service.command.AdminRegistrationCommand;
 import id.ac.ui.cs.advprog.authjwt.service.command.LecturerRegistrationCommand;
 import id.ac.ui.cs.advprog.authjwt.service.command.RegistrationCommand;
 import id.ac.ui.cs.advprog.authjwt.service.command.StudentRegistrationCommand;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import io.micrometer.core.instrument.MeterRegistry;
 
 import static id.ac.ui.cs.advprog.authjwt.config.GeneralUtils.*;
 
@@ -37,8 +39,12 @@ public class AuthService implements AuthenticationFacade {
 
     @Autowired
     JwtUtil jwtUtils;
-    private PasswordEncoder passwordEncoder;
 
+    private final MeterRegistry meterRegistry;
+
+    public AuthService(MeterRegistry meterRegistry) {
+        this.meterRegistry = meterRegistry;
+    }
 
     @Override
     @Transactional
@@ -61,6 +67,7 @@ public class AuthService implements AuthenticationFacade {
             String jwt_token = jwtUtils.generateToken(user.username(), exist_user.getRole(), exist_user.getUserId());
             Token user_token = new Token(jwt_token);
             tokenRepository.save(user_token);
+            meterRegistry.counter("login.success.count").increment();
 
             return new ResponseEntity<>(
                     new LoginResponseDTO(DEFAULT_ACCEPT_RESPONSE, "Success login", jwt_token),
