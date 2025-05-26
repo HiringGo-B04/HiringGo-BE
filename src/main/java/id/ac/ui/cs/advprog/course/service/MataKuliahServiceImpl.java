@@ -10,12 +10,12 @@ import id.ac.ui.cs.advprog.course.repository.MataKuliahRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
-import org.springframework.data.domain.*;
-import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.scheduling.annotation.Async;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @Primary
@@ -27,34 +27,16 @@ public class MataKuliahServiceImpl implements MataKuliahService {
     private final MataKuliahMapper     mapper;
     private final UserRepository       userRepo;
 
-    /* ============================================================
-       READ
-       ============================================================ */
-
+    @Async
     @Transactional(readOnly = true)
     @Override
-    public Page<MataKuliahDto> findAll(Pageable pageable) {
-
-        /*
-         * Jika repository JPA mendukung paging native, gunakan langsung;
-         * fallback → paging manual in-memory.
-         */
-        if (repo instanceof PagingAndSortingRepository<?,?> jpaRepo && pageable.isPaged()) {
-            @SuppressWarnings("unchecked")
-            Page<MataKuliah> page =
-                    ((PagingAndSortingRepository<MataKuliah, ?>) jpaRepo).findAll(pageable);
-            return page.map(mapper::toDto);
-        }
-
-        List<MataKuliah> all = repo.findAll();
-        if (pageable.isUnpaged()) {
-            return new PageImpl<>(all).map(mapper::toDto);
-        }
-
-        int start = (int) pageable.getOffset();
-        int end   = Math.min(start + pageable.getPageSize(), all.size());
-        return new PageImpl<>(all.subList(start, end), pageable, all.size())
-                .map(mapper::toDto);
+    public CompletableFuture<List<MataKuliahDto>> findAll() {
+        return CompletableFuture.supplyAsync(() -> {
+            List<MataKuliah> all = repo.findAll();
+            return all.stream()
+                    .map(mapper::toDto)
+                    .toList();
+        });
     }
 
     @Transactional(readOnly = true)
@@ -65,15 +47,9 @@ public class MataKuliahServiceImpl implements MataKuliahService {
                 .orElse(null);
     }
 
-    /* ============================================================
-       CREATE
-       ============================================================ */
-
     @Override
     public MataKuliahDto create(MataKuliahDto dto) {
         MataKuliah entity = mapper.toEntity(dto);
-
-        /* Pastikan Set<User> tidak null */
         if (entity.getDosenPengampu() == null) {
             entity.setDosenPengampu(new HashSet<>());
         }
@@ -82,23 +58,14 @@ public class MataKuliahServiceImpl implements MataKuliahService {
         return mapper.toDto(saved);
     }
 
-    /* ============================================================
-       UPDATE  (PUT — replace seluruh kolom)
-       ============================================================ */
-
     @Override
     public MataKuliahDto update(String kode, MataKuliahDto dto) {
-
         MataKuliah existing = repo.findByKode(kode)
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Mata kuliah tidak ditemukan: " + kode));
-
-        /* Salin field primitif */
         existing.setNama(dto.nama());
         existing.setSks(dto.sks());
         existing.setDeskripsi(dto.deskripsi());
-
-        /* Perbarui relasi dosenPengampu */
         Set<User> newSet = new HashSet<>();
         if (dto.dosenPengampu() != null && !dto.dosenPengampu().isEmpty()) {
             newSet.addAll(userRepo.findAllById(dto.dosenPengampu()));
@@ -108,24 +75,13 @@ public class MataKuliahServiceImpl implements MataKuliahService {
         return mapper.toDto(repo.update(existing));
     }
 
-    /* ============================================================
-       PATCH  (partial update — hanya kolom non-null)
-       ============================================================ */
-
     @Override
     public MataKuliahDto partialUpdate(String kode, MataKuliahPatch patch) {
 
         MataKuliah entity = repo.findByKode(kode)
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Mata kuliah tidak ditemukan: " + kode));
-
-        /* MapStruct akan meng-abaikan kolom null */
         mapper.patch(patch, entity);
-
-        /*
-         * Jika PATCH berisi daftar dosenPengampu,
-         * tangani manual (karena Patch tidak di-map otomatis).
-         */
         if (patch.dosenPengampu() != null) {
             Set<User> set = new HashSet<>(userRepo.findAllById(patch.dosenPengampu()));
             entity.setDosenPengampu(set);
@@ -134,10 +90,6 @@ public class MataKuliahServiceImpl implements MataKuliahService {
         return mapper.toDto(repo.update(entity));
     }
 
-    /* ============================================================
-       DELETE
-       ============================================================ */
-
     @Override
     public void delete(String kode) {
         if (repo.findByKode(kode).isEmpty()) {
@@ -145,10 +97,6 @@ public class MataKuliahServiceImpl implements MataKuliahService {
         }
         repo.deleteByKode(kode);
     }
-
-    /* ============================================================
-       LECTURER MANAGEMENT
-       ============================================================ */
 
     @Override
     public void addLecturer(String kode, UUID userId) {
@@ -173,7 +121,7 @@ public class MataKuliahServiceImpl implements MataKuliahService {
         boolean removed = mk.getDosenPengampu()
                 .removeIf(d -> d.getUserId().equals(userId));
 
-        if (!removed) {                     // ← opsional, tapi baik untuk feedback
+        if (!removed) {
             throw new EntityNotFoundException("Dosen " + userId + " tidak terdaftar pada mata kuliah");
         }
         repo.update(mk);

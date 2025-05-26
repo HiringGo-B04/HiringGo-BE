@@ -50,12 +50,8 @@ public class LamaranController {
 
     @PostMapping("/lecturer/accept/{id}")
     public ResponseEntity<String> acceptLamaran(@PathVariable UUID id) {
-        try {
-            lamaranService.acceptLamaran(id).join();
-            return ResponseEntity.ok("Lamaran accepted successfully");
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Failed to accept lamaran");
-        }
+        lamaranService.acceptLamaran(id).join();
+        return ResponseEntity.ok("Lamaran accepted successfully");
     }
 
     @PostMapping("/lecturer/reject/{id}")
@@ -68,7 +64,7 @@ public class LamaranController {
         }
     }
 
-    @GetMapping("/all")
+    @GetMapping("/user/all")
     public ResponseEntity<List<Lamaran>> getAllLamaran() {
         try {
             List<Lamaran> lamaranList = lamaranService.getLamaran().join();
@@ -78,7 +74,7 @@ public class LamaranController {
         }
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/user/{id}")
     public ResponseEntity<Lamaran> getLamaranById(@PathVariable UUID id) {
         try {
             Lamaran lamaran = lamaranService.getLamaranById(id).join();
@@ -92,7 +88,7 @@ public class LamaranController {
         }
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/lecturer/{id}")
     public ResponseEntity<Lamaran> updateLamaran(
             @PathVariable UUID id,
             @RequestBody Lamaran lamaran) {
@@ -109,7 +105,7 @@ public class LamaranController {
         }
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/lecturer/{id}")
     public ResponseEntity<String> deleteLamaran(@PathVariable UUID id) {
         try {
             lamaranService.deleteLamaran(id).join();

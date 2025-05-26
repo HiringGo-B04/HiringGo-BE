@@ -35,9 +35,7 @@ public class MataKuliah {
     @Column(nullable = false)
     private int sks;
 
-    /* ---------- Relasi dosen ---------- */
-
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "mata_kuliah_lecturer",
             joinColumns = @JoinColumn(name = "matkul_kode", referencedColumnName = "kode"),
@@ -45,7 +43,6 @@ public class MataKuliah {
     )
     private Set<User> dosenPengampu = new HashSet<>();
 
-    /* ---------- Konstruktor ringkas ---------- */
     public MataKuliah(String kode, String nama, String deskripsi, int sks) {
         this.kode       = kode;
         this.nama       = nama;
@@ -54,7 +51,6 @@ public class MataKuliah {
         this.dosenPengampu = new HashSet<>();
     }
 
-    /* ---------- Helper ---------- */
     public void addDosenPengampu(User dosen) {
         if (this.dosenPengampu == null) {
             this.dosenPengampu = new HashSet<>();

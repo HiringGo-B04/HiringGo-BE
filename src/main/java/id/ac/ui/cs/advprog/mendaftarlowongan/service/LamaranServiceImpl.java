@@ -1,7 +1,10 @@
 package id.ac.ui.cs.advprog.mendaftarlowongan.service;
 
+import id.ac.ui.cs.advprog.manajemenlowongan.model.Lowongan;
+import id.ac.ui.cs.advprog.manajemenlowongan.repository.LowonganRepository;
 import id.ac.ui.cs.advprog.mendaftarlowongan.dto.LamaranDTO;
 import id.ac.ui.cs.advprog.mendaftarlowongan.enums.StatusLamaran;
+import id.ac.ui.cs.advprog.mendaftarlowongan.exception.*;
 import id.ac.ui.cs.advprog.mendaftarlowongan.model.Lamaran;
 import id.ac.ui.cs.advprog.mendaftarlowongan.repository.LamaranRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +13,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -22,15 +26,20 @@ public class LamaranServiceImpl implements LamaranService {
     private LamaranRepository lamaranRepository;
 
     @Autowired
+    private LowonganRepository lowonganRepository;
+
+    @Autowired
     @Qualifier("taskExecutor")
     private Executor executor;
 
     // Default constructor for Spring
-    public LamaranServiceImpl() {}
+    public LamaranServiceImpl() {
+    }
+    // Constructor for dependency injection
 
-    // Constructor for testing purposes
-    public LamaranServiceImpl(LamaranRepository lamaranRepository) {
+    public LamaranServiceImpl(LamaranRepository lamaranRepository, LowonganRepository lowonganRepository) {
         this.lamaranRepository = lamaranRepository;
+        this.lowonganRepository = lowonganRepository;
     }
 
 
@@ -43,14 +52,15 @@ public class LamaranServiceImpl implements LamaranService {
     @Override
     @Async("taskExecutor")
     public CompletableFuture<Lamaran> getLamaranById(UUID id) {
-        return CompletableFuture.supplyAsync(() -> lamaranRepository.findById(id).orElse(null), executor);
+        return CompletableFuture.supplyAsync(() -> lamaranRepository.findById(id)
+                .orElseThrow(() -> new LamaranNotFoundExceptionException(id.toString())), executor);
     }
 
     @Override
     @Async("taskExecutor")
     public CompletableFuture<Lamaran> createLamaran(LamaranDTO lamaranDTO, UUID userIdFromToken) {
         return CompletableFuture.supplyAsync(() -> {
-            // Cek apakah idMahasiswa dari body sama dengan userId dari token
+            // Validasi idMahasiswa harus sama dengan userId pada token
             if (!lamaranDTO.getIdMahasiswa().equals(userIdFromToken)) {
                 throw new RuntimeException("ID Mahasiswa tidak sesuai dengan userId pada token.");
             }
@@ -58,14 +68,28 @@ public class LamaranServiceImpl implements LamaranService {
             Lamaran lamaran = toEntity(lamaranDTO);
 
             return validateLamaran(lamaran)
-                    .thenCompose(v -> CompletableFuture.supplyAsync(() ->
-                            lamaranRepository.save(lamaran), executor))
-                    .exceptionally(throwable -> {
+                    .thenCompose(v -> CompletableFuture.supplyAsync(() -> {
+                        // Simpan lamaran terlebih dahulu
+                        Lamaran savedLamaran = lamaranRepository.save(lamaran);
+
+                        // Cari lowongan terkait
+                        Optional<Lowongan> optionalLowongan = lowonganRepository.findById(lamaran.getIdLowongan());
+                        if (optionalLowongan.isEmpty()) {
+                            throw new RuntimeException("Lowongan tidak ditemukan.");
+                        }
+
+                        Lowongan lowongan = optionalLowongan.get();
+                        // Tambah totalAsdosRegistered
+                        lowongan.setTotalAsdosRegistered(lowongan.getTotalAsdosRegistered() + 1);
+                        lowonganRepository.save(lowongan);
+
+                        return savedLamaran;
+                    }, executor)).exceptionally(throwable -> {
                         throw new RuntimeException("Error creating lamaran: " + throwable.getMessage());
-                    })
-                    .join();
+                    }).join();
         }, executor);
     }
+
 
     @Override
     @Async("taskExecutor")
@@ -99,7 +123,8 @@ public class LamaranServiceImpl implements LamaranService {
     @Async("taskExecutor")
     public CompletableFuture<Boolean> isLamaranExists(Lamaran lamaran) {
         return CompletableFuture.supplyAsync(() -> lamaranRepository.findAll().stream()
-                .anyMatch(l -> l.getIdMahasiswa().equals(lamaran.getIdMahasiswa())
+                .anyMatch(l ->
+                        l.getIdMahasiswa().equals(lamaran.getIdMahasiswa())
                         && l.getIdLowongan().equals(lamaran.getIdLowongan())), executor);
     }
 
@@ -111,9 +136,9 @@ public class LamaranServiceImpl implements LamaranService {
                     boolean sksValid = lamaran.getSks() >= 0 && lamaran.getSks() <= 24;
 
                     if (!ipkValid) {
-                        throw new RuntimeException("IPK tidak valid");
+                        throw new IPKInvalidException();
                     } else if (!sksValid) {
-                        throw new RuntimeException("SKS tidak valid");
+                        throw new SKSInvalidException();
                     }
 
                     return null;
@@ -121,7 +146,7 @@ public class LamaranServiceImpl implements LamaranService {
                 .thenCompose(v -> isLamaranExists(lamaran))
                 .thenAccept(exists -> {
                     if (exists) {
-                        throw new RuntimeException("Sudah pernah melamar");
+                        throw new DuplicateLamaranException();
                     }
                 });
     }
@@ -139,30 +164,42 @@ public class LamaranServiceImpl implements LamaranService {
     public CompletableFuture<Void> acceptLamaran(UUID id) {
         return getLamaranById(id)
                 .thenCompose(lamaran -> {
-                    if (lamaran != null) {
-                        lamaran.setStatus(StatusLamaran.DITERIMA);
-                        return CompletableFuture.supplyAsync(() -> {
-                            lamaranRepository.save(lamaran);
-                            return null;
-                        }, executor);
+                    if (lamaran == null) {
+                        throw new LamaranNotFoundExceptionException(id.toString());
                     }
-                    return CompletableFuture.completedFuture(null);
+
+                    lamaran.setStatus(StatusLamaran.DITERIMA);
+
+                    return CompletableFuture.supplyAsync(() -> {
+                        lamaranRepository.save(lamaran);
+
+                        Lowongan lowongan = lowonganRepository.findById(lamaran.getIdLowongan())
+                                .orElseThrow(() -> new LowonganNotFoundExceptionException(lamaran.getIdLowongan().toString()));
+
+                        lowongan.setTotalAsdosAccepted(lowongan.getTotalAsdosAccepted() + 1);
+                        lowonganRepository.save(lowongan);
+
+                        return null;
+                    }, executor);
                 });
     }
+
+
 
     @Override
     @Async("taskExecutor")
     public CompletableFuture<Void> rejectLamaran(UUID id) {
         return getLamaranById(id)
                 .thenCompose(lamaran -> {
-                    if (lamaran != null) {
+                    if (lamaran == null) {
+                        throw new LamaranNotFoundExceptionException(id.toString());
+                    } else {
                         lamaran.setStatus(StatusLamaran.DITOLAK);
                         return CompletableFuture.supplyAsync(() -> {
                             lamaranRepository.save(lamaran);
                             return null;
                         }, executor);
                     }
-                    return CompletableFuture.completedFuture(null);
                 });
     }
 

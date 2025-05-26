@@ -28,12 +28,12 @@ public class UserTest {
     }
 
     @Test
-    void testUserConstructor() {
+    void testUserFactoryWithAdmin() {
         String email = "test@example.com";
         String password = "password123";
         UUID id = UUID.randomUUID();
 
-        User user = new User(id, email, password);
+        User user = UserFactory.createAdmin(id, email, password);
 
         assertThat(user.getUserId()).isNotNull();
         assertThat(user.getUsername()).isEqualTo(email);
@@ -42,16 +42,15 @@ public class UserTest {
     }
 
     @Test
-    void testUserConstructorWithWorkerTrueAndNumber() {
+    void testUserFactoryWithLecturer() {
         // Arrange
         UUID uuid = UUID.randomUUID();
         String email = "test@domain.com";
         String password = "password123";
         String fullName = "John Doe";
-        boolean worker = true;
         String number = "123456789";
 
-        User user = new User(uuid, email, password, fullName, worker, number);
+        User user = UserFactory.createLecturer(uuid, email, password, fullName, number);
 
         assertEquals(uuid, user.getUserId());
         assertEquals(email, user.getUsername());
@@ -63,15 +62,14 @@ public class UserTest {
     }
 
     @Test
-    void testUserConstructorWithWorkerFalseAndNumber() {
+    void testUserFactoryWithStudent() {
         UUID uuid = UUID.randomUUID();
         String email = "student@domain.com";
         String password = "password123";
         String fullName = "Jane Doe";
-        boolean worker = false;
         String number = "987654321";
 
-        User user = new User(uuid, email, password, fullName, worker, number);
+        User user = UserFactory.createStudent(uuid, email, password, fullName, number);
 
         assertEquals(uuid, user.getUserId());
         assertEquals(email, user.getUsername());

@@ -3,6 +3,7 @@ package id.ac.ui.cs.advprog.manajemenlowongan.model;
 import java.util.UUID;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,7 +16,9 @@ public class Lowongan {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    // Kode matkul
     private String matkul;
+
     private int tahun;
     private String term;
 

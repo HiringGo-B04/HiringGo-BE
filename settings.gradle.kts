@@ -4,3 +4,4 @@
 //rootProject.name = 'manajemen-lowongan'
 // rootProject.name = "Auth-Jwt"
 rootProject.name = "HiringGO-BE"
+

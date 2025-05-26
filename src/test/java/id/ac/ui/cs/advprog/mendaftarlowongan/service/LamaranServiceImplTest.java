@@ -6,11 +6,14 @@ import id.ac.ui.cs.advprog.manajemenlowongan.model.Lowongan;
 import id.ac.ui.cs.advprog.manajemenlowongan.repository.LowonganRepository;
 import id.ac.ui.cs.advprog.mendaftarlowongan.dto.LamaranDTO;
 import id.ac.ui.cs.advprog.mendaftarlowongan.enums.StatusLamaran;
+import id.ac.ui.cs.advprog.mendaftarlowongan.exception.DuplicateLamaranException;
+import id.ac.ui.cs.advprog.mendaftarlowongan.exception.LamaranNotFoundExceptionException;
 import id.ac.ui.cs.advprog.mendaftarlowongan.model.Lamaran;
 import id.ac.ui.cs.advprog.mendaftarlowongan.repository.LamaranRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.*;
@@ -50,7 +53,7 @@ public class LamaranServiceImplTest {
         taskExecutor.initialize();
 
         // Create service instance and inject dependencies
-        lamaranService = new LamaranServiceImpl(lamaranRepository);
+        lamaranService = new LamaranServiceImpl(lamaranRepository, lowonganRepository);
 
         // Use reflection to set the executor field since it's private
         try {
@@ -158,7 +161,22 @@ public class LamaranServiceImplTest {
             lamaranService.createLamaran(dummyLamaranDTO, dummyLamaranDTO.getIdMahasiswa()).get();
         });
 
-        assertTrue(ex.getCause().getMessage().contains("Sudah pernah melamar"));
+        assertTrue(ex.getCause().getMessage().contains("Lamaran sudah ada"));
+    }
+
+    @Test
+    void testCreateLamaranWithLowonganNotFoundThrowsException() {
+        when(userRepository.findById(dummyLamaranDTO.getIdMahasiswa()))
+                .thenReturn(Optional.of(new User()));
+        when(lowonganRepository.findById(dummyLamaranDTO.getIdLowongan()))
+                .thenReturn(Optional.empty());
+
+        // Act & Assert
+        ExecutionException ex = assertThrows(ExecutionException.class, () -> {
+            lamaranService.createLamaran(dummyLamaranDTO, dummyLamaranDTO.getIdMahasiswa()).get();
+        });
+
+        assertTrue(ex.getCause().getMessage().contains("Lowongan tidak ditemukan"));
     }
 
     @Test
@@ -192,10 +210,11 @@ public class LamaranServiceImplTest {
         when(lamaranRepository.findById(randomId)).thenReturn(Optional.empty());
 
         CompletableFuture<Lamaran> completableResult = lamaranService.getLamaranById(randomId);
-        Lamaran result = completableResult.get();
-
-        assertNull(result);
-        verify(lamaranRepository).findById(randomId);
+        try {
+            completableResult.get();
+        } catch (ExecutionException e) {
+            assertInstanceOf(LamaranNotFoundExceptionException.class, e.getCause());
+        }
     }
 
     @Test
@@ -227,11 +246,51 @@ public class LamaranServiceImplTest {
 
         Lamaran updatedData = new Lamaran();
         CompletableFuture<Lamaran> completableUpdated = lamaranService.updateLamaran(randomId, updatedData);
-        Lamaran result = completableUpdated.get();
+        try {
+            completableUpdated.get();
+        } catch (ExecutionException e) {
+            assertInstanceOf(LamaranNotFoundExceptionException.class, e.getCause());
+        }
+    }
+
+    @Test
+    void testUpdateLamaranIdNotFound() throws ExecutionException, InterruptedException {
+        UUID randomId = UUID.randomUUID();
+        when(lamaranRepository.findById(randomId)).thenReturn(Optional.empty());
+
+        Lamaran updatedData = new Lamaran();
+        updatedData.setId(randomId); // Set ID to a random value
+
+        CompletableFuture<Lamaran> completableUpdated = lamaranService.updateLamaran(randomId, updatedData);
+        try {
+            completableUpdated.get();
+        } catch (ExecutionException e) {
+            assertInstanceOf(LamaranNotFoundExceptionException.class, e.getCause());
+        }
+    }
+
+    @Test
+    void testUpdateLamaran_whenExistingIsNull_returnsNull() throws Exception {
+        // Buat spy dari service agar bisa mock method getLamaranById
+        LamaranServiceImpl spyService = Mockito.spy(lamaranService);
+
+        UUID lamaranId = UUID.randomUUID();
+
+        // Mock getLamaranById untuk return null (menguji existing == null)
+        doReturn(CompletableFuture.completedFuture(null))
+                .when(spyService).getLamaranById(lamaranId);
+
+        // Panggil method yang diuji
+        CompletableFuture<Lamaran> futureResult = spyService.updateLamaran(lamaranId, dummyLamaran);
+
+        // Tunggu hasil dan verifikasi
+        Lamaran result = futureResult.get(); // or .join()
 
         assertNull(result);
-        verify(lamaranRepository, never()).save(any(Lamaran.class));
+        verify(spyService, times(1)).getLamaranById(lamaranId);
+        verifyNoInteractions(lamaranRepository); // pastikan save tidak dipanggil
     }
+
 
     @Test
     void testDeleteLamaran() throws ExecutionException, InterruptedException {
@@ -303,8 +362,10 @@ public class LamaranServiceImplTest {
 
     @Test
     void testAcceptLamaran() throws ExecutionException, InterruptedException {
+        Lowongan dummyLowongan = new Lowongan();
         when(lamaranRepository.findById(dummyLamaran.getId())).thenReturn(Optional.of(dummyLamaran));
         when(lamaranRepository.save(any(Lamaran.class))).thenAnswer(i -> i.getArgument(0));
+        when(lowonganRepository.findById(dummyLamaran.getIdLowongan())).thenReturn(Optional.of(dummyLowongan));
 
         CompletableFuture<Void> completableResult = lamaranService.acceptLamaran(dummyLamaran.getId());
         completableResult.get();
@@ -320,10 +381,30 @@ public class LamaranServiceImplTest {
 
         CompletableFuture<Void> completableResult = lamaranService.acceptLamaran(randomId);
 
-        // Should complete without exception even if lamaran not found
-        assertDoesNotThrow(() -> completableResult.get());
-        verify(lamaranRepository, never()).save(any(Lamaran.class));
+        try {
+            completableResult.get();
+        } catch (ExecutionException | InterruptedException e) {
+            assertInstanceOf(LamaranNotFoundExceptionException.class, e.getCause());
+        }
     }
+
+    @Test
+    void testAcceptLamaran_whenLamaranIsNull_throwsException() {
+        LamaranServiceImpl spyService = Mockito.spy(lamaranService);
+
+        UUID lamaranId = UUID.randomUUID();
+
+        doReturn(CompletableFuture.completedFuture(null))
+                .when(spyService).getLamaranById(lamaranId);
+
+        CompletableFuture<Void> future = spyService.acceptLamaran(lamaranId);
+
+        ExecutionException thrown = assertThrows(ExecutionException.class, future::get);
+
+        assertInstanceOf(LamaranNotFoundExceptionException.class, thrown.getCause());
+        assertEquals("Lamaran dengan ID " + lamaranId + " tidak ditemukan.", thrown.getCause().getMessage());
+    }
+
 
     @Test
     void testRejectLamaran() throws ExecutionException, InterruptedException {
@@ -344,10 +425,31 @@ public class LamaranServiceImplTest {
 
         CompletableFuture<Void> completableResult = lamaranService.rejectLamaran(randomId);
 
-        // Should complete without exception even if lamaran not found
-        assertDoesNotThrow(() -> completableResult.get());
-        verify(lamaranRepository, never()).save(any(Lamaran.class));
+        try {
+            completableResult.get();
+        } catch (ExecutionException | InterruptedException e) {
+            assertInstanceOf(LamaranNotFoundExceptionException.class, e.getCause());
+        }
     }
+
+    @Test
+    void testRejectLamaran_whenLamaranIsNull_throwsException() {
+        // Spy service agar bisa mock method getLamaranById
+        LamaranServiceImpl spyService = Mockito.spy(lamaranService);
+
+        UUID lamaranId = UUID.randomUUID();
+
+        // Mock getLamaranById untuk return null
+        doReturn(CompletableFuture.completedFuture(null))
+                .when(spyService).getLamaranById(lamaranId);
+
+        // Eksekusi dan pastikan exception dilempar
+        CompletableFuture<Void> future = spyService.rejectLamaran(lamaranId);
+
+        ExecutionException thrown = assertThrows(ExecutionException.class, future::get);
+        assertEquals("Lamaran dengan ID " + lamaranId + " tidak ditemukan.", thrown.getCause().getMessage());
+    }
+
 
     @Test
     void testToEntity() {

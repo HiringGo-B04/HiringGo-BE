@@ -1,9 +1,9 @@
-name: Continous Integration (CI)
+name: Test Validation
 
-## Run CI jobs on all branches by default
 on:
   push:
-  pull_request:
+    branches:
+      - "**"
 
 jobs:
   test:
@@ -12,13 +12,16 @@ jobs:
     steps:
       - name: Check out the Git repository
         uses: actions/checkout@v4
+
       - name: Set up Java toolchain
         uses: actions/setup-java@v4
         with:
           distribution: "temurin"
           java-version: "21"
           cache: "gradle"
+
       - name: Grant execute permission to Gradle wrapper
         run: chmod +x gradlew
+
       - name: Run unit tests
         run: ./gradlew test

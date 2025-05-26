@@ -12,13 +12,4 @@ public enum StatusLamaran {
     private StatusLamaran(int value) {
         this.value = value;
     }
-
-    public static boolean contains(String param) {
-        for (StatusLamaran orderStatus : StatusLamaran.values()) {
-            if (orderStatus.name().equals(param)) {
-                return true;
-            }
-        }
-        return false;
-    }
 }
