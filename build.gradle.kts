@@ -54,35 +54,44 @@ val seleniumJupiterVersion = "5.0.1"
 val webdrivermanagerVersion = "5.6.3"
 val junitJupiterVersion = "5.9.1"
 
+val jakartaPersistanceVersion = "3.1.0"
+val jsonVersion = "20210307"
+val jsonWebTokenVersion = "0.11.5"
+val mapStructVersion = "1.5.5.Final"
+
+val postgresVersion = "42.7.2"
+val ormVersion = "6.3.1.Final"
+val jakartServletVersion = "6.0.0"
+
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("io.micrometer:micrometer-registry-prometheus")
-
-    runtimeOnly("org.postgresql:postgresql:42.7.2")
-    runtimeOnly("com.h2database:h2")
-    runtimeOnly("org.hibernate.orm:hibernate-core:6.3.1.Final")
-    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
-    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
-
-    compileOnly("jakarta.servlet:jakarta.servlet-api:6.0.0")
-    compileOnly("org.projectlombok:lombok")
-
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
-    implementation("jakarta.persistence:jakarta.persistence-api:3.1.0")
-    implementation("org.json:json:20210307")
-    implementation("io.jsonwebtoken:jjwt-api:0.11.5")
-    implementation("org.mapstruct:mapstruct:1.5.5.Final")
+    implementation("jakarta.persistence:jakarta.persistence-api:$jakartaPersistanceVersion")
+    implementation("org.json:json:$jsonVersion")
+    implementation("io.jsonwebtoken:jjwt-api:$jsonWebTokenVersion")
+    implementation("org.mapstruct:mapstruct:$mapStructVersion")
     implementation("org.springframework.data:spring-data-commons")
+
+
+    runtimeOnly("org.postgresql:postgresql:$postgresVersion")
+    runtimeOnly("com.h2database:h2")
+    runtimeOnly("org.hibernate.orm:hibernate-core:$ormVersion")
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:$jsonWebTokenVersion")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:$jsonWebTokenVersion")
+
+    compileOnly("jakarta.servlet:jakarta.servlet-api:$jakartServletVersion")
+    compileOnly("org.projectlombok:lombok")
 
     developmentOnly("org.springframework.boot:spring-boot-devtools")
 
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     annotationProcessor("org.projectlombok:lombok")
-    annotationProcessor("org.mapstruct:mapstruct-processor:1.5.5.Final")
+    annotationProcessor("org.mapstruct:mapstruct-processor:$mapStructVersion")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.seleniumhq.selenium:selenium-java:$seleniumJavaVersion")
@@ -90,9 +99,8 @@ dependencies {
     testImplementation("io.github.bonigarcia:webdrivermanager:$webdrivermanagerVersion")
     testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
     testImplementation("org.springframework.security:spring-security-test")
-
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-    testAnnotationProcessor("org.mapstruct:mapstruct-processor:1.5.5.Final")
+    testAnnotationProcessor("org.mapstruct:mapstruct-processor:$mapStructVersion")
 }
 
 // Ensure all test tasks use JUnit Platform
