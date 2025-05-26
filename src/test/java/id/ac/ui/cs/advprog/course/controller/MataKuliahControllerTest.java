@@ -21,8 +21,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -56,16 +54,15 @@ class MataKuliahControllerTest {
         dtoListFuture = CompletableFuture.completedFuture(dtoList);
     }
 
-    // ============== ADMIN READ ENDPOINTS TEST ==============
+    // ============== PUBLIC USER READ ENDPOINTS TEST ==============
 
     @Test
-    @WithMockUser(roles = "ADMIN")
-    void testListAll_Success() throws Exception {
+    void testListAll_Success_WithoutAuth() throws Exception {
         // Given
         when(service.findAll()).thenReturn(dtoListFuture);
 
-        // When & Then
-        mockMvc.perform(get("/api/course/admin/matakuliah"))
+        // When & Then - Test tanpa authentication (public access)
+        mockMvc.perform(get("/api/course/user/matakuliah"))
                 .andExpect(request().asyncStarted())
                 .andDo(result -> mockMvc.perform(asyncDispatch(result))
                         .andExpect(status().isOk())
@@ -81,14 +78,49 @@ class MataKuliahControllerTest {
     }
 
     @Test
-    @WithMockUser(roles = "ADMIN")
+    @WithMockUser(roles = "STUDENT")
+    void testListAll_Success_AsStudent() throws Exception {
+        // Given
+        when(service.findAll()).thenReturn(dtoListFuture);
+
+        // When & Then - Test with STUDENT role
+        mockMvc.perform(get("/api/course/user/matakuliah"))
+                .andExpect(request().asyncStarted())
+                .andDo(result -> mockMvc.perform(asyncDispatch(result))
+                        .andExpect(status().isOk())
+                        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(jsonPath("$").isArray())
+                        .andExpect(jsonPath("$.length()").value(2)));
+
+        verify(service, times(1)).findAll();
+    }
+
+    @Test
+    @WithMockUser(roles = "LECTURER")
+    void testListAll_Success_AsLecturer() throws Exception {
+        // Given
+        when(service.findAll()).thenReturn(dtoListFuture);
+
+        // When & Then - Test with LECTURER role
+        mockMvc.perform(get("/api/course/user/matakuliah"))
+                .andExpect(request().asyncStarted())
+                .andDo(result -> mockMvc.perform(asyncDispatch(result))
+                        .andExpect(status().isOk())
+                        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(jsonPath("$").isArray())
+                        .andExpect(jsonPath("$.length()").value(2)));
+
+        verify(service, times(1)).findAll();
+    }
+
+    @Test
     void testListAll_EmptyList() throws Exception {
         // Given
         CompletableFuture<List<MataKuliahDto>> emptyFuture = CompletableFuture.completedFuture(List.of());
         when(service.findAll()).thenReturn(emptyFuture);
 
         // When & Then
-        mockMvc.perform(get("/api/course/admin/matakuliah"))
+        mockMvc.perform(get("/api/course/user/matakuliah"))
                 .andExpect(request().asyncStarted())
                 .andDo(result -> mockMvc.perform(asyncDispatch(result))
                         .andExpect(status().isOk())
@@ -100,13 +132,12 @@ class MataKuliahControllerTest {
     }
 
     @Test
-    @WithMockUser(roles = "ADMIN")
-    void testGetByKode_Success() throws Exception {
+    void testGetByKode_Success_WithoutAuth() throws Exception {
         // Given
         when(service.findByKode(eq("CS101"))).thenReturn(dto1);
 
-        // When & Then
-        mockMvc.perform(get("/api/course/admin/matakuliah/CS101"))
+        // When & Then - Test tanpa authentication (public access)
+        mockMvc.perform(get("/api/course/user/matakuliah/CS101"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.kode").value("CS101"))
@@ -118,13 +149,28 @@ class MataKuliahControllerTest {
     }
 
     @Test
-    @WithMockUser(roles = "ADMIN")
+    @WithMockUser(roles = "STUDENT")
+    void testGetByKode_Success_AsStudent() throws Exception {
+        // Given
+        when(service.findByKode(eq("CS101"))).thenReturn(dto1);
+
+        // When & Then - Test with STUDENT role
+        mockMvc.perform(get("/api/course/user/matakuliah/CS101"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.kode").value("CS101"))
+                .andExpect(jsonPath("$.nama").value("Algoritma"));
+
+        verify(service, times(1)).findByKode(eq("CS101"));
+    }
+
+    @Test
     void testGetByKode_NotFound() throws Exception {
         // Given
         when(service.findByKode(eq("CS999"))).thenReturn(null);
 
         // When & Then
-        mockMvc.perform(get("/api/course/admin/matakuliah/CS999"))
+        mockMvc.perform(get("/api/course/user/matakuliah/CS999"))
                 .andExpect(status().isNotFound());
 
         verify(service, times(1)).findByKode(eq("CS999"));
@@ -262,24 +308,24 @@ class MataKuliahControllerTest {
         when(service.update(eq("CS999"), any(MataKuliahDto.class))).thenReturn(updatedDto);
         doNothing().when(service).delete(eq("CS999"));
 
-        // When & Then - Create
+        // When & Then - Create (Admin only)
         mockMvc.perform(post("/api/course/admin/matakuliah")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createDto)))
                 .andExpect(status().isCreated());
 
-        // When & Then - Read (now using admin endpoint)
-        mockMvc.perform(get("/api/course/admin/matakuliah/CS999"))
+        // When & Then - Read (Public access - using user endpoint)
+        mockMvc.perform(get("/api/course/user/matakuliah/CS999"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.kode").value("CS999"));
 
-        // When & Then - Update
+        // When & Then - Update (Admin only)
         mockMvc.perform(put("/api/course/admin/matakuliah/CS999")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updatedDto)))
                 .andExpect(status().isOk());
 
-        // When & Then - Delete
+        // When & Then - Delete (Admin only)
         mockMvc.perform(delete("/api/course/admin/matakuliah/CS999"))
                 .andExpect(status().isNoContent());
 
