@@ -21,7 +21,17 @@ public class LamaranController {
     @Autowired
     private JwtUtil jwtUtil;
 
-    @PostMapping("/student/add")
+    public static final String ENDPOINT_CREATE_LAMARAN = "/student/add";
+    public static final String ENDPOINT_GET_LAMARAN_BY_LOWONGAN = "/user/get-by-lowongan/{id}";
+    public static final String ENDPOINT_ACCEPT_LAMARAN = "/lecturer/accept/{id}";
+    public static final String ENDPOINT_REJECT_LAMARAN = "/lecturer/reject/{id}";
+    public static final String ENDPOINT_GET_ALL_LAMARAN = "/user/all";
+    public static final String ENDPOINT_GET_LAMARAN_BY_ID = "/user/{id}";
+    public static final String ENDPOINT_UPDATE_LAMARAN = "/lecturer/{id}";
+    public static final String ENDPOINT_DELETE_LAMARAN = "/lecturer/{id}";
+
+
+    @PostMapping(ENDPOINT_CREATE_LAMARAN)
     public ResponseEntity<Lamaran> createLamaran(
             @RequestBody LamaranDTO lamaranDTO,
             @RequestHeader("Authorization") String authHeader) {
@@ -38,7 +48,7 @@ public class LamaranController {
         }
     }
 
-    @GetMapping("/user/get-by-lowongan/{id}")
+    @GetMapping(ENDPOINT_GET_LAMARAN_BY_LOWONGAN)
     public ResponseEntity<List<Lamaran>> getLamaranByLowonganId(@PathVariable UUID id) {
         try {
             List<Lamaran> lamaranList = lamaranService.getLamaranByLowonganId(id).join();
@@ -48,13 +58,13 @@ public class LamaranController {
         }
     }
 
-    @PostMapping("/lecturer/accept/{id}")
+    @PostMapping(ENDPOINT_ACCEPT_LAMARAN)
     public ResponseEntity<String> acceptLamaran(@PathVariable UUID id) {
         lamaranService.acceptLamaran(id).join();
         return ResponseEntity.ok("Lamaran accepted successfully");
     }
 
-    @PostMapping("/lecturer/reject/{id}")
+    @PostMapping(ENDPOINT_REJECT_LAMARAN)
     public ResponseEntity<String> rejectLamaran(@PathVariable UUID id) {
         try {
             lamaranService.rejectLamaran(id).join();
@@ -64,7 +74,7 @@ public class LamaranController {
         }
     }
 
-    @GetMapping("/user/all")
+    @GetMapping(ENDPOINT_GET_ALL_LAMARAN)
     public ResponseEntity<List<Lamaran>> getAllLamaran() {
         try {
             List<Lamaran> lamaranList = lamaranService.getLamaran().join();
@@ -74,7 +84,7 @@ public class LamaranController {
         }
     }
 
-    @GetMapping("/user/{id}")
+    @GetMapping(ENDPOINT_GET_LAMARAN_BY_ID)
     public ResponseEntity<Lamaran> getLamaranById(@PathVariable UUID id) {
         try {
             Lamaran lamaran = lamaranService.getLamaranById(id).join();
@@ -88,7 +98,7 @@ public class LamaranController {
         }
     }
 
-    @PutMapping("/lecturer/{id}")
+    @PutMapping(ENDPOINT_UPDATE_LAMARAN)
     public ResponseEntity<Lamaran> updateLamaran(
             @PathVariable UUID id,
             @RequestBody Lamaran lamaran) {
@@ -105,7 +115,7 @@ public class LamaranController {
         }
     }
 
-    @DeleteMapping("/lecturer/{id}")
+    @DeleteMapping(ENDPOINT_DELETE_LAMARAN)
     public ResponseEntity<String> deleteLamaran(@PathVariable UUID id) {
         try {
             lamaranService.deleteLamaran(id).join();
