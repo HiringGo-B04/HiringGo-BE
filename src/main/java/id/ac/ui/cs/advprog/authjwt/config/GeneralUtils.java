@@ -11,9 +11,9 @@ public class GeneralUtils {
     private static final Pattern INT_PATTERN = Pattern.compile(INT_MAX_12_REGEX);
     private static final Pattern STRING_PATTERN = Pattern.compile(STRING_REGEX);
 
-    public static final String DEFAULT_ACCEPT_RESPONSE = "accept";
-    public static final String DEFAULT_ERROR_RESPONSE = "error";
-    public static final String DEFAULT_MESSAGE_RESPONSE = "message";
+    public final static String DEFAULT_ACCEPT_RESPONSE = "accept";
+    public final static String DEFAULT_ERROR_RESPONSE = "error";
+    public final static String DEFAULT_MESSAGE_RESPONSE = "message";
 
     private GeneralUtils() {
     }
