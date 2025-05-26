@@ -109,6 +109,7 @@ tasks.withType<Test>().configureEach {
     systemProperty("spring.profiles.active", "test")
 }
 
+
 // Separate unit test and functional test tasks
 tasks.register<Test>("unitTest") {
     description = "Runs unit tests."
