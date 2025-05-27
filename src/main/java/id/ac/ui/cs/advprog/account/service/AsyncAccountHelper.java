@@ -3,7 +3,6 @@ package id.ac.ui.cs.advprog.account.service;
 import id.ac.ui.cs.advprog.authjwt.model.User;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
 import id.ac.ui.cs.advprog.course.repository.MataKuliahRepository;
-import id.ac.ui.cs.advprog.manajemenlowongan.model.Lowongan;
 import id.ac.ui.cs.advprog.manajemenlowongan.repository.LowonganRepository;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -37,15 +36,6 @@ public class AsyncAccountHelper {
 
     @Async("taskExecutor")
     public CompletableFuture<Integer> getNumberOfVacanciesAsync() {
-        List<Lowongan> lowongans = lowonganRepository.findAll();
-        int value = 0;
-
-        for (Lowongan lowongan : lowongans) {
-            if (lowongan.getTotalAsdosAccepted() < lowongan.getTotalAsdosNeeded()) {
-                value++;
-            }
-        }
-
-        return CompletableFuture.completedFuture(value);
+        return CompletableFuture.completedFuture(lowonganRepository.findAll().size());
     }
 }

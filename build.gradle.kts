@@ -128,12 +128,13 @@ tasks.register<Test>("functionalTest") {
     }
 }
 
+// JaCoCo configuration
 jacoco {
-    toolVersion = "0.8.11"
+    toolVersion = "0.8.11" // or latest stable version
 }
 
 tasks.jacocoTestReport {
-    dependsOn(tasks.test)
+    dependsOn(tasks.test) // Ensures test runs before report
     reports {
         xml.required.set(true)
         html.required.set(true)

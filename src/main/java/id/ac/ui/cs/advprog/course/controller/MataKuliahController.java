@@ -23,13 +23,17 @@ public class MataKuliahController {
 
     private final MataKuliahService service;
 
-    @GetMapping("/user/matakuliah")
+    /* ---------- ADMIN ONLY - Read Operations ---------- */
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/admin/matakuliah")
     public CompletableFuture<ResponseEntity<List<MataKuliahDto>>> listAll() {
         return service.findAll()
                 .thenApply(ResponseEntity::ok);
     }
 
-    @GetMapping("/user/matakuliah/{kode}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/admin/matakuliah/{kode}")
     public ResponseEntity<MataKuliahDto> getByKode(@PathVariable String kode) {
         var dto = service.findByKode(kode);
         return (dto == null) ? ResponseEntity.notFound().build() : ResponseEntity.ok(dto);

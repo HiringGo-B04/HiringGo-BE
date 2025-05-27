@@ -137,9 +137,3 @@ Raihan Akbar - 2306152506
 Mendapatkan Tugas Bagian: Manajemen Akun dan Dashboard Mahasiswa
 
 Jika diagram kurang jelas, bisa dilihat di draw.io kami [disini](https://drive.google.com/file/d/15BBQb-VU09JhqOzyiTkONZZ7gJOJ9bdL/view?usp=sharing) 
-
-## Manajemen-Mata-Kuliah
-![img.png](images/laurentius-farel/img.png)
-Profiling dari service IMPL 
-![img_1.png](images/laurentius-farel/img_1.png)
-Profiling dari Repository

@@ -75,18 +75,13 @@ public class AsyncAccountHelperTest {
     void testGetNumberOfVacanciesAsync_ReturnsCorrectSize() throws Exception {
         Lowongan low1 = mock(Lowongan.class);
         Lowongan low2 = mock(Lowongan.class);
-        when(low1.getTotalAsdosAccepted()).thenReturn(2);
-        when(low1.getTotalAsdosNeeded()).thenReturn(4);
-
-        when(low2.getTotalAsdosAccepted()).thenReturn(2);
-        when(low2.getTotalAsdosNeeded()).thenReturn(1);
 
         when(lowonganRepository.findAll()).thenReturn(List.of(low1, low2));
 
         CompletableFuture<Integer> future = asyncHelper.getNumberOfVacanciesAsync();
         int result = future.get();
 
-        assertEquals(1, result);
+        assertEquals(2, result);
         verify(lowonganRepository).findAll();
     }
 
