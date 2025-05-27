@@ -110,12 +110,14 @@ public class AuthServiceTest {
         when(jwtUtils.generateToken(mockUser.getUsername(), "STUDENT", mockUser.getUserId()))
                 .thenReturn("mocked-jwt-token");
 
+
+
         // When
         ResponseEntity<LoginResponseDTO> response = authService.login(loginRequest);
 
         // Then
-//        assertEquals(HttpStatus.OK, response.getStatusCode());
-//        assertEquals("accept", response.getBody().status());
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("accept", response.getBody().status());
         assertEquals("Success login", response.getBody().message());
         assertEquals("mocked-jwt-token", response.getBody().token());
     }
