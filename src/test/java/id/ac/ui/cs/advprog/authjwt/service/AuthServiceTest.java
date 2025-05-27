@@ -13,6 +13,8 @@ import id.ac.ui.cs.advprog.authjwt.model.Token;
 import id.ac.ui.cs.advprog.authjwt.model.User;
 import id.ac.ui.cs.advprog.authjwt.repository.TokenRepository;
 import id.ac.ui.cs.advprog.authjwt.repository.UserRepository;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -35,6 +37,9 @@ public class AuthServiceTest {
     private TokenRepository tokenRepository;
     private JwtUtil jwtUtils;
     private PasswordEncoder passwordEncoder;
+    private MeterRegistry meterRegistry;
+
+    private Counter mockCounter;
 
     @BeforeEach
     public void setUp() {
@@ -42,12 +47,16 @@ public class AuthServiceTest {
         tokenRepository = mock(TokenRepository.class);
         jwtUtils = mock(JwtUtil.class);
         passwordEncoder = mock(PasswordEncoder.class);
+        meterRegistry = mock(MeterRegistry.class);
 
-        authService = new AuthService();
+        authService = new AuthService(meterRegistry);
         authService.userRepository = userRepository;
         authService.tokenRepository = tokenRepository;
         authService.jwtUtils = jwtUtils;
         authService.encoder = passwordEncoder;
+
+        mockCounter = mock(Counter.class);
+        when(meterRegistry.counter("login.success.count")).thenReturn(mockCounter);
     }
 
     @Test
