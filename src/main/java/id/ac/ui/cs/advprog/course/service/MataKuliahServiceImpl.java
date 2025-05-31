@@ -27,7 +27,7 @@ public class MataKuliahServiceImpl implements MataKuliahService {
     private final MataKuliahMapper     mapper;
     private final UserRepository       userRepo;
 
-    @Async
+    @Async("taskExecutor")
     @Transactional(readOnly = true)
     @Override
     public CompletableFuture<List<MataKuliahDto>> findAll() {
