@@ -132,7 +132,8 @@ public class AuthControllerTest {
 
         mockMvc.perform(post(LOGIN_ENDPOINT)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(invalidLoginRequest)));
+                        .content(objectMapper.writeValueAsString(invalidLoginRequest)))
+                        .andExpect(status().isInternalServerError());
     }
 
     @Test
